@@ -978,15 +978,20 @@
                         if (existingFeedback !== '' && existingFeedback !== '-') {
                             skippedCount++;
                         } else {
-                            // LOGIKA BARU: Ambil semua teks SETELAH nomor resi
-                            let afterAwb = line.substring(line.indexOf(awb) + awb.length).trim();
+                            // LOGIKA BARU: Ambil semua teks SETELAH nomor resi tanpa di-trim dulu
+                            let afterAwb = line.substring(line.indexOf(awb) + awb.length).replace(/^[\t\s]+/, '');
                             
-                            // Hapus Opcode (angka di awal teks setelah resi) beserta spasi/tab-nya
-                            let cleanFeedback = afterAwb.replace(/^\d{1,4}[\t\s]+/, '').trim();
+                            // Hapus Opcode (angka di awal teks setelah resi) beserta spasi/tab-nya (atau di akhir baris)
+                            let cleanFeedback = afterAwb.replace(/^\d{1,4}([\t\s]+|$)/, '').trim();
                             
-                            window.databaseMap[awb]['Feedback'] = cleanFeedback;
-                            recordsToSave.push(window.databaseMap[awb]); 
-                            updatedCount++;
+                            // Hanya simpan jika feedback-nya benar-benar ada (tidak kosong)
+                            if (cleanFeedback !== '') {
+                                window.databaseMap[awb]['Feedback'] = cleanFeedback;
+                                recordsToSave.push(window.databaseMap[awb]); 
+                                updatedCount++;
+                            } else {
+                                skippedCount++; // Jika feedback kosong, skip saja
+                            }
                         }
                     }
                 }
@@ -1000,7 +1005,7 @@
                 lucide.createIcons();
             } else if (updatedCount === 0) {
                 if (skippedCount > 0) {
-                    statusText.innerText = `Ditemukan ${foundCount} resi. ${skippedCount} di-skip (sudah ada feedback). 0 diupdate.`;
+                    statusText.innerText = `Ditemukan ${foundCount} resi. ${skippedCount} di-skip (sudah ada feedback/kosong). 0 diupdate.`;
                     statusText.classList.replace('text-slate-400', 'text-amber-500');
                 } else {
                     statusText.innerText = `Ditemukan ${foundCount} resi, tetapi tidak ada yang cocok dengan database.`;

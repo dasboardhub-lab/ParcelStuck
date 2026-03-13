@@ -45,7 +45,6 @@
             border-collapse: collapse !important; 
             width: 100% !important; 
             margin-top: 0 !important; 
-            table-layout: fixed !important; 
         }
         table.dataTable thead th {
             background-color: #f8fafc;
@@ -55,19 +54,17 @@
             letter-spacing: 0.05em;
             font-weight: 800;
             border-bottom: 2px solid #e2e8f0 !important;
-            padding: 16px 12px !important;
+            padding: 12px 10px !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         table.dataTable tbody td {
             border-bottom: 1px solid #f1f5f9 !important;
-            padding: 14px 12px !important;
+            padding: 10px 10px !important;
             color: #334155;
-            vertical-align: middle;
-            font-size: 0.85rem;
-            word-wrap: break-word;
-            white-space: normal;
+            vertical-align: top !important; /* Rata atas agar tetap rapi saat teks di-expand */
+            font-size: 0.8rem;
             transition: background-color 0.2s;
         }
         table.dataTable tbody tr:hover td { background-color: #f8fafc !important; }
@@ -724,7 +721,7 @@
 
                     <div class="p-6 bg-white">
                         <!-- Tabel Warning -->
-                        <div id="tc-warning" class="w-full block overflow-x-auto">
+                        <div id="tc-warning" class="w-full block overflow-hidden">
                             <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5 text-sm text-rose-800 flex items-start gap-3 shadow-inner">
                                 <div class="bg-rose-200 p-1.5 rounded-lg text-rose-700 mt-0.5"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
                                 <div>
@@ -735,15 +732,15 @@
                             <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Stuck / Pending -->
-                        <div id="tc-stuck" class="w-full hidden overflow-x-auto">
+                        <div id="tc-stuck" class="w-full hidden overflow-hidden">
                             <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Resolved -->
-                        <div id="tc-resolved" class="w-full hidden overflow-x-auto">
+                        <div id="tc-resolved" class="w-full hidden overflow-hidden">
                             <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Freeze -->
-                        <div id="tc-freeze" class="w-full hidden overflow-x-auto">
+                        <div id="tc-freeze" class="w-full hidden overflow-hidden">
                             <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                     </div>
@@ -2088,102 +2085,135 @@
         };
 
         window.renderOrUpdateTable = function(tableSelector, dtInstance, dataArray, tableType) {
-            let columns = [
-                {
-                    title: "Tindakan",
-                    data: null,
-                    orderable: false,
-                    width: "100px", 
-                    className: "dt-center",
-                    render: function(data, type, row) {
-                        let currentStatus = row._ui_status || 'Stuck';
-                        
-                        // Inline SVG agar icon PASTI muncul dan langsung berfungsi di dalam tabel
-                        const iWarn = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-                        const iPend = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-                        const iRes = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>`;
-                        const iFrz = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="22" y1="12" x2="2" y2="12"></line><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`;
+            let columns = [];
 
-                        if (currentStatus === 'Warning') {
-                            if (window.isAdminLoggedIn) {
-                                return `<div class="status-btn-group"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`;
-                            } else {
-                                return `<span title="Warning" class="p-2 rounded-lg bg-rose-100 text-rose-700 border border-rose-200 inline-flex items-center justify-center shadow-sm">${iWarn}</span>`;
-                            }
+            // 1. Tindakan (Semua Tab)
+            columns.push({
+                title: "Tindakan",
+                data: null,
+                orderable: false,
+                width: "90px", 
+                className: "dt-center whitespace-nowrap",
+                render: function(data, type, row) {
+                    let currentStatus = row._ui_status || 'Stuck';
+                    
+                    const iWarn = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+                    const iPend = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+                    const iRes = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>`;
+                    const iFrz = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="22" y1="12" x2="2" y2="12"></line><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`;
+
+                    if (currentStatus === 'Warning') {
+                        if (window.isAdminLoggedIn) {
+                            return `<div class="status-btn-group"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`;
+                        } else {
+                            return `<span title="Warning" class="p-2 rounded-lg bg-rose-100 text-rose-700 border border-rose-200 inline-flex items-center justify-center shadow-sm">${iWarn}</span>`;
                         }
-                        
-                        if (!window.isAdminLoggedIn) {
-                            let badgeClass = currentStatus === 'Resolved' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                                             currentStatus === 'Freeze' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                             'bg-orange-100 text-orange-700 border border-orange-200';
-                            let badgeIcon = currentStatus === 'Resolved' ? iRes : currentStatus === 'Freeze' ? iFrz : iPend;
-                            return `<span title="Status: ${currentStatus}" class="p-2 rounded-lg inline-flex items-center justify-center shadow-sm ${badgeClass}">${badgeIcon}</span>`;
-                        }
-                        
-                        let btnStuck = currentStatus === 'Stuck' ? `<button title="Status: Pending" class="status-btn bg-orange-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iPend}</button>` : `<button title="Ubah ke Pending" onclick="window.changeStatus('${row.AWB}', 'Stuck')" class="status-btn hover:bg-orange-50 hover:text-orange-600 text-slate-400 flex items-center justify-center p-2">${iPend}</button>`;
-                        let btnRes = currentStatus === 'Resolved' ? `<button title="Status: Resolved" class="status-btn bg-emerald-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iRes}</button>` : `<button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-600 text-slate-400 flex items-center justify-center p-2">${iRes}</button>`;
-                        let btnFrz = currentStatus === 'Freeze' ? `<button title="Status: Freeze" class="status-btn bg-blue-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iFrz}</button>` : `<button title="Ubah ke Freeze" onclick="window.changeStatus('${row.AWB}', 'Freeze')" class="status-btn hover:bg-blue-50 hover:text-blue-600 text-slate-400 flex items-center justify-center p-2">${iFrz}</button>`;
-
-                        return `<div class="status-btn-group">${btnStuck}${btnRes}${btnFrz}</div>`;
                     }
-                },
-                { title: "Hub Ops", data: "hub_operator_internal", width: "90px", defaultContent: "-", className: "dt-center font-bold text-slate-600 text-xs" },
-                { title: "No. Resi / AWB", data: "AWB", width: "160px", defaultContent: "-", className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm" },
-                { 
-                    title: "Last Scan", data: "Last Scan", width: "100px", defaultContent: "-", className: "dt-center text-slate-500 font-semibold text-xs",
-                    render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
-                },
-                { 
-                    title: "Opcode", data: "Update Opcode", width: "90px", defaultContent: "-", className: "dt-center",
-                    render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-xs px-2.5 py-1 rounded-md font-bold">${data || '-'}</span>`; }
-                },
-                { title: "Deskripsi Item", data: "item_name", width: "250px", defaultContent: "-", className: "dt-left text-[11px] font-semibold text-slate-600" },
-                { title: "Feedback Sistem", data: "Feedback", width: "220px", defaultContent: "-", className: "dt-left text-[11px] font-medium text-slate-500 italic" }
-            ];
-
-            // Menambahkan Kolom Expect Delivery HANYA pada tabel Warning dan Stuck (Pending)
-            if (tableType === 'warning' || tableType === 'stuck') {
-                columns.push({
-                    title: "Expect Delivery", 
-                    data: "Expect Delivery", 
-                    width: "110px", 
-                    defaultContent: "-", 
-                    className: "dt-center text-slate-500 font-semibold text-xs",
-                    render: function(data, type, row) { 
-                        return (type === 'display' && data) ? window.formatStandardDate(data) : data; 
+                    
+                    if (!window.isAdminLoggedIn) {
+                        let badgeClass = currentStatus === 'Resolved' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                         currentStatus === 'Freeze' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                         'bg-orange-100 text-orange-700 border border-orange-200';
+                        let badgeIcon = currentStatus === 'Resolved' ? iRes : currentStatus === 'Freeze' ? iFrz : iPend;
+                        return `<span title="Status: ${currentStatus}" class="p-2 rounded-lg inline-flex items-center justify-center shadow-sm ${badgeClass}">${badgeIcon}</span>`;
                     }
+                    
+                    let btnStuck = currentStatus === 'Stuck' ? `<button title="Status: Pending" class="status-btn bg-orange-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iPend}</button>` : `<button title="Ubah ke Pending" onclick="window.changeStatus('${row.AWB}', 'Stuck')" class="status-btn hover:bg-orange-50 hover:text-orange-600 text-slate-400 flex items-center justify-center p-2">${iPend}</button>`;
+                    let btnRes = currentStatus === 'Resolved' ? `<button title="Status: Resolved" class="status-btn bg-emerald-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iRes}</button>` : `<button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-600 text-slate-400 flex items-center justify-center p-2">${iRes}</button>`;
+                    let btnFrz = currentStatus === 'Freeze' ? `<button title="Status: Freeze" class="status-btn bg-blue-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iFrz}</button>` : `<button title="Ubah ke Freeze" onclick="window.changeStatus('${row.AWB}', 'Freeze')" class="status-btn hover:bg-blue-50 hover:text-blue-600 text-slate-400 flex items-center justify-center p-2">${iFrz}</button>`;
+
+                    return `<div class="status-btn-group">${btnStuck}${btnRes}${btnFrz}</div>`;
+                }
+            });
+
+            // 2. Hub Ops (Hapus dari tab Freeze)
+            if (tableType !== 'freeze') {
+                columns.push({ 
+                    title: "Hub", data: "hub_operator_internal", width: "60px", defaultContent: "-", 
+                    className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap" 
                 });
             }
 
-            if (tableType === 'freeze') {
-                // Kolonn fir HUB Delivery derbäisetzen an der Freeze Tab
-                columns.push({
-                    title: "HUB Delivery", 
-                    data: "staging_operator_internal", 
-                    width: "100px", 
-                    defaultContent: "-", 
-                    className: "dt-center font-bold text-slate-600 text-xs",
-                    render: function(data, type, row) {
-                        return data || row['HUB Delivery'] || '-';
+            // 3. AWB
+            columns.push({ 
+                title: "No. Resi", data: "AWB", width: "130px", defaultContent: "-", 
+                className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm whitespace-nowrap" 
+            });
+
+            // 4. Last Scan
+            columns.push({ 
+                title: "Last Scan", data: "Last Scan", width: "80px", defaultContent: "-", 
+                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
+                render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
+            });
+
+            // 5. Opcode
+            columns.push({ 
+                title: "Opcode", data: "Update Opcode", width: "60px", defaultContent: "-", 
+                className: "dt-center whitespace-nowrap",
+                render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-xs px-2 py-0.5 rounded-md font-bold">${data || '-'}</span>`; }
+            });
+
+            // 6. Deskripsi Item (Klik untuk Tampil Semua - Lebih Kemas)
+            columns.push({ 
+                title: "Item", data: "item_name", width: "auto", defaultContent: "-", 
+                className: "dt-left text-[8px] font-semibold text-slate-600 min-w-[180px] max-w-[280px]",
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        return `<div class="line-clamp-3 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-3');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
                     }
+                    return data;
+                }
+            });
+
+            // 7. Feedback Sistem (Klik untuk Tampil Semua - Lebih Kemas)
+            columns.push({ 
+                title: "Feedback", data: "Feedback", width: "auto", defaultContent: "-", 
+                className: "dt-left text-[8px] font-medium text-slate-500 italic min-w-[200px] max-w-[300px]",
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        return `<div class="line-clamp-3 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-3');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
+                    }
+                    return data;
+                }
+            });
+
+            // 8. Expect Delivery (HANYA Warning & Stuck)
+            if (tableType === 'warning' || tableType === 'stuck') {
+                columns.push({
+                    title: "Expect Delivery", data: "Expect Delivery", width: "90px", defaultContent: "-", 
+                    className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
+                    render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
+                });
+            }
+
+            // 9. Kolom Tambahan (HANYA Freeze)
+            if (tableType === 'freeze') {
+                columns.push({
+                    title: "HUB Delivery", data: "staging_operator_internal", width: "80px", defaultContent: "-", 
+                    className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap",
+                    render: function(data, type, row) { return data || row['HUB Delivery'] || '-'; }
                 });
 
                 columns.push({
-                    title: "Last < 92", data: "Last Before 92", width: "120px", defaultContent: "", className: "dt-center",
+                    title: "Last < 92", data: "Last Before 92", width: "70px", defaultContent: "", 
+                    className: "dt-center whitespace-nowrap",
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${data}</span>` : '-';
-                            return `<input type="number" class="dt-input" value="${data || ''}" placeholder="Nilai..." onchange="window.saveManualData('${row.AWB}', 'Last Before 92', this.value)">`;
+                            return `<input type="number" class="dt-input p-1 text-xs text-center" value="${data || ''}" placeholder="Nilai..." onchange="window.saveManualData('${row.AWB}', 'Last Before 92', this.value)">`;
                         }
                         return data;
                     }
                 });
+                
                 columns.push({
-                    title: "Tgl Last < 92", data: "Date Last Before 92", width: "150px", defaultContent: "", className: "dt-center",
+                    title: "Tgl Last < 92", data: "Date Last Before 92", width: "90px", defaultContent: "", 
+                    className: "dt-center whitespace-nowrap",
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded text-[11px]">${data}</span>` : '-';
-                            return `<input type="date" class="dt-input" value="${data || ''}" onchange="window.saveManualData('${row.AWB}', 'Date Last Before 92', this.value)">`;
+                            return `<input type="date" class="dt-input p-1 text-[10px] text-center" value="${data || ''}" onchange="window.saveManualData('${row.AWB}', 'Date Last Before 92', this.value)">`;
                         }
                         return data;
                     }

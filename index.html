@@ -2097,6 +2097,18 @@
             }
 
             if (tableType === 'freeze') {
+                // Kolonn fir HUB Delivery derbäisetzen an der Freeze Tab
+                columns.push({
+                    title: "HUB Delivery", 
+                    data: "staging_operator_internal", 
+                    width: "100px", 
+                    defaultContent: "-", 
+                    className: "dt-center font-bold text-slate-600 text-xs",
+                    render: function(data, type, row) {
+                        return data || row['HUB Delivery'] || '-';
+                    }
+                });
+
                 columns.push({
                     title: "Last < 92", data: "Last Before 92", width: "120px", defaultContent: "", className: "dt-center",
                     render: function(data, type, row) {

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Manajemen Hub - Parcel Stuck</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (PASTIKAN BARIS INI ADA & TERSALIN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- DataTables CSS -->
@@ -22,6 +22,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* CSS Fallback: Mencegah popup bocor jika koneksi internet melambat/memblokir CSS utama */
+        [hidden] { display: none !important; }
+        
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #f1f5f9; 
@@ -791,6 +794,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Card Alat Tambahan (Reset Feedback) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-4">
+                        <div class="p-2 bg-rose-100 rounded-xl"><i data-lucide="eraser" class="w-4 h-4 text-rose-600"></i></div>
+                        Utilitas Database
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-5 leading-relaxed font-medium">Hapus seluruh isi kolom <b>Feedback</b> khusus pada data yang berstatus <b>Warning</b> dan <b>Pending (Stuck)</b> untuk persiapan format baru.</p>
+                    <button onclick="window.clearSpecificFeedback()" class="w-full bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Kosongkan Feedback
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -960,11 +978,11 @@
                         if (existingFeedback !== '' && existingFeedback !== '-') {
                             skippedCount++;
                         } else {
-                            let feedbackRaw = line.replace(awb, '').trim();
-                            feedbackRaw = feedbackRaw.replace(/^\d{2}[\/\-]\d{2}[\/\-]\d{4}\s*/, '');
-                            feedbackRaw = feedbackRaw.replace(/^\d{1,3}\s+/, '');
+                            // LOGIKA BARU: Ambil semua teks SETELAH nomor resi
+                            let afterAwb = line.substring(line.indexOf(awb) + awb.length).trim();
                             
-                            let cleanFeedback = feedbackRaw.replace(/[\t\s]+/g, ' ').trim();
+                            // Hapus Opcode (angka di awal teks setelah resi) beserta spasi/tab-nya
+                            let cleanFeedback = afterAwb.replace(/^\d{1,4}[\t\s]+/, '').trim();
                             
                             window.databaseMap[awb]['Feedback'] = cleanFeedback;
                             recordsToSave.push(window.databaseMap[awb]); 
@@ -1342,6 +1360,41 @@
             });
         };
 
+        window.clearSpecificFeedback = async function() {
+            if(!window.isAdminLoggedIn) return;
+            window.showConfirmModal(
+                "Kosongkan Feedback?", 
+                "Tindakan ini akan menghapus secara permanen semua teks Feedback yang ada di tabel Warning dan Pending. Lanjutkan?", 
+                async () => {
+                    let updatedCount = 0;
+                    let recordsToSave = [];
+
+                    // Cari semua data yang statusnya Warning atau Stuck dan punya feedback
+                    Object.values(window.databaseMap).forEach(row => {
+                        let currentStatus = window.evaluateStatus(row);
+                        if (row._is_manual) currentStatus = row._ui_status;
+
+                        if ((currentStatus === 'Warning' || currentStatus === 'Stuck') && row['Feedback'] && row['Feedback'].trim() !== '' && row['Feedback'].trim() !== '-') {
+                            row['Feedback'] = ''; // Kosongkan feedback
+                            recordsToSave.push(row);
+                            updatedCount++;
+                        }
+                    });
+
+                    if (recordsToSave.length > 0) {
+                        window.showUploadProgress("Menghapus Feedback", "Menyinkronkan perubahan ke Cloud...");
+                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                            window.updateUploadProgress(current, total, "Memproses Data:");
+                        });
+                        window.updateDatabaseUI();
+                        window.finishUploadProgress(updatedCount, 0, "Feedback berhasil dikosongkan dari tabel Warning dan Pending.");
+                    } else {
+                        window.showToast("Data bersih! Tidak ada Feedback yang perlu dihapus.", "success");
+                    }
+                }
+            );
+        };
+
         window.evaluateStatus = function(row) {
             let currentOpcode = (row['Update Opcode'] || '').toString().trim();
             let currentHub = (row['hub_operator_internal'] || '').toString().trim();
@@ -1657,7 +1710,7 @@
             let pendingOpcodes = new Set();
 
             data.forEach(row => {
-                let d = row['Today'];
+                let d = row['Today'] || row['Last Scan']; // Fallback baca tanggal
                 if(!d) return;
                 
                 let dateObj = window.parseCustomDate(d);
@@ -1689,7 +1742,7 @@
             });
 
             data.forEach(row => {
-                let d = row['Today'];
+                let d = row['Today'] || row['Last Scan']; // Fallback baca tanggal
                 if(!d) return;
                 let dateObj = window.parseCustomDate(d);
                 if(!dateObj) return;
@@ -1909,7 +1962,10 @@
                     }
 
                     if (fStart || fEnd) {
-                        let rowDate = window.parseCustomDate(row['Today']);
+                        // Perbaikan pencarian tanggal (Aman jika kolom "Today" tidak ada)
+                        let rawDateStr = row['Today'] || row['Last Scan'];
+                        let rowDate = window.parseCustomDate(rawDateStr);
+                        
                         if (!rowDate) match = false;
                         else {
                             if (fStart && rowDate < new Date(fStart + 'T00:00:00')) match = false;

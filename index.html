@@ -842,7 +842,7 @@
     <div id="custom-confirm-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-300" id="custom-confirm-box">
             <div class="p-8 text-center">
-                <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-amber-100">
+                <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-5 border border-amber-100">
                     <i data-lucide="help-circle" class="w-8 h-8"></i>
                 </div>
                 <h3 id="confirm-title" class="text-xl font-extrabold text-slate-800 mb-2 tracking-tight">Konfirmasi</h3>
@@ -1321,6 +1321,10 @@
                     }
                 });
                 
+                // Hapus isi dropdown agar di-render ulang berdasarkan aturan whitelist yang baru
+                const hubContainer = document.getElementById('hub-options-container');
+                if (hubContainer) hubContainer.innerHTML = '';
+
                 window.updateDatabaseUI();
                 
                 if (recordsToSave.length > 0) {
@@ -1344,25 +1348,38 @@
             let currentOpcode80 = (row['Opcode 80'] || '').toString().trim();
             let currentReturn = (row['Return'] || '').toString().trim();
             
+            // PRIORITAS 1 MUTLAK: Filter Hub (Area Coverage)
+            // Jika resi berada di Hub yang TIDAK ADA di dalam Whitelist, otomatis Resolved.
+            // Tidak peduli apakah itu Warning atau Freeze, jika bukan area kita, buang ke Resolved.
+            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
+            if (confHubs.length > 0) {
+                if (currentHub !== '' && !confHubs.includes(currentHub)) return 'Resolved';
+            }
+
+            // PRIORITAS 2: Warning Opcodes (Kritis)
             const warningOpcodes = ['603', '618', '21', '22', '207'];
             if (warningOpcodes.includes(currentOpcode)) {
                 if (row._is_manual) return row._ui_status; 
                 return 'Warning';
             }
+
+            // PRIORITAS 3: Freeze Opcode (>92 Hari)
             if (currentOpcode === '92') {
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
             }
+
+            // Jika status sudah diubah secara manual oleh Admin, pertahankan status manual tersebut
             if (row._is_manual) return row._ui_status;
+
+            // PRIORITAS 4: Status Resolved Default
             if (currentOpcode80 !== '' || currentReturn !== '') return 'Resolved';
 
+            // PRIORITAS 5: Whitelist Opcodes (Auto-Resolved)
             let confOpcodes = window.appSettings.opcodes ? window.appSettings.opcodes.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confOpcodes.length > 0 && confOpcodes.includes(currentOpcode)) return 'Resolved';
 
-            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
-            if (confHubs.length > 0) {
-                if (currentHub !== '' && !confHubs.includes(currentHub)) return 'Resolved';
-            }
+            // Jika tidak memenuhi semua kondisi di atas dan lolos Filter Hub, maka statusnya Pending (Stuck)
             return 'Stuck';
         };
 
@@ -1371,7 +1388,9 @@
                 window.showToast("Akses Ditolak: Diperlukan izin Admin.", "error");
                 return;
             }
-            window.showConfirmModal("Ubah Status Operasional", `Status AWB ${awb} akan dialihkan secara manual ke kategori ${newStatus}.`, async () => {
+
+            // Fungsi eksekusi utama (tanpa konfirmasi)
+            const executeChange = async () => {
                 if(window.databaseMap[awb]) {
                     window.databaseMap[awb]._ui_status = newStatus;
                     window.databaseMap[awb]._is_manual = true; 
@@ -1380,7 +1399,22 @@
                     catch(e) { console.warn("Error manual status:", e); }
                     window.showToast(`Status AWB ${awb} dialihkan ke ${newStatus}.`, "success");
                 }
-            });
+            };
+
+            // Cek status resi saat ini (sebelum diubah)
+            let currentStatus = window.databaseMap[awb] ? window.databaseMap[awb]._ui_status : null;
+
+            // Popup HANYA muncul jika data berasal dari tab Resolved atau Freeze
+            if (currentStatus === 'Resolved' || currentStatus === 'Freeze') {
+                window.showConfirmModal(
+                    "Peringatan: Ubah Status Manual", 
+                    `Data ini sudah berada di kategori ${currentStatus}. Yakin ingin mengembalikannya ke ${newStatus}?`, 
+                    executeChange
+                );
+            } else {
+                // Untuk Warning dan Stuck, eksekusi langsung (instan!)
+                executeChange();
+            }
         };
 
         window.saveManualData = async function(awb, field, value) {
@@ -1481,6 +1515,7 @@
                             if (row['fop_code_internal']) { window.databaseMap[awb]['Update Opcode'] = row['fop_code_internal']; isUpdated = true; }
                             if (row['return_awb']) { window.databaseMap[awb]['Return'] = row['return_awb']; isUpdated = true; }
                             if (row['80_last']) { window.databaseMap[awb]['Opcode 80'] = row['80_last']; isUpdated = true; }
+                            if (row['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = row['expect_delivery_tm']; isUpdated = true; } // Update expectation
 
                             let currentItemName = window.databaseMap[awb]['item_name'];
                             if (!currentItemName || currentItemName.trim() === "") {
@@ -1799,8 +1834,9 @@
 
                 const hubContainer = document.getElementById('hub-options-container');
                 if(hubContainer && hubContainer.innerHTML.trim() === '') {
-                    const hubSet = new Set();
-                    dbArray.forEach(r => { if(r['hub_operator_internal']) hubSet.add(r['hub_operator_internal']); });
+                    // MENGUBAH SUMBER LIST HUB DARI DATABASE MENJADI DARI SETTING WHITELIST
+                    let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
+                    const hubSet = new Set(confHubs);
                     
                     let currentHtml = '';
                     Array.from(hubSet).sort().forEach(hub => {
@@ -1814,6 +1850,12 @@
                             </label>
                         `;
                     });
+                    
+                    // Jika belum ada hub yang disetel di konfigurasi Admin
+                    if(currentHtml === '') {
+                        currentHtml = `<p class="text-[10px] text-slate-400 px-2 italic">Hub Whitelist kosong. Atur di menu Admin.</p>`;
+                    }
+                    
                     hubContainer.innerHTML = currentHtml;
                 }
 
@@ -1943,6 +1985,20 @@
                 { title: "Deskripsi Item", data: "item_name", width: "250px", defaultContent: "-", className: "dt-left text-[11px] font-semibold text-slate-600" },
                 { title: "Feedback Sistem", data: "Feedback", width: "220px", defaultContent: "-", className: "dt-left text-[11px] font-medium text-slate-500 italic" }
             ];
+
+            // Menambahkan Kolom Expect Delivery HANYA pada tabel Warning dan Stuck (Pending)
+            if (tableType === 'warning' || tableType === 'stuck') {
+                columns.push({
+                    title: "Expect Delivery", 
+                    data: "Expect Delivery", 
+                    width: "110px", 
+                    defaultContent: "-", 
+                    className: "dt-center text-slate-500 font-semibold text-xs",
+                    render: function(data, type, row) { 
+                        return (type === 'display' && data) ? window.formatStandardDate(data) : data; 
+                    }
+                });
+            }
 
             if (tableType === 'freeze') {
                 columns.push({

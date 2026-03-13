@@ -707,8 +707,14 @@
 
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-2.5 pb-3">
-                            <button onclick="window.copyFilteredData()" id="btn-copy" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                <i data-lucide="copy" class="w-4 h-4"></i> Salin Data
+                            <button onclick="window.copyAWBWarnPend()" id="btn-copy-awb-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                <i data-lucide="list" class="w-4 h-4"></i> Salin AWB
+                            </button>
+                            <button onclick="window.copyDataWarnPend()" id="btn-copy-data-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                <i data-lucide="copy" class="w-4 h-4"></i> Salin Data Laporan
+                            </button>
+                            <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                <i data-lucide="copy" class="w-4 h-4"></i> Salin AWB
                             </button>
                             <button onclick="window.exportToCSV()" id="btn-download" class="bg-slate-800 text-white hover:bg-slate-900 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-slate-200 text-xs">
                                 <i data-lucide="download" class="w-4 h-4"></i> Unduh CSV
@@ -1295,6 +1301,22 @@
                 activeContainer.classList.add('block');
             }
 
+            // Atur tampilan tombol salin berdasarkan Tab Aktif
+            let btnCopyAwbWp = document.getElementById('btn-copy-awb-wp');
+            let btnCopyDataWp = document.getElementById('btn-copy-data-wp');
+            let btnCopyFreeze = document.getElementById('btn-copy-freeze');
+            
+            if(btnCopyAwbWp) { btnCopyAwbWp.classList.add('hidden'); btnCopyAwbWp.classList.remove('flex'); }
+            if(btnCopyDataWp) { btnCopyDataWp.classList.add('hidden'); btnCopyDataWp.classList.remove('flex'); }
+            if(btnCopyFreeze) { btnCopyFreeze.classList.add('hidden'); btnCopyFreeze.classList.remove('flex'); }
+
+            if (tableName === 'warning' || tableName === 'stuck') {
+                if(btnCopyAwbWp) { btnCopyAwbWp.classList.remove('hidden'); btnCopyAwbWp.classList.add('flex'); }
+                if(btnCopyDataWp) { btnCopyDataWp.classList.remove('hidden'); btnCopyDataWp.classList.add('flex'); }
+            } else if (tableName === 'freeze') {
+                if(btnCopyFreeze) { btnCopyFreeze.classList.remove('hidden'); btnCopyFreeze.classList.add('flex'); }
+            }
+
             if(activeBtn) {
                 let activeSpan = activeBtn.querySelector(`span#count-${tableName}`);
                 if (tableName === 'warning') {
@@ -1636,23 +1658,27 @@
             window.showToast("Filter dikembalikan ke default (30 Hari Terakhir).", "info");
         };
 
-        window.copyFilteredData = function() {
-            let activeDt;
-            let activeTableName = "";
-            if (window.currentActiveTable === 'warning') { activeDt = window.dtWarning; activeTableName = "Warning"; }
-            else if (window.currentActiveTable === 'stuck') { activeDt = window.dtStuck; activeTableName = "Pending"; }
-            else if (window.currentActiveTable === 'resolved') { activeDt = window.dtResolved; activeTableName = "Resolved"; }
-            else if (window.currentActiveTable === 'freeze') { activeDt = window.dtFreeze; activeTableName = "Freeze"; }
-
-            if (!activeDt) return;
-
-            let rows = activeDt.rows({ search: 'applied' }).data().toArray();
-            if (rows.length === 0) {
-                window.showToast(`Kosong: Tidak ada baris pada tabel ${activeTableName}.`, "warning");
+        window.copyToClipboard = function(text, successMsg) {
+            if (!text || text.trim() === "") {
+                window.showToast("Tidak ada data untuk disalin.", "warning");
                 return;
             }
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast(successMsg, "success");
+            } catch (err) { 
+                window.showToast("Browser memblokir aksi salin otomatis.", "error"); 
+            }
+            document.body.removeChild(textArea);
+        };
 
-            // Object untuk menyimpan data yang dikelompokkan berdasarkan timestamp Last Scan
+        window.formatGroupedData = function(rows) {
+            if (rows.length === 0) return "(Tidak ada data)\n";
             let groupedData = {};
 
             rows.forEach(row => {
@@ -1679,34 +1705,67 @@
 
             // Urutkan kunci (timestamp) dari yang terlama (terkecil) ke terbaru (terbesar)
             let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+            let resultText = "";
 
-            let textToCopy = "";
             sortedTimestamps.forEach(ts => {
                 let group = groupedData[ts];
-                
-                // Header Tanggal
-                textToCopy += `${group.dateLabel}\n`;
-                
-                // Daftar AWB | Opcode | Feedback di bawah tanggal tersebut
+                resultText += `${group.dateLabel}\n`;
                 group.items.forEach(item => {
-                    textToCopy += `${item.awb}\t${item.opcode}\t${item.feedback}\n`;
+                    resultText += `${item.awb}\t${item.opcode}\t${item.feedback}\n`;
                 });
-                
-                textToCopy += `\n`; // Spasi antar kelompok tanggal
+                resultText += `\n`; 
             });
 
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy.trim();
-            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus(); textArea.select();
+            return resultText;
+        };
+
+        window.copyAWBWarnPend = function() {
+            if (!window.dtWarning || !window.dtStuck) return;
+            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
+            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
+
+            let textToCopy = "> warning\n";
+            if (rowsWarn.length === 0) textToCopy += "-\n";
+            rowsWarn.forEach(row => { textToCopy += `${row['AWB']}\n`; });
             
-            try {
-                document.execCommand('copy');
-                window.showToast(`${rows.length} baris data disalin ke Clipboard berdasarkan Last Scan!`, "success");
-            } catch (err) { window.showToast("Browser memblokir aksi salin otomatis.", "error"); }
+            textToCopy += "\n> pending\n";
+            if (rowsStuck.length === 0) textToCopy += "-\n";
+            rowsStuck.forEach(row => { textToCopy += `${row['AWB']}\n`; });
+
+            window.copyToClipboard(textToCopy.trim(), `AWB Warning & Pending berhasil disalin!`);
+        };
+
+        window.copyDataWarnPend = function() {
+            if (!window.dtWarning || !window.dtStuck) return;
+            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
+            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
+
+            let textToCopy = "=== DATA WARNING ===\n\n";
+            textToCopy += window.formatGroupedData(rowsWarn);
             
-            document.body.removeChild(textArea);
+            textToCopy += "====================\n\n=== DATA PENDING ===\n\n";
+            textToCopy += window.formatGroupedData(rowsStuck);
+
+            window.copyToClipboard(textToCopy.trim(), `Data Laporan Warning & Pending disalin!`);
+        };
+
+        window.copyFilteredData = function() {
+            // Fungsi ini sekarang khusus digunakan oleh tab Freeze
+            if (window.currentActiveTable === 'freeze') {
+                if (!window.dtFreeze) return;
+                let rows = window.dtFreeze.rows({ search: 'applied' }).data().toArray();
+                let textToCopy = "";
+                
+                // Mengambil data persis sesuai urutan yang terlihat di layar
+                let nodes = window.dtFreeze.rows({ search: 'applied' }).nodes();
+                for (let i = 0; i < nodes.length; i++) {
+                    let rowData = window.dtFreeze.row(nodes[i]).data();
+                    if (rowData && rowData['AWB']) {
+                        textToCopy += `${rowData['AWB']}\n`;
+                    }
+                }
+                window.copyToClipboard(textToCopy.trim(), `${rows.length} AWB Freeze disalin!`);
+            }
         };
 
         window.renderSummaryTable = function(data) {

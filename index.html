@@ -1594,24 +1594,58 @@
                 return;
             }
 
-            let textToCopy = "AWB\tLast Scan\tUpdate Opcode\tFeedback\n";
+            // Object untuk menyimpan data yang dikelompokkan berdasarkan timestamp Last Scan
+            let groupedData = {};
+
             rows.forEach(row => {
-                let awb = row['AWB'] || '';
-                let lastScan = window.formatStandardDate(row['Last Scan']);
-                let opcode = row['Update Opcode'] || '';
-                let feedback = row['Feedback'] || '';
-                textToCopy += `${awb}\t${lastScan}\t${opcode}\t${feedback}\n`;
+                let rawDate = row['Last Scan'];
+                let dateObj = window.parseCustomDate(rawDate);
+                
+                // Gunakan timestamp untuk pengurutan, jika null beri 0 (akan muncul paling atas)
+                let timestamp = dateObj ? dateObj.getTime() : 0; 
+                let formattedDate = window.formatStandardDate(rawDate);
+
+                if (!groupedData[timestamp]) {
+                    groupedData[timestamp] = {
+                        dateLabel: formattedDate,
+                        items: []
+                    };
+                }
+                
+                groupedData[timestamp].items.push({
+                    awb: row['AWB'] || '',
+                    opcode: row['Update Opcode'] || '-',
+                    feedback: row['Feedback'] || '-'
+                });
+            });
+
+            // Urutkan kunci (timestamp) dari yang terlama (terkecil) ke terbaru (terbesar)
+            let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+
+            let textToCopy = "";
+            sortedTimestamps.forEach(ts => {
+                let group = groupedData[ts];
+                
+                // Header Tanggal
+                textToCopy += `${group.dateLabel}\n`;
+                
+                // Daftar AWB | Opcode | Feedback di bawah tanggal tersebut
+                group.items.forEach(item => {
+                    textToCopy += `${item.awb}\t${item.opcode}\t${item.feedback}\n`;
+                });
+                
+                textToCopy += `\n`; // Spasi antar kelompok tanggal
             });
 
             const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
+            textArea.value = textToCopy.trim();
             textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
             document.body.appendChild(textArea);
             textArea.focus(); textArea.select();
             
             try {
                 document.execCommand('copy');
-                window.showToast(`${rows.length} baris data disalin ke Clipboard!`, "success");
+                window.showToast(`${rows.length} baris data disalin ke Clipboard berdasarkan Last Scan!`, "success");
             } catch (err) { window.showToast("Browser memblokir aksi salin otomatis.", "error"); }
             
             document.body.removeChild(textArea);

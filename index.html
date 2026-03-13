@@ -720,7 +720,7 @@
                                 <div class="bg-rose-200 p-1.5 rounded-lg text-rose-700 mt-0.5"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
                                 <div>
                                     <p class="font-extrabold mb-0.5 text-rose-900">Eskalasi Tim Pencarian</p>
-                                    <p class="text-rose-700 text-xs font-medium">Data berikut terdeteksi memiliki Opcode kritis (603, 618, 21, 22, 207). Admin dapat mengubah status ke Resolved jika investigasi selesai.</p>
+                                    <p class="text-rose-700 text-xs font-medium">Data berikut terdeteksi memiliki Opcode kritis (603, 618, 21, 22, 207, 43). Admin dapat mengubah status ke Resolved jika investigasi selesai.</p>
                                 </div>
                             </div>
                             <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
@@ -776,7 +776,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Whitelist Opcode (Auto-Resolved)</label>
                             <textarea id="set-opcodes" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono font-medium" placeholder="Cth: 41, 90, 55"></textarea>
-                            <p class="text-[10px] leading-relaxed text-slate-400 mt-1.5 font-medium">Pisahkan dengan koma. Sistem memiliki *hardcode rule* mutlak untuk Opcode: 92, 603, 618, 21, 22, 207.</p>
+                            <p class="text-[10px] leading-relaxed text-slate-400 mt-1.5 font-medium">Pisahkan dengan koma. Sistem memiliki *hardcode rule* mutlak untuk Opcode: 92, 603, 618, 21, 22, 207, 43.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Filter Hub (Auto-Resolved Jika Tidak Cocok)</label>
@@ -1348,25 +1348,26 @@
             let currentOpcode80 = (row['Opcode 80'] || '').toString().trim();
             let currentReturn = (row['Return'] || '').toString().trim();
             
-            // PRIORITAS 1 MUTLAK: Filter Hub (Area Coverage)
+            // PRIORITAS ABSOLUT: Freeze Opcode (>92 Hari)
+            // Di mana pun areanya, Opcode 92 WAJIB masuk Freeze (Tidak bisa diganggu gugat)
+            if (currentOpcode === '92') {
+                if (row._is_manual) return row._ui_status;
+                return 'Freeze';
+            }
+
+            // PRIORITAS 1: Filter Hub (Area Coverage)
             // Jika resi berada di Hub yang TIDAK ADA di dalam Whitelist, otomatis Resolved.
-            // Tidak peduli apakah itu Warning atau Freeze, jika bukan area kita, buang ke Resolved.
+            // Tidak peduli apakah itu Warning, jika bukan area kita, buang ke Resolved.
             let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confHubs.length > 0) {
                 if (currentHub !== '' && !confHubs.includes(currentHub)) return 'Resolved';
             }
 
             // PRIORITAS 2: Warning Opcodes (Kritis)
-            const warningOpcodes = ['603', '618', '21', '22', '207'];
+            const warningOpcodes = ['603', '618', '21', '22', '207', '43'];
             if (warningOpcodes.includes(currentOpcode)) {
                 if (row._is_manual) return row._ui_status; 
                 return 'Warning';
-            }
-
-            // PRIORITAS 3: Freeze Opcode (>92 Hari)
-            if (currentOpcode === '92') {
-                if (row._is_manual) return row._ui_status;
-                return 'Freeze';
             }
 
             // Jika status sudah diubah secara manual oleh Admin, pertahankan status manual tersebut

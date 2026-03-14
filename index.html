@@ -1780,18 +1780,37 @@
             // Fungsi ini sekarang khusus digunakan oleh tab Freeze
             if (window.currentActiveTable === 'freeze') {
                 if (!window.dtFreeze) return;
-                let rows = window.dtFreeze.rows({ search: 'applied' }).data().toArray();
                 let textToCopy = "";
+                let copiedCount = 0;
                 
                 // Mengambil data persis sesuai urutan yang terlihat di layar
                 let nodes = window.dtFreeze.rows({ search: 'applied' }).nodes();
                 for (let i = 0; i < nodes.length; i++) {
                     let rowData = window.dtFreeze.row(nodes[i]).data();
                     if (rowData && rowData['AWB']) {
-                        textToCopy += `${rowData['AWB']}\n`;
+                        // Ambil nilai dari ketiga kolom investigasi Freeze
+                        let hubDel = (rowData['staging_operator_internal'] || rowData['HUB Delivery'] || '').toString().trim();
+                        let last92 = (rowData['Last Before 92'] || '').toString().trim();
+                        let date92 = (rowData['Date Last Before 92'] || '').toString().trim();
+
+                        let isHubEmpty = (hubDel === '' || hubDel === '-');
+                        let isLast92Empty = (last92 === '' || last92 === '-');
+                        let isDate92Empty = (date92 === '' || date92 === '-');
+
+                        // Salin HANYA JIKA ketiganya masih benar-benar kosong (Belum dikerjakan sama sekali)
+                        if (isHubEmpty && isLast92Empty && isDate92Empty) {
+                            textToCopy += `${rowData['AWB']}\n`;
+                            copiedCount++;
+                        }
                     }
                 }
-                window.copyToClipboard(textToCopy.trim(), `${rows.length} AWB Freeze disalin!`);
+                
+                if (copiedCount === 0) {
+                    window.showToast("Tidak ada AWB kosong. Semua data yang tampil saat ini sudah mulai dikerjakan.", "warning");
+                    return;
+                }
+
+                window.copyToClipboard(textToCopy.trim(), `${copiedCount} AWB (Belum diinvestigasi) berhasil disalin!`);
             }
         };
 

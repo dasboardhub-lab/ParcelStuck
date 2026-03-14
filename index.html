@@ -44,6 +44,8 @@
         table.dataTable { 
             border-collapse: collapse !important; 
             width: 100% !important; 
+            min-width: 1100px !important; /* Mencegah tabel hilang/hancur di layar kecil */
+            table-layout: fixed !important; /* FIX KUNCI: Memaksa lebar kolom sesuai persentase */
             margin-top: 0 !important; 
         }
         table.dataTable thead th {
@@ -1797,8 +1799,8 @@
                         let isLast92Empty = (last92 === '' || last92 === '-');
                         let isDate92Empty = (date92 === '' || date92 === '-');
 
-                        // Salin HANYA JIKA ketiganya masih benar-benar kosong (Belum dikerjakan sama sekali)
-                        if (isHubEmpty && isLast92Empty && isDate92Empty) {
+                        // Salin JIKA salah satunya masih kosong (Belum lengkap dikerjakan)
+                        if (isHubEmpty || isLast92Empty || isDate92Empty) {
                             textToCopy += `${rowData['AWB']}\n`;
                             copiedCount++;
                         }
@@ -1806,11 +1808,11 @@
                 }
                 
                 if (copiedCount === 0) {
-                    window.showToast("Tidak ada AWB kosong. Semua data yang tampil saat ini sudah mulai dikerjakan.", "warning");
+                    window.showToast("Semua AWB yang tampil saat ini datanya sudah lengkap.", "warning");
                     return;
                 }
 
-                window.copyToClipboard(textToCopy.trim(), `${copiedCount} AWB (Belum diinvestigasi) berhasil disalin!`);
+                window.copyToClipboard(textToCopy.trim(), `${copiedCount} AWB (Data belum lengkap) berhasil disalin!`);
             }
         };
 
@@ -2271,13 +2273,17 @@
 
         window.renderOrUpdateTable = function(tableSelector, dtInstance, dataArray, tableType) {
             let columns = [];
+            
+            let isFreeze = tableType === 'freeze';
+            let isWarnStuck = (tableType === 'warning' || tableType === 'stuck');
+            let isResolved = tableType === 'resolved';
 
-            // 1. Tindakan (Semua Tab)
+            // 1. Tindakan (Semua Tab) - 10%
             columns.push({
                 title: "Tindakan",
                 data: null,
                 orderable: false,
-                width: "90px", 
+                width: "10%", 
                 className: "dt-center whitespace-nowrap",
                 render: function(data, type, row) {
                     let currentStatus = row._ui_status || 'Stuck';
@@ -2311,38 +2317,42 @@
                 }
             });
 
-            // 2. Hub Ops (Hapus dari tab Freeze)
-            if (tableType !== 'freeze') {
+            // 2. Hub Ops (Hapus dari tab Freeze) - 8%
+            if (!isFreeze) {
                 columns.push({ 
-                    title: "Hub", data: "hub_operator_internal", width: "60px", defaultContent: "-", 
+                    title: "Hub", data: "hub_operator_internal", width: "8%", defaultContent: "-", 
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap" 
                 });
             }
 
             // 3. AWB
+            let awbW = isWarnStuck ? "12%" : (isFreeze ? "12%" : "15%");
             columns.push({ 
-                title: "No. Resi", data: "AWB", width: "130px", defaultContent: "-", 
+                title: "No. Resi", data: "AWB", width: awbW, defaultContent: "-", 
                 className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm whitespace-nowrap" 
             });
 
             // 4. Last Scan
+            let lsW = isResolved ? "12%" : "10%";
             columns.push({ 
-                title: "Last Scan", data: "Last Scan", width: "80px", defaultContent: "-", 
+                title: "Last Scan", data: "Last Scan", width: lsW, defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
                 render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
             });
 
             // 5. Opcode
+            let opW = isResolved ? "10%" : "8%";
             columns.push({ 
-                title: "Opcode", data: "Update Opcode", width: "60px", defaultContent: "-", 
+                title: "Opcode", data: "Update Opcode", width: opW, defaultContent: "-", 
                 className: "dt-center whitespace-nowrap",
                 render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-xs px-2 py-0.5 rounded-md font-bold">${data || '-'}</span>`; }
             });
 
-            // 6. Deskripsi Item (Klik untuk Tampil Semua - Lebih Kemas)
+            // 6. Item (Deskripsi)
+            let itW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "22%");
             columns.push({ 
-                title: "Item", data: "item_name", width: "auto", defaultContent: "-", 
-                className: "dt-left text-[8px] font-semibold text-slate-600 min-w-[180px] max-w-[280px]",
+                title: "Item", data: "item_name", width: itW, defaultContent: "-", 
+                className: "dt-left text-[8px] lg:text-[10px] font-semibold text-slate-600",
                 render: function(data, type, row) {
                     if (type === 'display') {
                         return `<div class="line-clamp-3 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-3');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
@@ -2351,10 +2361,11 @@
                 }
             });
 
-            // 7. Feedback Sistem (Klik untuk Tampil Semua - Lebih Kemas)
+            // 7. Feedback Sistem
+            let fbW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "23%");
             columns.push({ 
-                title: "Feedback", data: "Feedback", width: "auto", defaultContent: "-", 
-                className: "dt-left text-[8px] font-medium text-slate-500 italic min-w-[200px] max-w-[300px]",
+                title: "Feedback", data: "Feedback", width: fbW, defaultContent: "-", 
+                className: "dt-left text-[8px] lg:text-[10px] font-medium text-slate-500 italic",
                 render: function(data, type, row) {
                     if (type === 'display') {
                         return `<div class="line-clamp-3 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-3');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
@@ -2363,49 +2374,49 @@
                 }
             });
 
-            // 8. Expect Delivery (HANYA Warning & Stuck)
-            if (tableType === 'warning' || tableType === 'stuck') {
+            // 8. Expect Delivery (HANYA Warning & Stuck) - 12%
+            if (isWarnStuck) {
                 columns.push({
-                    title: "Expect Delivery", data: "Expect Delivery", width: "90px", defaultContent: "-", 
+                    title: "Expect Delivery", data: "Expect Delivery", width: "12%", defaultContent: "-", 
                     className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
                     render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
                 });
             }
 
-            // 9. Kolom Tambahan (HANYA Freeze)
-            if (tableType === 'freeze') {
+            // 9. Kolom Tambahan (HANYA Freeze) - Masing-masing 10%
+            if (isFreeze) {
                 columns.push({
-                    title: "HUB Delivery", data: "staging_operator_internal", width: "80px", defaultContent: "-", 
+                    title: "HUB Delivery", data: "staging_operator_internal", width: "10%", defaultContent: "-", 
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap",
                     render: function(data, type, row) { 
                         let displayData = data || row['HUB Delivery'] || '';
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return displayData ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${displayData}</span>` : '-';
-                            return `<input type="text" class="dt-input p-1 text-xs text-center font-bold text-slate-700 uppercase" value="${displayData}" placeholder="HUB..." onchange="window.saveManualData('${row.AWB}', 'staging_operator_internal', this.value.toUpperCase())">`;
+                            return `<input type="text" class="dt-input p-1 text-[10px] lg:text-xs text-center font-bold text-slate-700 uppercase" value="${displayData}" placeholder="HUB..." onchange="window.saveManualData('${row.AWB}', 'staging_operator_internal', this.value.toUpperCase())">`;
                         }
                         return displayData; 
                     }
                 });
 
                 columns.push({
-                    title: "Last < 92", data: "Last Before 92", width: "70px", defaultContent: "", 
+                    title: "Last < 92", data: "Last Before 92", width: "10%", defaultContent: "", 
                     className: "dt-center whitespace-nowrap",
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${data}</span>` : '-';
-                            return `<input type="number" class="dt-input p-1 text-xs text-center" value="${data || ''}" placeholder="Nilai..." onchange="window.saveManualData('${row.AWB}', 'Last Before 92', this.value)">`;
+                            return `<input type="number" class="dt-input p-1 text-[10px] lg:text-xs text-center" value="${data || ''}" placeholder="Nilai..." onchange="window.saveManualData('${row.AWB}', 'Last Before 92', this.value)">`;
                         }
                         return data;
                     }
                 });
                 
                 columns.push({
-                    title: "Tgl Last < 92", data: "Date Last Before 92", width: "90px", defaultContent: "", 
+                    title: "Tgl Last < 92", data: "Date Last Before 92", width: "10%", defaultContent: "", 
                     className: "dt-center whitespace-nowrap",
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded text-[11px]">${data}</span>` : '-';
-                            return `<input type="date" class="dt-input p-1 text-[10px] text-center" value="${data || ''}" onchange="window.saveManualData('${row.AWB}', 'Date Last Before 92', this.value)">`;
+                            return `<input type="date" class="dt-input p-1 text-[9px] lg:text-[10px] text-center" value="${data || ''}" onchange="window.saveManualData('${row.AWB}', 'Date Last Before 92', this.value)">`;
                         }
                         return data;
                     }
@@ -2418,7 +2429,7 @@
                 
                 let dt = window.jQuery(domEl).DataTable({
                     data: dataArray, columns: columns, pageLength: 10, lengthMenu: [10, 25, 50, 100, 500],
-                    scrollX: true, autoWidth: false, order: [], 
+                    scrollX: false, autoWidth: false, order: [], 
                     dom: 'rt<"flex flex-col md:flex-row justify-between items-center pt-5 mt-3 border-t border-slate-100 gap-4"<"flex items-center"i><"flex items-center gap-3"lp>>',
                     language: {
                         lengthMenu: "Tampil _MENU_ baris", info: "Data _START_ s/d _END_ dari _TOTAL_",

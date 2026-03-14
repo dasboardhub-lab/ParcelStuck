@@ -670,8 +670,23 @@
                 </div>
             </div>
 
+            <!-- ROW 4.5: Summary Khusus Freeze -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative z-10 hidden flex-col mt-6" id="freeze-summary-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
+                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="snowflake" class="w-4 h-4"></i></div>
+                        Rekapitulasi Khusus Freeze (Berdasarkan Last < 92)
+                    </h4>
+                </div>
+                <div class="w-full overflow-x-auto rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
+                    <table class="summary-table" id="freezeSummaryTable">
+                        <!-- Di-render via JS -->
+                    </table>
+                </div>
+            </div>
+
             <!-- ROW 5: Table Section & Actions -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative z-10">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative z-10 mt-6">
                 
                 <div id="empty-state" class="text-center py-24">
                     <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-slate-100 shadow-sm">
@@ -1892,6 +1907,133 @@
             table.innerHTML = thead + tbody;
         };
 
+        window.renderFreezeSummaryTable = function(data) {
+            let freezeData = data.filter(row => row._ui_status === 'Freeze');
+            let section = document.getElementById('freeze-summary-section');
+            let table = document.getElementById('freezeSummaryTable');
+            
+            if(freezeData.length === 0) {
+                if(section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            }
+            
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+            let opcodes = new Set();
+            let rowsData = {}; 
+            let hasValidData = false;
+
+            freezeData.forEach(row => {
+                let op = (row['Last Before 92'] || '').toString().trim();
+                
+                // FILTER: Takeout (abaikan) data jika "Opcode sebelum 92" kosong atau "-"
+                if (!op || op === '-') return;
+                
+                hasValidData = true;
+
+                // Gunakan Date Last Before 92 jika ada, jika tidak fallback ke Last Scan
+                let rawDate = row['Date Last Before 92'] || row['Last Scan'];
+                let dateObj = window.parseCustomDate(rawDate);
+                let monthYear = "-";
+                let sortKey = "0000-00";
+                
+                if(dateObj) {
+                    let m = dateObj.getMonth();
+                    let y = dateObj.getFullYear();
+                    monthYear = `${monthNames[m]}-${y}`;
+                    sortKey = `${y}-${String(m).padStart(2, '0')}`;
+                }
+                
+                let hub = (row['staging_operator_internal'] || row['HUB Delivery'] || '-').toString().trim();
+                
+                opcodes.add(op);
+                
+                let rowKey = `${sortKey}|${hub}`;
+                if (!rowsData[rowKey]) {
+                    rowsData[rowKey] = { monthYear, hub, sortKey, ops: {}, total: 0 };
+                }
+                rowsData[rowKey].ops[op] = (rowsData[rowKey].ops[op] || 0) + 1;
+                rowsData[rowKey].total++;
+            });
+
+            // Sembunyikan tabel jika semua data Freeze ternyata tidak punya Opcode sebelum 92
+            if (!hasValidData) {
+                if(section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if(section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            let sortedOpcodes = Array.from(opcodes).sort();
+            let sortedRowKeys = Object.keys(rowsData).sort(); // Urutkan berdasarkan Tahun-Bulan lalu HUB
+
+            let opCols = sortedOpcodes.length > 0 ? sortedOpcodes.length : 1;
+
+            let thead = `
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
+                        <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
+                        <th colspan="${opCols}" class="bg-blue-50 text-blue-800 border-l border-slate-200 text-center rounded-tr-xl">Opcode sebelum 92</th>
+                    </tr>
+                    <tr>
+            `;
+            
+            if (sortedOpcodes.length > 0) {
+                sortedOpcodes.forEach(op => {
+                    thead += `<th class="bg-white text-[10px] text-blue-600 border-l border-slate-100 text-center">${op}</th>`;
+                });
+            } else {
+                thead += `<th class="bg-white text-[10px] text-blue-600 border-l border-slate-100 text-center">-</th>`;
+            }
+            thead += `</tr></thead>`;
+
+            // Hitung jumlah baris per Bulan-Tahun untuk keperluan Merge Cell (Rowspan)
+            let monthYearCounts = {};
+            sortedRowKeys.forEach(key => {
+                let my = rowsData[key].monthYear;
+                monthYearCounts[my] = (monthYearCounts[my] || 0) + 1;
+            });
+
+            let renderedMonthYears = new Set();
+            let tbody = `<tbody>`;
+            
+            sortedRowKeys.forEach((key, index) => {
+                let rData = rowsData[key];
+                let isLast = index === sortedRowKeys.length - 1;
+                let my = rData.monthYear;
+                
+                tbody += `<tr>`;
+                
+                // Menerapkan Rowspan untuk cell Bulan-Tahun
+                if (!renderedMonthYears.has(my)) {
+                    let rowspan = monthYearCounts[my];
+                    let isLastBlock = (index + rowspan === sortedRowKeys.length);
+                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100 ${isLastBlock ? 'rounded-bl-xl' : ''}" style="vertical-align: middle !important;">${my}</td>`;
+                    renderedMonthYears.add(my);
+                }
+
+                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white">${rData.hub}</td>`;
+                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${rData.total}</td>`;
+                
+                if (sortedOpcodes.length > 0) {
+                    sortedOpcodes.forEach(op => {
+                        let val = rData.ops[op];
+                        let displayVal = val > 0 ? val : '';
+                        let colorClass = displayVal ? 'text-blue-600 bg-blue-50/30 font-bold' : 'text-slate-300';
+                        let rounded = (isLast && op === sortedOpcodes[sortedOpcodes.length-1]) ? 'rounded-br-xl' : '';
+                        tbody += `<td class="${colorClass} border-l border-slate-100 text-center transition-colors hover:bg-slate-50 ${rounded}">${displayVal}</td>`;
+                    });
+                } else {
+                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center ${isLast ? 'rounded-br-xl' : ''}"></td>`;
+                }
+                tbody += `</tr>`;
+            });
+            
+            tbody += `</tbody>`;
+            table.innerHTML = thead + tbody;
+        };
+
         window.updateChart = function(filteredArray) {
             let dateCounts = {};
             
@@ -2035,7 +2177,12 @@
                     }
                     
                     if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
-                        if (!window.selectedHubs.includes(row['hub_operator_internal'])) match = false;
+                        // KHUSUS FREEZE: filter berdasarkan staging_operator_internal (Hub Delivery)
+                        let currentHubValue = row._ui_status === 'Freeze' ? 
+                            (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim() : 
+                            (row['hub_operator_internal'] || '').toString().trim();
+
+                        if (!window.selectedHubs.includes(currentHubValue)) match = false;
                     } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
                         match = false; 
                     }
@@ -2070,6 +2217,7 @@
 
                 window.updateChart(filteredArray);
                 window.renderSummaryTable(filteredArray);
+                window.renderFreezeSummaryTable(filteredArray);
 
                 window.dtWarning = window.renderOrUpdateTable('#tableWarning', window.dtWarning, dataWarning, 'warning');
                 window.dtStuck = window.renderOrUpdateTable('#tableStuck', window.dtStuck, dataStuck, 'stuck');
@@ -2192,7 +2340,14 @@
                 columns.push({
                     title: "HUB Delivery", data: "staging_operator_internal", width: "80px", defaultContent: "-", 
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap",
-                    render: function(data, type, row) { return data || row['HUB Delivery'] || '-'; }
+                    render: function(data, type, row) { 
+                        let displayData = data || row['HUB Delivery'] || '';
+                        if (type === 'display') {
+                            if (!window.isAdminLoggedIn) return displayData ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${displayData}</span>` : '-';
+                            return `<input type="text" class="dt-input p-1 text-xs text-center font-bold text-slate-700 uppercase" value="${displayData}" placeholder="HUB..." onchange="window.saveManualData('${row.AWB}', 'staging_operator_internal', this.value.toUpperCase())">`;
+                        }
+                        return displayData; 
+                    }
                 });
 
                 columns.push({

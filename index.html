@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Manajemen Hub - Parcel Stuck</title>
     
-    <!-- Tailwind CSS (PASTIKAN BARIS INI ADA & TERSALIN) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- DataTables CSS -->
@@ -736,7 +736,7 @@
 
                     <div class="p-6 bg-white">
                         <!-- Tabel Warning -->
-                        <div id="tc-warning" class="w-full block overflow-hidden">
+                        <div id="tc-warning" class="w-full block overflow-x-auto">
                             <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5 text-sm text-rose-800 flex items-start gap-3 shadow-inner">
                                 <div class="bg-rose-200 p-1.5 rounded-lg text-rose-700 mt-0.5"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
                                 <div>
@@ -747,15 +747,15 @@
                             <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Stuck / Pending -->
-                        <div id="tc-stuck" class="w-full hidden overflow-hidden">
+                        <div id="tc-stuck" class="w-full hidden overflow-x-auto">
                             <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Resolved -->
-                        <div id="tc-resolved" class="w-full hidden overflow-hidden">
+                        <div id="tc-resolved" class="w-full hidden overflow-x-auto">
                             <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                         <!-- Tabel Freeze -->
-                        <div id="tc-freeze" class="w-full hidden overflow-hidden">
+                        <div id="tc-freeze" class="w-full hidden overflow-x-auto">
                             <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                         </div>
                     </div>
@@ -1083,21 +1083,11 @@
         } catch (e) { console.error("Firebase Update Error:", e); }
 
         window.setDefaultDates = function() {
-            const end = new Date();
-            const start = new Date();
-            start.setDate(end.getDate() - 30);
-
-            const formatDate = (date) => {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const d = String(date.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            };
-
+            // Filter tanggal dikosongkan secara default agar SEMUA histori data (bahkan yang > 90 hari) tetap tampil di tabel.
             const elStart = document.getElementById('filter-start');
             const elEnd = document.getElementById('filter-end');
-            if (elStart && !elStart.value) elStart.value = formatDate(start);
-            if (elEnd && !elEnd.value) elEnd.value = formatDate(end);
+            if (elStart) elStart.value = '';
+            if (elEnd) elEnd.value = '';
         };
 
         let bootAttempt = 0;
@@ -1443,6 +1433,16 @@
             // PRIORITAS ABSOLUT: Freeze Opcode (>92 Hari)
             // Di mana pun areanya, Opcode 92 WAJIB masuk Freeze (Tidak bisa diganggu gugat)
             if (currentOpcode === '92') {
+                let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                let last92 = (row['Last Before 92'] || '').toString().trim();
+                let date92 = (row['Date Last Before 92'] || '').toString().trim();
+
+                // Jika ketiga data investigasi ini SUDAH TERISI, maka dianggap selesai dan pindah ke Resolved
+                if (hubDel !== '' && hubDel !== '-' && last92 !== '' && date92 !== '') {
+                    if (row._is_manual) return row._ui_status;
+                    return 'Resolved';
+                }
+
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
             }
@@ -1513,9 +1513,22 @@
         window.saveManualData = async function(awb, field, value) {
             if (window.databaseMap[awb] && window.isAdminLoggedIn) {
                 window.databaseMap[awb][field] = value;
+                
+                // Evaluasi ulang otomatis: Jika data yang diisi membuat resi memenuhi syarat selesai (misal Freeze -> Resolved)
+                let oldStatus = window.databaseMap[awb]._ui_status;
+                if (!window.databaseMap[awb]._is_manual) {
+                    window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);
+                }
+
                 try { await setDoc(doc(collection(dbMain, "parcel_data"), awb), window.databaseMap[awb]); } 
                 catch(e) { console.warn("Error save manual input:", e); }
-                window.showToast(`Data ${field} disimpan.`, 'success');
+                window.showToast(`Data tersimpan.`, 'success');
+                
+                // Jika statusnya berubah setelah data diisi (Keluar dari Freeze), langsung refresh tabelnya
+                if (oldStatus !== window.databaseMap[awb]._ui_status) {
+                    window.updateDatabaseUI();
+                    window.showToast(`Data lengkap! AWB dipindahkan ke ${window.databaseMap[awb]._ui_status}.`, 'success');
+                }
             }
         };
 
@@ -1657,6 +1670,8 @@
         window.resetFilters = function() {
             const fsearch = document.getElementById('filter-search'); if(fsearch) fsearch.value = '';
             const fstat = document.getElementById('filter-status'); if(fstat) fstat.value = '';
+            const fstart = document.getElementById('filter-start'); if(fstart) fstart.value = '';
+            const fend = document.getElementById('filter-end'); if(fend) fend.value = '';
             
             window.setDefaultDates();
 
@@ -1667,7 +1682,7 @@
             window.setText('hub-selector-text', 'Semua Hub');
             
             window.updateDatabaseUI();
-            window.showToast("Filter dikembalikan ke default (30 Hari Terakhir).", "info");
+            window.showToast("Semua filter telah di-reset.", "info");
         };
 
         window.copyToClipboard = function(text, successMsg) {
@@ -2165,7 +2180,6 @@
                     }
 
                     if (fStart || fEnd) {
-                        // Perbaikan pencarian tanggal (Aman jika kolom "Today" tidak ada)
                         let rawDateStr = row['Today'] || row['Last Scan'];
                         let rowDate = window.parseCustomDate(rawDateStr);
                         
@@ -2177,10 +2191,14 @@
                     }
                     
                     if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
-                        // KHUSUS FREEZE: filter berdasarkan staging_operator_internal (Hub Delivery)
-                        let currentHubValue = row._ui_status === 'Freeze' ? 
-                            (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim() : 
-                            (row['hub_operator_internal'] || '').toString().trim();
+                        let hubOps = (row['hub_operator_internal'] || '').toString().trim();
+                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                        
+                        // KHUSUS FREEZE: Prioritaskan Hub Delivery. Jika masih kosong, gunakan Hub Ops agar data tidak hilang/tersembunyi.
+                        let currentHubValue = hubOps;
+                        if (row._ui_status === 'Freeze' && hubDel !== '') {
+                            currentHubValue = hubDel;
+                        }
 
                         if (!window.selectedHubs.includes(currentHubValue)) match = false;
                     } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
@@ -2381,7 +2399,7 @@
                 
                 let dt = window.jQuery(domEl).DataTable({
                     data: dataArray, columns: columns, pageLength: 10, lengthMenu: [10, 25, 50, 100, 500],
-                    scrollX: false, autoWidth: false, order: [], 
+                    scrollX: true, autoWidth: false, order: [], 
                     dom: 'rt<"flex flex-col md:flex-row justify-between items-center pt-5 mt-3 border-t border-slate-100 gap-4"<"flex items-center"i><"flex items-center gap-3"lp>>',
                     language: {
                         lengthMenu: "Tampil _MENU_ baris", info: "Data _START_ s/d _END_ dari _TOTAL_",

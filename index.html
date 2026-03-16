@@ -1387,10 +1387,11 @@
 
                 Object.values(window.databaseMap).forEach(row => {
                     let oldStatus = row._ui_status;
+                    let currentOpcode = (row['Update Opcode'] || '').toString().trim();
                     
-                    // HANYA mengubah evaluasi bagi row yang berstatus Warning dan Stuck 
-                    // agar tidak menyentuh yang sudah Resolved/Freeze secara manual
-                    if (oldStatus === 'Warning' || oldStatus === 'Stuck') {
+                    // Mengevaluasi ulang data Warning dan Stuck, 
+                    // SERTA menarik paksa Opcode 92 yang telanjur masuk ke Resolved kembali ke Freeze
+                    if (oldStatus === 'Warning' || oldStatus === 'Stuck' || currentOpcode === '92') {
                         row._is_manual = false; 
                         row._ui_status = window.evaluateStatus(row);
                         if (oldStatus !== row._ui_status) {
@@ -1411,7 +1412,7 @@
                     await window.saveBatchToFirebase(recordsToSave, (current, total) => {
                         window.updateUploadProgress(current, total, "Penyimpanan Database:");
                     });
-                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan evaluasi ulang berhasil disimpan.");
+                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan pemulihan data berhasil disimpan.");
                 } else {
                     window.showToast("Aturan disimpan. Tidak ada data yang berubah status.", 'success');
                 }
@@ -1463,18 +1464,7 @@
             let currentReturn = (row['Return'] || '').toString().trim();
             
             // PRIORITAS ABSOLUT: Freeze Opcode (>92 Hari)
-            // Di mana pun areanya, Opcode 92 WAJIB masuk Freeze (Tidak bisa diganggu gugat)
             if (currentOpcode === '92') {
-                let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
-                let last92 = (row['Last Before 92'] || '').toString().trim();
-                let date92 = (row['Date Last Before 92'] || '').toString().trim();
-
-                // Jika ketiga data investigasi ini SUDAH TERISI, maka dianggap selesai dan pindah ke Resolved
-                if (hubDel !== '' && hubDel !== '-' && last92 !== '' && date92 !== '') {
-                    if (row._is_manual) return row._ui_status;
-                    return 'Resolved';
-                }
-
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
             }
@@ -1546,7 +1536,6 @@
             if (window.databaseMap[awb] && window.isAdminLoggedIn) {
                 window.databaseMap[awb][field] = value;
                 
-                // Evaluasi ulang otomatis: Jika data yang diisi membuat resi memenuhi syarat selesai (misal Freeze -> Resolved)
                 let oldStatus = window.databaseMap[awb]._ui_status;
                 if (!window.databaseMap[awb]._is_manual) {
                     window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);
@@ -1556,10 +1545,8 @@
                 catch(e) { console.warn("Error save manual input:", e); }
                 window.showToast(`Data tersimpan.`, 'success');
                 
-                // Jika statusnya berubah setelah data diisi (Keluar dari Freeze), langsung refresh tabelnya
                 if (oldStatus !== window.databaseMap[awb]._ui_status) {
                     window.updateDatabaseUI();
-                    window.showToast(`Data lengkap! AWB dipindahkan ke ${window.databaseMap[awb]._ui_status}.`, 'success');
                 }
             }
         };

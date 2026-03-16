@@ -1888,6 +1888,12 @@
                 pendingOpcodes.forEach(op => summary[k]['Pending_'+op] = 0);
             });
 
+            let grandTotal = 0;
+            let grandWarning = 0;
+            let grandPending = 0;
+            let grandResolved = 0;
+            let grandFreeze = 0;
+
             data.forEach(row => {
                 let key = "-";
                 
@@ -1910,10 +1916,12 @@
                 let op = (row['Update Opcode'] || '').toString().trim();
 
                 summary[key].Total++;
-                if (status === 'Resolved') summary[key].Resolved++;
-                else if (status === 'Freeze') summary[key].Freeze++;
-                else if (status === 'Warning' && op) summary[key]['Warning_'+op]++;
-                else if (status === 'Stuck' && op) summary[key]['Pending_'+op]++;
+                grandTotal++;
+
+                if (status === 'Resolved') { summary[key].Resolved++; grandResolved++; }
+                else if (status === 'Freeze') { summary[key].Freeze++; grandFreeze++; }
+                else if (status === 'Warning' && op) { summary[key]['Warning_'+op]++; grandWarning++; }
+                else if (status === 'Stuck' && op) { summary[key]['Pending_'+op]++; grandPending++; }
             });
 
             let table = document.getElementById('summaryTable');
@@ -1960,11 +1968,10 @@
                     return `<td class="${displayVal ? colorClass + ' font-bold' : ''} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
                 };
 
-                groupKeys.forEach((k, index) => {
+                groupKeys.forEach((k) => {
                     let row = summary[k];
-                    let isLast = index === groupKeys.length - 1;
                     tbody += `<tr>`;
-                    tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] ${isLast ? 'rounded-bl-xl' : ''}">${k}</td>`;
+                    tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-50">${k}</td>`;
                     tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${row.Total}</td>`;
 
                     if (warningOpcodes.length > 0) {
@@ -1980,9 +1987,19 @@
                     }
 
                     tbody += renderCell(row.Resolved, 'text-emerald-600');
-                    tbody += renderCell(row.Freeze, `text-blue-600 ${isLast ? 'rounded-br-xl' : ''}`);
+                    tbody += renderCell(row.Freeze, `text-blue-600`);
                     tbody += `</tr>`;
                 });
+
+                // Baris Grand Total
+                tbody += `<tr class="bg-slate-100">`;
+                tbody += `<td class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
+                tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandTotal}</td>`;
+                tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning}</td>`;
+                tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center py-3">${grandPending}</td>`;
+                tbody += `<td class="font-black text-emerald-700 bg-emerald-200/50 text-center border-t-2 border-slate-200 py-3">${grandResolved}</td>`;
+                tbody += `<td class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreeze}</td>`;
+                tbody += `</tr>`;
             }
             tbody += `</tbody>`;
             
@@ -2003,6 +2020,8 @@
             let opcodes = new Set();
             let rowsData = {}; 
             let hasValidData = false;
+
+            let grandFreezeTotal = 0; // Tambahan variabel untuk total
 
             freezeData.forEach(row => {
                 let op = (row['Last Before 92'] || '').toString().trim();
@@ -2035,6 +2054,7 @@
                 }
                 rowsData[rowKey].ops[op] = (rowsData[rowKey].ops[op] || 0) + 1;
                 rowsData[rowKey].total++;
+                grandFreezeTotal++; // Menghitung total data di tabel ini
             });
 
             // Sembunyikan tabel jika semua data Freeze ternyata tidak punya Opcode sebelum 92
@@ -2082,7 +2102,6 @@
             
             sortedRowKeys.forEach((key, index) => {
                 let rData = rowsData[key];
-                let isLast = index === sortedRowKeys.length - 1;
                 let my = rData.monthYear;
                 
                 tbody += `<tr>`;
@@ -2090,8 +2109,7 @@
                 // Menerapkan Rowspan untuk cell Bulan-Tahun
                 if (!renderedMonthYears.has(my)) {
                     let rowspan = monthYearCounts[my];
-                    let isLastBlock = (index + rowspan === sortedRowKeys.length);
-                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100 ${isLastBlock ? 'rounded-bl-xl' : ''}" style="vertical-align: middle !important;">${my}</td>`;
+                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100" style="vertical-align: middle !important;">${my}</td>`;
                     renderedMonthYears.add(my);
                 }
 
@@ -2103,15 +2121,21 @@
                         let val = rData.ops[op];
                         let displayVal = val > 0 ? val : '';
                         let colorClass = displayVal ? 'text-blue-600 bg-blue-50/30 font-bold' : 'text-slate-300';
-                        let rounded = (isLast && op === sortedOpcodes[sortedOpcodes.length-1]) ? 'rounded-br-xl' : '';
-                        tbody += `<td class="${colorClass} border-l border-slate-100 text-center transition-colors hover:bg-slate-50 ${rounded}">${displayVal}</td>`;
+                        tbody += `<td class="${colorClass} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
                     });
                 } else {
-                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center ${isLast ? 'rounded-br-xl' : ''}"></td>`;
+                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center"></td>`;
                 }
                 tbody += `</tr>`;
             });
             
+            // Baris Grand Total Khusus Freeze
+            tbody += `<tr class="bg-slate-100">`;
+            tbody += `<td colspan="2" class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
+            tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandFreezeTotal}</td>`;
+            tbody += `<td colspan="${opCols}" class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreezeTotal}</td>`;
+            tbody += `</tr>`;
+
             tbody += `</tbody>`;
             table.innerHTML = thead + tbody;
         };

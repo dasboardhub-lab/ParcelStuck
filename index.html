@@ -1387,11 +1387,16 @@
 
                 Object.values(window.databaseMap).forEach(row => {
                     let oldStatus = row._ui_status;
-                    row._is_manual = false; 
-                    row._ui_status = window.evaluateStatus(row);
-                    if (oldStatus !== row._ui_status) {
-                        updatedCount++;
-                        recordsToSave.push(row);
+                    
+                    // HANYA mengubah evaluasi bagi row yang berstatus Warning dan Stuck 
+                    // agar tidak menyentuh yang sudah Resolved/Freeze secara manual
+                    if (oldStatus === 'Warning' || oldStatus === 'Stuck') {
+                        row._is_manual = false; 
+                        row._ui_status = window.evaluateStatus(row);
+                        if (oldStatus !== row._ui_status) {
+                            updatedCount++;
+                            recordsToSave.push(row);
+                        }
                     }
                 });
                 

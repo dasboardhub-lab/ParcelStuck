@@ -659,11 +659,16 @@
 
             <!-- ROW 4: Summary Pivot Table Full Width -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative z-10 flex flex-col hidden" id="summary-section">
-                <div class="flex justify-between items-center mb-4">
-                    <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
+                <div class="flex flex-wrap gap-4 justify-between items-center mb-4">
+                    <h4 id="summary-title" class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
                         <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="calendar-days" class="w-4 h-4"></i></div>
-                        Rekapitulasi Berdasarkan Tanggal (Today)
+                        Rekapitulasi Berdasarkan Tanggal
                     </h4>
+                    <!-- Toggle Switch -->
+                    <div class="bg-slate-100 p-1 rounded-xl flex items-center shadow-inner border border-slate-200">
+                        <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600">Per Tanggal</button>
+                        <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700">Per HUB</button>
+                    </div>
                 </div>
                 <div class="w-full overflow-x-auto rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
                     <table class="summary-table" id="summaryTable">
@@ -1113,6 +1118,26 @@
         window.databaseMap = {}; 
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
+        window.summaryMode = 'date'; // Variabel untuk menyimpan status toggle saat ini
+
+        window.setSummaryMode = function(mode) {
+            window.summaryMode = mode;
+            const btnDate = document.getElementById('btn-sum-date');
+            const btnHub = document.getElementById('btn-sum-hub');
+            const title = document.getElementById('summary-title');
+            
+            if (mode === 'date') {
+                if(btnDate) btnDate.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600";
+                if(btnHub) btnHub.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700";
+                if(title) title.innerHTML = `<div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="calendar-days" class="w-4 h-4"></i></div> Rekapitulasi Berdasarkan Tanggal`;
+            } else {
+                if(btnHub) btnHub.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600";
+                if(btnDate) btnDate.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700";
+                if(title) title.innerHTML = `<div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="building-2" class="w-4 h-4"></i></div> Rekapitulasi Berdasarkan HUB`;
+            }
+            lucide.createIcons();
+            window.updateDatabaseUI();
+        };
 
         const withTimeout = (promise, ms) => {
             return Promise.race([
@@ -1817,23 +1842,33 @@
         };
 
         window.renderSummaryTable = function(data) {
-            let dates = new Set();
+            let groupKeys = new Set();
             let warningOpcodes = new Set();
             let pendingOpcodes = new Set();
 
             data.forEach(row => {
-                let d = row['Today'] || row['Last Scan']; // Fallback baca tanggal
-                if(!d) return;
+                let key = "-";
                 
-                let dateObj = window.parseCustomDate(d);
-                if(!dateObj) return;
-
-                let yyyy = dateObj.getFullYear();
-                let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                let dd = String(dateObj.getDate()).padStart(2, '0');
-                let formattedDate = `${yyyy}-${mm}-${dd}`;
+                if (window.summaryMode === 'date') {
+                    let d = row['Today'] || row['Last Scan'];
+                    if(d) {
+                        let dateObj = window.parseCustomDate(d);
+                        if(dateObj) {
+                            let yyyy = dateObj.getFullYear();
+                            let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            let dd = String(dateObj.getDate()).padStart(2, '0');
+                            key = `${yyyy}-${mm}-${dd}`;
+                        }
+                    }
+                } else {
+                    // Logic group by HUB
+                    let hubOps = (row['hub_operator_internal'] || '').toString().trim();
+                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                    key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
+                    if (!key || key === '-') key = "TIDAK ADA HUB";
+                }
                 
-                dates.add(formattedDate);
+                groupKeys.add(key);
                 
                 let status = row._ui_status;
                 let op = (row['Update Opcode'] || '').toString().trim();
@@ -1842,33 +1877,43 @@
                 if (status === 'Stuck' && op) pendingOpcodes.add(op);
             });
 
-            dates = Array.from(dates).sort();
+            groupKeys = Array.from(groupKeys).sort();
             warningOpcodes = Array.from(warningOpcodes).sort();
             pendingOpcodes = Array.from(pendingOpcodes).sort();
 
             let summary = {};
-            dates.forEach(d => {
-                summary[d] = { Total: 0, Resolved: 0, Freeze: 0 };
-                warningOpcodes.forEach(op => summary[d]['Warning_'+op] = 0);
-                pendingOpcodes.forEach(op => summary[d]['Pending_'+op] = 0);
+            groupKeys.forEach(k => {
+                summary[k] = { Total: 0, Resolved: 0, Freeze: 0 };
+                warningOpcodes.forEach(op => summary[k]['Warning_'+op] = 0);
+                pendingOpcodes.forEach(op => summary[k]['Pending_'+op] = 0);
             });
 
             data.forEach(row => {
-                let d = row['Today'] || row['Last Scan']; // Fallback baca tanggal
-                if(!d) return;
-                let dateObj = window.parseCustomDate(d);
-                if(!dateObj) return;
+                let key = "-";
                 
-                let formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+                if (window.summaryMode === 'date') {
+                    let d = row['Today'] || row['Last Scan'];
+                    if(d) {
+                        let dateObj = window.parseCustomDate(d);
+                        if(dateObj) {
+                            key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+                        }
+                    }
+                } else {
+                    let hubOps = (row['hub_operator_internal'] || '').toString().trim();
+                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                    key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
+                    if (!key || key === '-') key = "TIDAK ADA HUB";
+                }
                 
                 let status = row._ui_status;
                 let op = (row['Update Opcode'] || '').toString().trim();
 
-                summary[formattedDate].Total++;
-                if (status === 'Resolved') summary[formattedDate].Resolved++;
-                else if (status === 'Freeze') summary[formattedDate].Freeze++;
-                else if (status === 'Warning' && op) summary[formattedDate]['Warning_'+op]++;
-                else if (status === 'Stuck' && op) summary[formattedDate]['Pending_'+op]++;
+                summary[key].Total++;
+                if (status === 'Resolved') summary[key].Resolved++;
+                else if (status === 'Freeze') summary[key].Freeze++;
+                else if (status === 'Warning' && op) summary[key]['Warning_'+op]++;
+                else if (status === 'Stuck' && op) summary[key]['Pending_'+op]++;
             });
 
             let table = document.getElementById('summaryTable');
@@ -1876,11 +1921,12 @@
 
             let wCols = warningOpcodes.length > 0 ? warningOpcodes.length : 1;
             let pCols = pendingOpcodes.length > 0 ? pendingOpcodes.length : 1;
+            let firstHeader = window.summaryMode === 'date' ? 'Tanggal (Today)' : 'HUB Operator';
 
             let thead = `
                 <thead>
                     <tr>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Tanggal (Today)</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">${firstHeader}</th>
                         <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
                         <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode)</th>
                         <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center">Pending (Opcode)</th>
@@ -1906,7 +1952,7 @@
 
             let tbody = `<tbody>`;
             
-            if (dates.length === 0) {
+            if (groupKeys.length === 0) {
                 tbody += `<tr><td colspan="${4 + wCols + pCols}" class="text-slate-400 py-8 text-center rounded-b-xl">Belum ada data tersedia</td></tr>`;
             } else {
                 const renderCell = (val, colorClass) => {
@@ -1914,11 +1960,11 @@
                     return `<td class="${displayVal ? colorClass + ' font-bold' : ''} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
                 };
 
-                dates.forEach((d, index) => {
-                    let row = summary[d];
-                    let isLast = index === dates.length - 1;
+                groupKeys.forEach((k, index) => {
+                    let row = summary[k];
+                    let isLast = index === groupKeys.length - 1;
                     tbody += `<tr>`;
-                    tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] ${isLast ? 'rounded-bl-xl' : ''}">${d}</td>`;
+                    tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] ${isLast ? 'rounded-bl-xl' : ''}">${k}</td>`;
                     tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${row.Total}</td>`;
 
                     if (warningOpcodes.length > 0) {

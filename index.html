@@ -1173,11 +1173,11 @@
         async function fetchInitialData() {
             try {
                 try {
-                    await withTimeout(signInAnonymously(authMain), 10000);
-                    await withTimeout(signInAnonymously(authUpdate), 10000);
+                    await withTimeout(signInAnonymously(authMain), 15000);
+                    await withTimeout(signInAnonymously(authUpdate), 15000);
                 } catch (authErr) { console.warn("Anon Auth warn:", authErr.message); }
 
-                const settingsDoc = await withTimeout(getDoc(doc(dbMain, "settings", "admin")), 10000);
+                const settingsDoc = await withTimeout(getDoc(doc(dbMain, "settings", "admin")), 15000);
                 if (settingsDoc.exists()) window.appSettings = settingsDoc.data();
                 
                 const elOp = document.getElementById('set-opcodes');
@@ -1185,7 +1185,8 @@
                 const elHub = document.getElementById('set-hubs');
                 if (elHub) elHub.value = window.appSettings.hubs || '';
 
-                const querySnapshot = await withTimeout(getDocs(collection(dbMain, "parcel_data")), 15000);
+                // Waktu timeout ditingkatkan menjadi 60 detik untuk mengakomodasi jumlah data yang besar
+                const querySnapshot = await withTimeout(getDocs(collection(dbMain, "parcel_data")), 60000);
                 window.databaseMap = {};
                 querySnapshot.forEach((docSnap) => { window.databaseMap[docSnap.id] = docSnap.data(); });
                 

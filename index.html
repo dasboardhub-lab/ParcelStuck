@@ -1537,6 +1537,7 @@
             if (window.databaseMap[awb] && window.isAdminLoggedIn) {
                 window.databaseMap[awb][field] = value;
                 
+                let oldStatus = window.databaseMap[awb]._ui_status;
                 if (!window.databaseMap[awb]._is_manual) {
                     window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);
                 }
@@ -1545,8 +1546,9 @@
                 catch(e) { console.warn("Error save manual input:", e); }
                 window.showToast(`Data tersimpan.`, 'success');
                 
-                // Refresh UI setiap kali ada perubahan data agar tabel rekapitulasi selalu akurat
-                window.updateDatabaseUI();
+                if (oldStatus !== window.databaseMap[awb]._ui_status) {
+                    window.updateDatabaseUI();
+                }
             }
         };
 

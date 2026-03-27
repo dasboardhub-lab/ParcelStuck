@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Hub - Parcel Stuck</title>
+    <title>Parcel Stuck</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -735,8 +735,8 @@
                             <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
                                 <i data-lucide="copy" class="w-4 h-4"></i> Salin AWB
                             </button>
-                            <button onclick="window.exportToCSV()" id="btn-download" class="bg-slate-800 text-white hover:bg-slate-900 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-slate-200 text-xs">
-                                <i data-lucide="download" class="w-4 h-4"></i> Unduh CSV
+                            <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Unduh Excel
                             </button>
                         </div>
                     </div>
@@ -956,10 +956,44 @@
         </div>
     </div>
 
+    <!-- CUSTOM MODAL EXPORT EXCEL -->
+    <div id="export-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300" id="export-box">
+            <button onclick="window.hideExportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="text-center mb-6 mt-2">
+                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-100 shadow-inner">
+                    <i data-lucide="file-spreadsheet" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">Unduh Data Excel</h3>
+                <p class="text-xs text-slate-500 font-medium mt-1">Pilih kategori yang ingin ditarik</p>
+            </div>
+            <div class="space-y-3 mb-6 text-sm font-bold text-slate-700">
+                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="checkbox" class="export-cb w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" value="Warning" checked> Warning
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="checkbox" class="export-cb w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" value="Stuck" checked> Pending
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="checkbox" class="export-cb w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" value="Resolved"> Resolved
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="checkbox" class="export-cb w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" value="Freeze"> Freeze
+                </label>
+            </div>
+            <button onclick="window.executeExportExcel()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-200 text-sm flex items-center justify-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i> Buat Excel
+            </button>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <!-- Firebase SDK (ES Module) -->
     <script type="module">
@@ -1537,7 +1571,6 @@
             if (window.databaseMap[awb] && window.isAdminLoggedIn) {
                 window.databaseMap[awb][field] = value;
                 
-                let oldStatus = window.databaseMap[awb]._ui_status;
                 if (!window.databaseMap[awb]._is_manual) {
                     window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);
                 }
@@ -1546,9 +1579,8 @@
                 catch(e) { console.warn("Error save manual input:", e); }
                 window.showToast(`Data tersimpan.`, 'success');
                 
-                if (oldStatus !== window.databaseMap[awb]._ui_status) {
-                    window.updateDatabaseUI();
-                }
+                // Refresh UI setiap kali ada perubahan data agar tabel rekapitulasi selalu akurat
+                window.updateDatabaseUI();
             }
         };
 
@@ -1787,10 +1819,20 @@
             let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
             let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
 
-            let textToCopy = "=== DATA WARNING ===\n\n";
+            let hubText = "Semua Hub";
+            if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
+                hubText = window.selectedHubs.join(', ');
+            } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
+                hubText = "0 Hub";
+            }
+
+            let textToCopy = `*Parcel stuck HUB* *_${hubText}_*\n`;
+            textToCopy += `*_Visit Datanya di https://parcelstuck.vercel.app/_*\n\n`;
+            
+            textToCopy += `> *DATA WARNING*\n`;
             textToCopy += window.formatGroupedData(rowsWarn);
             
-            textToCopy += "====================\n\n=== DATA PENDING ===\n\n";
+            textToCopy += `\n> *DATA PENDING*\n`;
             textToCopy += window.formatGroupedData(rowsStuck);
 
             window.copyToClipboard(textToCopy.trim(), `Data Laporan Warning & Pending disalin!`);
@@ -2014,17 +2056,21 @@
             let rowsData = {}; 
             let hasValidData = false;
 
-            let grandFreezeTotal = 0; // Tambahan variabel untuk total
+            let grandFreezeTotal = 0; 
+            
+            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
 
             freezeData.forEach(row => {
                 let op = (row['Last Before 92'] || '').toString().trim();
                 
-                // FILTER: Takeout (abaikan) data jika "Opcode sebelum 92" kosong atau "-"
                 if (!op || op === '-') return;
+                
+                let hub = (row['staging_operator_internal'] || row['HUB Delivery'] || '-').toString().trim();
+                
+                if (confHubs.length > 0 && !confHubs.includes(hub)) return;
                 
                 hasValidData = true;
 
-                // Gunakan Date Last Before 92 jika ada, jika tidak fallback ke Last Scan
                 let rawDate = row['Date Last Before 92'] || row['Last Scan'];
                 let dateObj = window.parseCustomDate(rawDate);
                 let monthYear = "-";
@@ -2037,8 +2083,6 @@
                     sortKey = `${y}-${String(m).padStart(2, '0')}`;
                 }
                 
-                let hub = (row['staging_operator_internal'] || row['HUB Delivery'] || '-').toString().trim();
-                
                 opcodes.add(op);
                 
                 let rowKey = `${sortKey}|${hub}`;
@@ -2047,10 +2091,9 @@
                 }
                 rowsData[rowKey].ops[op] = (rowsData[rowKey].ops[op] || 0) + 1;
                 rowsData[rowKey].total++;
-                grandFreezeTotal++; // Menghitung total data di tabel ini
+                grandFreezeTotal++; 
             });
 
-            // Sembunyikan tabel jika semua data Freeze ternyata tidak punya Opcode sebelum 92
             if (!hasValidData) {
                 if(section) { section.classList.add('hidden'); section.classList.remove('flex'); }
                 return;
@@ -2512,24 +2555,82 @@
             }
         };
 
-        window.exportToCSV = function() {
-            const exportData = Object.values(window.databaseMap).map(row => {
-                let newRow = { ...row };
-                newRow['Current Status'] = row._ui_status || 'Stuck';
-                delete newRow._ui_status; delete newRow._is_manual; return newRow;
+        window.showExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const box = document.getElementById('export-box');
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const box = document.getElementById('export-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.executeExportExcel = function() {
+            const checkboxes = document.querySelectorAll('.export-cb:checked');
+            const selectedStatuses = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedStatuses.length === 0) {
+                window.showToast("Pilih minimal satu kategori.", "warning");
+                return;
+            }
+
+            const exportData = [];
+            const includeFreezeCols = selectedStatuses.includes('Freeze');
+
+            Object.values(window.databaseMap).forEach(row => {
+                let status = row._ui_status || 'Stuck';
+                
+                if (selectedStatuses.includes(status)) {
+                    let hubValue = (row['hub_operator_internal'] || '-').toString().trim();
+                    if (status === 'Freeze') {
+                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                        if (hubDel) hubValue = hubDel;
+                    }
+
+                    let newRow = {
+                        "HUB": hubValue,
+                        "Status": status === 'Stuck' ? 'Pending' : status,
+                        "AWB / No Resi": row['AWB'] || '-',
+                        "Last Scan": row['Last Scan'] || '-',
+                        "Opcode": row['Update Opcode'] || '-'
+                    };
+
+                    if (includeFreezeCols) {
+                        newRow["Opcode sebelum 92"] = status === 'Freeze' ? (row['Last Before 92'] || '-') : '-';
+                        newRow["Tgl Last < 92"] = status === 'Freeze' ? (row['Date Last Before 92'] || '-') : '-';
+                    }
+
+                    newRow["Item"] = row['item_name'] || '-';
+                    newRow["Feedback"] = row['Feedback'] || '-';
+
+                    exportData.push(newRow);
+                }
             });
-            if (exportData.length === 0) return;
-            const csvData = Papa.unparse(exportData);
-            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Data_Export_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.showToast("Unduhan CSV berhasil dimulai.", "success");
+
+            if (exportData.length === 0) {
+                window.showToast("Tidak ada data untuk kategori terpilih.", "warning");
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data Laporan");
+            
+            XLSX.writeFile(wb, `Laporan_HubOps_${new Date().toISOString().split('T')[0]}.xlsx`);
+            window.hideExportModal();
+            window.showToast(`Berhasil mengunduh ${exportData.length} data.`, "success");
         };
 
     </script>

@@ -726,6 +726,9 @@
 
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-2.5 pb-3">
+                            <button onclick="window.commitChanges()" id="btn-save-changes" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-2 px-4 rounded-xl transition-all items-center gap-2 text-xs shadow-sm shadow-indigo-200">
+                                <i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan
+                            </button>
                             <button onclick="window.copyAWBWarnPend()" id="btn-copy-awb-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
                                 <i data-lucide="list" class="w-4 h-4"></i> Salin AWB
                             </button>
@@ -1152,7 +1155,8 @@
         window.databaseMap = {}; 
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
-        window.summaryMode = 'date'; // Variabel untuk menyimpan status toggle saat ini
+        window.summaryMode = 'date';
+        window.modifiedAwbs = new Set();
 
         window.setSummaryMode = function(mode) {
             window.summaryMode = mode;
@@ -1311,6 +1315,7 @@
                 window.toggleVisibility('btn-head-upload-2', true, 'flex');
                 window.toggleVisibility('tab-settings', true, 'flex');
                 window.toggleVisibility('btn-bulk-feedback-container', true, 'block'); 
+                window.toggleVisibility('btn-save-changes', true, 'flex');
             } else {
                 window.toggleVisibility('btn-login-ui', true, 'flex');
                 window.toggleVisibility('badge-publik', true, 'flex');
@@ -1319,6 +1324,7 @@
                 window.toggleVisibility('btn-head-upload-2', false);
                 window.toggleVisibility('tab-settings', false);
                 window.toggleVisibility('btn-bulk-feedback-container', false); 
+                window.toggleVisibility('btn-save-changes', false);
             }
             window.updateDatabaseUI(); 
         };
@@ -1422,12 +1428,10 @@
 
                 Object.values(window.databaseMap).forEach(row => {
                     let oldStatus = row._ui_status;
-                    let currentOpcode = (row['Update Opcode'] || '').toString().trim();
                     
-                    // Mengevaluasi ulang data Warning dan Stuck, 
-                    // SERTA menarik paksa Opcode 92 yang telanjur masuk ke Resolved kembali ke Freeze
-                    if (oldStatus === 'Warning' || oldStatus === 'Stuck' || currentOpcode === '92') {
-                        row._is_manual = false; 
+                    // PERBAIKAN: Sistem HANYA mengevaluasi resi yang BELUM PERNAH dipindah manual oleh Anda.
+                    // Data yang sudah Anda tandai Resolved/Freeze secara manual tidak akan disentuh lagi.
+                    if (!row._is_manual) {
                         row._ui_status = window.evaluateStatus(row);
                         if (oldStatus !== row._ui_status) {
                             updatedCount++;
@@ -1447,7 +1451,7 @@
                     await window.saveBatchToFirebase(recordsToSave, (current, total) => {
                         window.updateUploadProgress(current, total, "Penyimpanan Database:");
                     });
-                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan pemulihan data berhasil disimpan.");
+                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan evaluasi ulang berhasil disimpan.");
                 } else {
                     window.showToast("Aturan disimpan. Tidak ada data yang berubah status.", 'success');
                 }
@@ -1539,22 +1543,18 @@
                 return;
             }
 
-            // Fungsi eksekusi utama (tanpa konfirmasi)
             const executeChange = async () => {
                 if(window.databaseMap[awb]) {
                     window.databaseMap[awb]._ui_status = newStatus;
-                    window.databaseMap[awb]._is_manual = true; 
-                    window.updateDatabaseUI(); 
-                    try { await setDoc(doc(collection(dbMain, "parcel_data"), awb), window.databaseMap[awb]); } 
-                    catch(e) { console.warn("Error manual status:", e); }
+                    window.databaseMap[awb]._is_manual = true;
+                    window.modifiedAwbs.add(awb);
+                    await window.commitChanges();
                     window.showToast(`Status AWB ${awb} dialihkan ke ${newStatus}.`, "success");
                 }
             };
 
-            // Cek status resi saat ini (sebelum diubah)
             let currentStatus = window.databaseMap[awb] ? window.databaseMap[awb]._ui_status : null;
 
-            // Popup HANYA muncul jika data berasal dari tab Resolved atau Freeze
             if (currentStatus === 'Resolved' || currentStatus === 'Freeze') {
                 window.showConfirmModal(
                     "Peringatan: Ubah Status Manual", 
@@ -1562,26 +1562,51 @@
                     executeChange
                 );
             } else {
-                // Untuk Warning dan Stuck, eksekusi langsung (instan!)
                 executeChange();
             }
         };
 
-        window.saveManualData = async function(awb, field, value) {
+        window.draftManualData = function(awb, field, value) {
             if (window.databaseMap[awb] && window.isAdminLoggedIn) {
                 window.databaseMap[awb][field] = value;
-                
-                if (!window.databaseMap[awb]._is_manual) {
-                    window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);
-                }
-
-                try { await setDoc(doc(collection(dbMain, "parcel_data"), awb), window.databaseMap[awb]); } 
-                catch(e) { console.warn("Error save manual input:", e); }
-                window.showToast(`Data tersimpan.`, 'success');
-                
-                // Refresh UI setiap kali ada perubahan data agar tabel rekapitulasi selalu akurat
-                window.updateDatabaseUI();
+                window.modifiedAwbs.add(awb);
             }
+        };
+
+        window.commitChanges = async function() {
+            if (!window.isAdminLoggedIn) return;
+            if (window.modifiedAwbs.size === 0) {
+                window.showToast("Belum ada data yang diubah.", "info");
+                return;
+            }
+
+            let recordsToSave = [];
+            window.modifiedAwbs.forEach(awb => {
+                let row = window.databaseMap[awb];
+                if (row) {
+                    if (!row._is_manual) {
+                        row._ui_status = window.evaluateStatus(row);
+                    }
+                    recordsToSave.push(row);
+                }
+            });
+
+            if (recordsToSave.length > 1) {
+                window.showUploadProgress("Menyimpan Data", "Menyinkronkan ke Cloud...");
+            }
+
+            await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                if (recordsToSave.length > 1) window.updateUploadProgress(current, total, "Menyimpan:");
+            });
+
+            if (recordsToSave.length > 1) {
+                window.finishUploadProgress(recordsToSave.length, 0, "Perubahan berhasil disimpan.");
+            } else {
+                window.showToast("Data berhasil disimpan.", "success");
+            }
+
+            window.modifiedAwbs.clear();
+            window.updateDatabaseUI();
         };
 
         document.getElementById('file1').addEventListener('change', function(e) {
@@ -2498,7 +2523,7 @@
                         let displayData = data || row['HUB Delivery'] || '';
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return displayData ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${displayData}</span>` : '-';
-                            return `<input type="text" class="dt-input p-1 text-[10px] lg:text-xs text-center font-bold text-slate-700 uppercase" value="${displayData}" placeholder="HUB..." onchange="window.saveManualData('${row.AWB}', 'staging_operator_internal', this.value.toUpperCase())">`;
+                            return `<input type="text" class="dt-input p-1 text-[10px] lg:text-xs text-center font-bold text-slate-700 uppercase" value="${displayData}" placeholder="HUB..." onchange="window.draftManualData('${row.AWB}', 'staging_operator_internal', this.value.toUpperCase()); this.classList.add('bg-amber-50', 'border-amber-300');">`;
                         }
                         return displayData; 
                     }
@@ -2510,7 +2535,7 @@
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded">${data}</span>` : '-';
-                            return `<input type="number" class="dt-input p-1 text-[10px] lg:text-xs text-center" value="${data || ''}" placeholder="Nilai..." onchange="window.saveManualData('${row.AWB}', 'Last Before 92', this.value)">`;
+                            return `<input type="number" class="dt-input p-1 text-[10px] lg:text-xs text-center" value="${data || ''}" placeholder="Nilai..." onchange="window.draftManualData('${row.AWB}', 'Last Before 92', this.value); this.classList.add('bg-amber-50', 'border-amber-300');">`;
                         }
                         return data;
                     }
@@ -2522,7 +2547,7 @@
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded text-[11px]">${data}</span>` : '-';
-                            return `<input type="date" class="dt-input p-1 text-[9px] lg:text-[10px] text-center" value="${data || ''}" onchange="window.saveManualData('${row.AWB}', 'Date Last Before 92', this.value)">`;
+                            return `<input type="date" class="dt-input p-1 text-[9px] lg:text-[10px] text-center" value="${data || ''}" onchange="window.draftManualData('${row.AWB}', 'Date Last Before 92', this.value); this.classList.add('bg-amber-50', 'border-amber-300');">`;
                         }
                         return data;
                     }

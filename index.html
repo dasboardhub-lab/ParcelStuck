@@ -1829,10 +1829,10 @@
             let textToCopy = `*Parcel stuck HUB* *_${hubText}_*\n`;
             textToCopy += `*_Visit Datanya di https://parcelstuck.vercel.app/_*\n\n`;
             
-            textToCopy += `> *DATA WARNING*\n`;
+            textToCopy += `> *🆘 DATA WARNING*\n`;
             textToCopy += window.formatGroupedData(rowsWarn);
             
-            textToCopy += `\n> *DATA PENDING*\n`;
+            textToCopy += `\n> *⏳ DATA PENDING*\n`;
             textToCopy += window.formatGroupedData(rowsStuck);
 
             window.copyToClipboard(textToCopy.trim(), `Data Laporan Warning & Pending disalin!`);

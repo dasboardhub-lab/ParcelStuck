@@ -830,10 +830,15 @@
                         <div class="p-2 bg-rose-100 rounded-xl"><i data-lucide="eraser" class="w-4 h-4 text-rose-600"></i></div>
                         Utilitas Database
                     </h3>
-                    <p class="text-xs text-slate-500 mb-5 leading-relaxed font-medium">Hapus seluruh isi kolom <b>Feedback</b> khusus pada data yang berstatus <b>Warning</b> dan <b>Pending (Stuck)</b> untuk persiapan format baru.</p>
-                    <button onclick="window.clearSpecificFeedback()" class="w-full bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i> Kosongkan Feedback
-                    </button>
+                    <p class="text-xs text-slate-500 mb-5 leading-relaxed font-medium">Hapus seluruh isi kolom <b>Feedback</b> atau reset status resi secara massal.</p>
+                    <div class="space-y-3">
+                        <button onclick="window.clearSpecificFeedback()" class="w-full bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Kosongkan Feedback
+                        </button>
+                        <button onclick="window.resetOpcode92()" class="w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
+                            <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Reset Opcode 92 ke Freeze
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1485,6 +1490,41 @@
             );
         };
 
+        window.resetOpcode92 = async function() {
+            if(!window.isAdminLoggedIn) return;
+            window.showConfirmModal(
+                "Reset Opcode 92?", 
+                "Tindakan ini akan menarik paksa semua resi dengan Opcode 92 kembali ke tab Freeze. Status manual akan dihapus. Lanjutkan?", 
+                async () => {
+                    let updatedCount = 0;
+                    let recordsToSave = [];
+
+                    Object.values(window.databaseMap).forEach(row => {
+                        let currentOpcode = (row['Update Opcode'] || '').toString().trim();
+                        let currentStatus = row._ui_status;
+
+                        if (currentOpcode === '92' && (currentStatus !== 'Freeze' || row._is_manual)) {
+                            row._ui_status = 'Freeze';
+                            row._is_manual = false; 
+                            recordsToSave.push(row);
+                            updatedCount++;
+                        }
+                    });
+
+                    if (recordsToSave.length > 0) {
+                        window.showUploadProgress("Mereset Data", "Menarik data kembali ke Freeze...");
+                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                            window.updateUploadProgress(current, total, "Memproses Data:");
+                        });
+                        window.updateDatabaseUI();
+                        window.finishUploadProgress(updatedCount, 0, "Semua Opcode 92 berhasil dikembalikan ke Freeze.");
+                    } else {
+                        window.showToast("Tidak ada data Opcode 92 yang perlu direset.", "success");
+                    }
+                }
+            );
+        };
+
         window.evaluateStatus = function(row) {
             let currentOpcode = (row['Update Opcode'] || '').toString().trim();
             let currentHub = (row['hub_operator_internal'] || '').toString().trim();
@@ -1492,15 +1532,6 @@
             let currentReturn = (row['Return'] || '').toString().trim();
             
             if (currentOpcode === '92') {
-                let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
-                let last92 = (row['Last Before 92'] || '').toString().trim();
-                let date92 = (row['Date Last Before 92'] || '').toString().trim();
-
-                if (hubDel !== '' && hubDel !== '-' && last92 !== '' && date92 !== '') {
-                    if (row._is_manual) return row._ui_status;
-                    return 'Resolved';
-                }
-
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
             }
@@ -2555,9 +2586,24 @@
                     title: "Tgl Last < 92", data: "Date Last Before 92", width: "10%", defaultContent: "", 
                     className: "dt-center whitespace-nowrap",
                     render: function(data, type, row) {
+                        let inputVal = "";
+                        let displayVal = data || "";
+                        if (data) {
+                            let dObj = window.parseCustomDate(data);
+                            if (dObj) {
+                                let y = dObj.getFullYear();
+                                let m = String(dObj.getMonth() + 1).padStart(2, '0');
+                                let d = String(dObj.getDate()).padStart(2, '0');
+                                inputVal = `${y}-${m}-${d}`;
+                                displayVal = `${d}/${m}/${y}`;
+                            } else {
+                                inputVal = data;
+                            }
+                        }
+
                         if (type === 'display') {
-                            if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded text-[11px]">${data}</span>` : '-';
-                            return `<input type="date" class="dt-input p-1 text-[9px] lg:text-[10px] text-center" value="${data || ''}" onchange="window.draftManualData('${row.AWB}', 'Date Last Before 92', this.value); this.classList.add('bg-amber-50', 'border-amber-300');">`;
+                            if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded text-[11px]">${displayVal}</span>` : '-';
+                            return `<input type="date" class="dt-input p-1 text-[9px] lg:text-[10px] text-center" value="${inputVal}" onchange="window.draftManualData('${row.AWB}', 'Date Last Before 92', this.value); this.classList.add('bg-amber-50', 'border-amber-300');">`;
                         }
                         return data;
                     }
@@ -2569,7 +2615,7 @@
                 if(!window.jQuery || !window.jQuery.fn.DataTable || !domEl) return null;
                 
                 let dt = window.jQuery(domEl).DataTable({
-                    data: dataArray, columns: columns, pageLength: 10, lengthMenu: [10, 25, 50, 100, 500],
+                    data: dataArray, columns: columns, pageLength: 10, lengthMenu: [[10, 25, 50, 100, 500, -1], [10, 25, 50, 100, 500, "Semua"]],
                     scrollX: false, autoWidth: false, order: [], 
                     dom: 'rt<"flex flex-col md:flex-row justify-between items-center pt-5 mt-3 border-t border-slate-100 gap-4"<"flex items-center"i><"flex items-center gap-3"lp>>',
                     language: {

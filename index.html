@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parcel Stuck</title>
+    <title>Sistem Manajemen Hub - Parcel Stuck</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1426,8 +1426,10 @@
 
                 Object.values(window.databaseMap).forEach(row => {
                     let oldStatus = row._ui_status;
+                    let currentOpcode = (row['Update Opcode'] || '').toString().trim();
                     
-                    if (!row._is_manual) {
+                    if (oldStatus === 'Warning' || oldStatus === 'Stuck' || currentOpcode === '92') {
+                        row._is_manual = false; 
                         row._ui_status = window.evaluateStatus(row);
                         if (oldStatus !== row._ui_status) {
                             updatedCount++;
@@ -1446,7 +1448,7 @@
                     await window.saveBatchToFirebase(recordsToSave, (current, total) => {
                         window.updateUploadProgress(current, total, "Penyimpanan Database:");
                     });
-                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan evaluasi ulang berhasil disimpan.");
+                    window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan pemulihan data berhasil disimpan.");
                 } else {
                     window.showToast("Aturan disimpan. Tidak ada data yang berubah status.", 'success');
                 }
@@ -2246,20 +2248,23 @@
                 let rData = rowsData[key];
                 let my = rData.monthYear;
                 
+                let isLastRowOfMonth = (index === sortedRowKeys.length - 1) || (rowsData[sortedRowKeys[index + 1]].monthYear !== my);
+                let borderStyle = isLastRowOfMonth ? 'border-bottom: 2px solid #cbd5e1 !important;' : '';
+                
                 tbody += `<tr>`;
                 
                 if (!renderedMonthYears.has(my)) {
                     let rowspan = monthYearCounts[my];
-                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100" style="vertical-align: middle !important;">${my}</td>`;
+                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r-2 border-slate-200" style="vertical-align: middle !important; border-bottom: 2px solid #cbd5e1 !important;">${my}</td>`;
                     renderedMonthYears.add(my);
                 }
 
-                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white">${rData.hub}</td>`;
-                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${rData.total.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white" style="${borderStyle}">${rData.hub}</td>`;
+                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center" style="${borderStyle}">${rData.total.toLocaleString('id-ID')}</td>`;
                 
                 const renderCell = (val, colorClass) => {
                     const displayVal = val > 0 ? val.toLocaleString('id-ID') : ''; 
-                    return `<td class="${displayVal ? colorClass + ' font-bold' : 'text-slate-300'} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
+                    return `<td class="${displayVal ? colorClass + ' font-bold' : 'text-slate-300'} border-l border-slate-100 text-center transition-colors hover:bg-slate-50" style="${borderStyle}">${displayVal}</td>`;
                 };
 
                 if (sortedWarningOpcodes.length > 0) {
@@ -2267,7 +2272,7 @@
                         tbody += renderCell(rData.warningOps[op], 'text-rose-600 bg-rose-50/30');
                     });
                 } else {
-                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center"></td>`;
+                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center" style="${borderStyle}"></td>`;
                 }
 
                 if (sortedPendingOpcodes.length > 0) {
@@ -2275,7 +2280,7 @@
                         tbody += renderCell(rData.pendingOps[op], 'text-orange-600 bg-orange-50/30');
                     });
                 } else {
-                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center"></td>`;
+                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center" style="${borderStyle}"></td>`;
                 }
 
                 tbody += `</tr>`;

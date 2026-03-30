@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parcel Stuck</title>
+    <title>Sistem Manajemen Hub - Parcel Stuck</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -328,7 +328,7 @@
             let pct = total > 0 ? Math.round((current / total) * 100) : 100;
             document.getElementById('up-progress-bar').style.width = `${pct}%`;
             window.setText('up-progress-pct', `${pct}%`);
-            window.setText('up-progress-text', `${prefixText} ${current.toLocaleString()} / ${total.toLocaleString()}`);
+            window.setText('up-progress-text', `${prefixText} ${current.toLocaleString('id-ID')} / ${total.toLocaleString('id-ID')}`);
         };
 
         window.finishUploadProgress = function(successCount, skipCount, successMsg) {
@@ -343,8 +343,8 @@
             window.toggleVisibility('up-summary', true, 'grid');
             window.toggleVisibility('btn-close-progress', true);
             
-            window.setText('up-stat-success', successCount.toLocaleString());
-            window.setText('up-stat-skipped', skipCount.toLocaleString());
+            window.setText('up-stat-success', successCount.toLocaleString('id-ID'));
+            window.setText('up-stat-skipped', skipCount.toLocaleString('id-ID'));
             
             lucide.createIcons();
         };
@@ -1040,19 +1040,15 @@
                         if (existingFeedback !== '' && existingFeedback !== '-') {
                             skippedCount++;
                         } else {
-                            // LOGIKA BARU: Ambil semua teks SETELAH nomor resi tanpa di-trim dulu
                             let afterAwb = line.substring(line.indexOf(awb) + awb.length).replace(/^[\t\s]+/, '');
-                            
-                            // Hapus Opcode (angka di awal teks setelah resi) beserta spasi/tab-nya (atau di akhir baris)
                             let cleanFeedback = afterAwb.replace(/^\d{1,4}([\t\s]+|$)/, '').trim();
                             
-                            // Hanya simpan jika feedback-nya benar-benar ada (tidak kosong)
                             if (cleanFeedback !== '') {
                                 window.databaseMap[awb]['Feedback'] = cleanFeedback;
                                 recordsToSave.push(window.databaseMap[awb]); 
                                 updatedCount++;
                             } else {
-                                skippedCount++; // Jika feedback kosong, skip saja
+                                skippedCount++;
                             }
                         }
                     }
@@ -1127,7 +1123,6 @@
         } catch (e) { console.error("Firebase Update Error:", e); }
 
         window.setDefaultDates = function() {
-            // Filter tanggal dikosongkan secara default agar SEMUA histori data (bahkan yang > 90 hari) tetap tampil di tabel.
             const elStart = document.getElementById('filter-start');
             const elEnd = document.getElementById('filter-end');
             if (elStart) elStart.value = '';
@@ -1223,7 +1218,6 @@
                 const elHub = document.getElementById('set-hubs');
                 if (elHub) elHub.value = window.appSettings.hubs || '';
 
-                // Waktu timeout ditingkatkan menjadi 60 detik untuk mengakomodasi jumlah data yang besar
                 const querySnapshot = await withTimeout(getDocs(collection(dbMain, "parcel_data")), 60000);
                 window.databaseMap = {};
                 querySnapshot.forEach((docSnap) => { window.databaseMap[docSnap.id] = docSnap.data(); });
@@ -1257,7 +1251,7 @@
         window.saveBatchToFirebase = async function(recordsArray, progressCallback) {
             const colRef = collection(dbMain, "parcel_data");
             let totalSaved = 0;
-            let chunkSize = 490; // Firebase maksimum izinkan 500 per batch
+            let chunkSize = 490;
             
             for (let i = 0; i < recordsArray.length; i += chunkSize) {
                 const chunk = recordsArray.slice(i, i + chunkSize);
@@ -1371,7 +1365,6 @@
                 activeContainer.classList.add('block');
             }
 
-            // Atur tampilan tombol salin berdasarkan Tab Aktif
             let btnCopyAwbWp = document.getElementById('btn-copy-awb-wp');
             let btnCopyDataWp = document.getElementById('btn-copy-data-wp');
             let btnCopyFreeze = document.getElementById('btn-copy-freeze');
@@ -1429,8 +1422,6 @@
                 Object.values(window.databaseMap).forEach(row => {
                     let oldStatus = row._ui_status;
                     
-                    // PERBAIKAN: Sistem HANYA mengevaluasi resi yang BELUM PERNAH dipindah manual oleh Anda.
-                    // Data yang sudah Anda tandai Resolved/Freeze secara manual tidak akan disentuh lagi.
                     if (!row._is_manual) {
                         row._ui_status = window.evaluateStatus(row);
                         if (oldStatus !== row._ui_status) {
@@ -1440,7 +1431,6 @@
                     }
                 });
                 
-                // Hapus isi dropdown agar di-render ulang berdasarkan aturan whitelist yang baru
                 const hubContainer = document.getElementById('hub-options-container');
                 if (hubContainer) hubContainer.innerHTML = '';
 
@@ -1470,13 +1460,12 @@
                     let updatedCount = 0;
                     let recordsToSave = [];
 
-                    // Cari semua data yang statusnya Warning atau Stuck dan punya feedback
                     Object.values(window.databaseMap).forEach(row => {
                         let currentStatus = window.evaluateStatus(row);
                         if (row._is_manual) currentStatus = row._ui_status;
 
                         if ((currentStatus === 'Warning' || currentStatus === 'Stuck') && row['Feedback'] && row['Feedback'].trim() !== '' && row['Feedback'].trim() !== '-') {
-                            row['Feedback'] = ''; // Kosongkan feedback
+                            row['Feedback'] = ''; 
                             recordsToSave.push(row);
                             updatedCount++;
                         }
@@ -1502,38 +1491,38 @@
             let currentOpcode80 = (row['Opcode 80'] || '').toString().trim();
             let currentReturn = (row['Return'] || '').toString().trim();
             
-            // PRIORITAS ABSOLUT: Freeze Opcode (>92 Hari)
             if (currentOpcode === '92') {
+                let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                let last92 = (row['Last Before 92'] || '').toString().trim();
+                let date92 = (row['Date Last Before 92'] || '').toString().trim();
+
+                if (hubDel !== '' && hubDel !== '-' && last92 !== '' && date92 !== '') {
+                    if (row._is_manual) return row._ui_status;
+                    return 'Resolved';
+                }
+
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
             }
 
-            // PRIORITAS 1: Filter Hub (Area Coverage)
-            // Jika resi berada di Hub yang TIDAK ADA di dalam Whitelist, otomatis Resolved.
-            // Tidak peduli apakah itu Warning, jika bukan area kita, buang ke Resolved.
             let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confHubs.length > 0) {
                 if (currentHub !== '' && !confHubs.includes(currentHub)) return 'Resolved';
             }
 
-            // PRIORITAS 2: Warning Opcodes (Kritis)
             const warningOpcodes = ['603', '618', '21', '22', '207', '43'];
             if (warningOpcodes.includes(currentOpcode)) {
                 if (row._is_manual) return row._ui_status; 
                 return 'Warning';
             }
 
-            // Jika status sudah diubah secara manual oleh Admin, pertahankan status manual tersebut
             if (row._is_manual) return row._ui_status;
 
-            // PRIORITAS 4: Status Resolved Default
             if (currentOpcode80 !== '' || currentReturn !== '') return 'Resolved';
 
-            // PRIORITAS 5: Whitelist Opcodes (Auto-Resolved)
             let confOpcodes = window.appSettings.opcodes ? window.appSettings.opcodes.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confOpcodes.length > 0 && confOpcodes.includes(currentOpcode)) return 'Resolved';
 
-            // Jika tidak memenuhi semua kondisi di atas dan lolos Filter Hub, maka statusnya Pending (Stuck)
             return 'Stuck';
         };
 
@@ -1698,7 +1687,7 @@
                             if (row['fop_code_internal']) { window.databaseMap[awb]['Update Opcode'] = row['fop_code_internal']; isUpdated = true; }
                             if (row['return_awb']) { window.databaseMap[awb]['Return'] = row['return_awb']; isUpdated = true; }
                             if (row['80_last']) { window.databaseMap[awb]['Opcode 80'] = row['80_last']; isUpdated = true; }
-                            if (row['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = row['expect_delivery_tm']; isUpdated = true; } // Update expectation
+                            if (row['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = row['expect_delivery_tm']; isUpdated = true; } 
 
                             let currentItemName = window.databaseMap[awb]['item_name'];
                             if (!currentItemName || currentItemName.trim() === "") {
@@ -1710,10 +1699,10 @@
                                 recordsToSave.push(window.databaseMap[awb]); 
                                 updatedCount++;
                             } else {
-                                skipCount++; // Cocok tapi data tidak ada yg berubah
+                                skipCount++; 
                             }
                         } else {
-                            skipCount++; // Tidak ada di database utama
+                            skipCount++; 
                         }
                     });
 
@@ -1789,7 +1778,6 @@
                 let rawDate = row['Last Scan'];
                 let dateObj = window.parseCustomDate(rawDate);
                 
-                // Gunakan timestamp untuk pengurutan, jika null beri 0 (akan muncul paling atas)
                 let timestamp = dateObj ? dateObj.getTime() : 0; 
                 let formattedDate = window.formatStandardDate(rawDate);
 
@@ -1807,7 +1795,6 @@
                 });
             });
 
-            // Urutkan kunci (timestamp) dari yang terlama (terkecil) ke terbaru (terbesar)
             let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
             let resultText = "";
 
@@ -1864,18 +1851,15 @@
         };
 
         window.copyFilteredData = function() {
-            // Fungsi ini sekarang khusus digunakan oleh tab Freeze
             if (window.currentActiveTable === 'freeze') {
                 if (!window.dtFreeze) return;
                 let textToCopy = "";
                 let copiedCount = 0;
                 
-                // Mengambil data persis sesuai urutan yang terlihat di layar
                 let nodes = window.dtFreeze.rows({ search: 'applied' }).nodes();
                 for (let i = 0; i < nodes.length; i++) {
                     let rowData = window.dtFreeze.row(nodes[i]).data();
                     if (rowData && rowData['AWB']) {
-                        // Ambil nilai dari ketiga kolom investigasi Freeze
                         let hubDel = (rowData['staging_operator_internal'] || rowData['HUB Delivery'] || '').toString().trim();
                         let last92 = (rowData['Last Before 92'] || '').toString().trim();
                         let date92 = (rowData['Date Last Before 92'] || '').toString().trim();
@@ -1884,7 +1868,6 @@
                         let isLast92Empty = (last92 === '' || last92 === '-');
                         let isDate92Empty = (date92 === '' || date92 === '-');
 
-                        // Salin JIKA salah satunya masih kosong (Belum lengkap dikerjakan)
                         if (isHubEmpty || isLast92Empty || isDate92Empty) {
                             textToCopy += `${rowData['AWB']}\n`;
                             copiedCount++;
@@ -1897,7 +1880,7 @@
                     return;
                 }
 
-                window.copyToClipboard(textToCopy.trim(), `${copiedCount} AWB (Data belum lengkap) berhasil disalin!`);
+                window.copyToClipboard(textToCopy.trim(), `${copiedCount.toLocaleString('id-ID')} AWB (Data belum lengkap) berhasil disalin!`);
             }
         };
 
@@ -1905,6 +1888,8 @@
             let groupKeys = new Set();
             let warningOpcodes = new Set();
             let pendingOpcodes = new Set();
+
+            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim().toUpperCase()).filter(s => s !== '') : [];
 
             data.forEach(row => {
                 let key = "-";
@@ -1921,11 +1906,15 @@
                         }
                     }
                 } else {
-                    // Logic group by HUB
-                    let hubOps = (row['hub_operator_internal'] || '').toString().trim();
-                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                    let hubOps = (row['hub_operator_internal'] || '').toString().trim().toUpperCase();
+                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                     key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
-                    if (!key || key === '-') key = "TIDAK ADA HUB";
+                    
+                    if (!key || key === '-') {
+                        key = "TIDAK ADA HUB";
+                    } else if (confHubs.length > 0 && !confHubs.includes(key)) {
+                        key = "EXTERNAL";
+                    }
                 }
                 
                 groupKeys.add(key);
@@ -1937,7 +1926,7 @@
                 if (status === 'Stuck' && op) pendingOpcodes.add(op);
             });
 
-            groupKeys = Array.from(groupKeys).sort();
+            groupKeys = Array.from(groupKeys);
             warningOpcodes = Array.from(warningOpcodes).sort();
             pendingOpcodes = Array.from(pendingOpcodes).sort();
 
@@ -1966,10 +1955,15 @@
                         }
                     }
                 } else {
-                    let hubOps = (row['hub_operator_internal'] || '').toString().trim();
-                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                    let hubOps = (row['hub_operator_internal'] || '').toString().trim().toUpperCase();
+                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                     key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
-                    if (!key || key === '-') key = "TIDAK ADA HUB";
+                    
+                    if (!key || key === '-') {
+                        key = "TIDAK ADA HUB";
+                    } else if (confHubs.length > 0 && !confHubs.includes(key)) {
+                        key = "EXTERNAL";
+                    }
                 }
                 
                 let status = row._ui_status;
@@ -1982,6 +1976,17 @@
                 else if (status === 'Freeze') { summary[key].Freeze++; grandFreeze++; }
                 else if (status === 'Warning' && op) { summary[key]['Warning_'+op]++; grandWarning++; }
                 else if (status === 'Stuck' && op) { summary[key]['Pending_'+op]++; grandPending++; }
+            });
+
+            groupKeys.sort((a, b) => {
+                if (window.summaryMode === 'hub') {
+                    if (a === "TIDAK ADA HUB") return 1;
+                    if (b === "TIDAK ADA HUB") return -1;
+                    if (a === "EXTERNAL") return 1;
+                    if (b === "EXTERNAL") return -1;
+                    return summary[b].Total - summary[a].Total;
+                }
+                return a.localeCompare(b);
             });
 
             let table = document.getElementById('summaryTable');
@@ -2024,7 +2029,7 @@
                 tbody += `<tr><td colspan="${4 + wCols + pCols}" class="text-slate-400 py-8 text-center rounded-b-xl">Belum ada data tersedia</td></tr>`;
             } else {
                 const renderCell = (val, colorClass) => {
-                    const displayVal = val > 0 ? val : ''; 
+                    const displayVal = val > 0 ? val.toLocaleString('id-ID') : ''; 
                     return `<td class="${displayVal ? colorClass + ' font-bold' : ''} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
                 };
 
@@ -2032,7 +2037,7 @@
                     let row = summary[k];
                     tbody += `<tr>`;
                     tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-50">${k}</td>`;
-                    tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${row.Total}</td>`;
+                    tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${row.Total.toLocaleString('id-ID')}</td>`;
 
                     if (warningOpcodes.length > 0) {
                         warningOpcodes.forEach(op => tbody += renderCell(row['Warning_'+op], 'text-rose-600 bg-rose-50/30'));
@@ -2051,14 +2056,13 @@
                     tbody += `</tr>`;
                 });
 
-                // Baris Grand Total
                 tbody += `<tr class="bg-slate-100">`;
                 tbody += `<td class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
-                tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandTotal}</td>`;
-                tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning}</td>`;
-                tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center py-3">${grandPending}</td>`;
-                tbody += `<td class="font-black text-emerald-700 bg-emerald-200/50 text-center border-t-2 border-slate-200 py-3">${grandResolved}</td>`;
-                tbody += `<td class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreeze}</td>`;
+                tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandTotal.toLocaleString('id-ID')}</td>`;
+                tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning.toLocaleString('id-ID')}</td>`;
+                tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center py-3">${grandPending.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-black text-emerald-700 bg-emerald-200/50 text-center border-t-2 border-slate-200 py-3">${grandResolved.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreeze.toLocaleString('id-ID')}</td>`;
                 tbody += `</tr>`;
             }
             tbody += `</tbody>`;
@@ -2083,16 +2087,20 @@
 
             let grandFreezeTotal = 0; 
             
-            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
+            let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim().toUpperCase()).filter(s => s !== '') : [];
 
             freezeData.forEach(row => {
                 let op = (row['Last Before 92'] || '').toString().trim();
                 
                 if (!op || op === '-') return;
                 
-                let hub = (row['staging_operator_internal'] || row['HUB Delivery'] || '-').toString().trim();
-                
-                if (confHubs.length > 0 && !confHubs.includes(hub)) return;
+                let hubRaw = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
+                let hub = hubRaw;
+                if (!hub || hub === '-') {
+                    hub = "TIDAK ADA HUB";
+                } else if (confHubs.length > 0 && !confHubs.includes(hub)) {
+                    hub = "EXTERNAL";
+                }
                 
                 hasValidData = true;
 
@@ -2127,7 +2135,25 @@
             }
 
             let sortedOpcodes = Array.from(opcodes).sort();
-            let sortedRowKeys = Object.keys(rowsData).sort(); // Urutkan berdasarkan Tahun-Bulan lalu HUB
+            let sortedRowKeys = Object.keys(rowsData).sort((a, b) => {
+                let partsA = a.split('|');
+                let partsB = b.split('|');
+                let monthA = partsA[0];
+                let monthB = partsB[0];
+                let hubA = partsA[1];
+                let hubB = partsB[1];
+
+                if (monthA !== monthB) {
+                    return monthA.localeCompare(monthB);
+                }
+
+                if (hubA === "TIDAK ADA HUB") return 1;
+                if (hubB === "TIDAK ADA HUB") return -1;
+                if (hubA === "EXTERNAL") return 1;
+                if (hubB === "EXTERNAL") return -1;
+
+                return rowsData[b].total - rowsData[a].total;
+            });
 
             let opCols = sortedOpcodes.length > 0 ? sortedOpcodes.length : 1;
 
@@ -2151,7 +2177,6 @@
             }
             thead += `</tr></thead>`;
 
-            // Hitung jumlah baris per Bulan-Tahun untuk keperluan Merge Cell (Rowspan)
             let monthYearCounts = {};
             sortedRowKeys.forEach(key => {
                 let my = rowsData[key].monthYear;
@@ -2167,7 +2192,6 @@
                 
                 tbody += `<tr>`;
                 
-                // Menerapkan Rowspan untuk cell Bulan-Tahun
                 if (!renderedMonthYears.has(my)) {
                     let rowspan = monthYearCounts[my];
                     tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100" style="vertical-align: middle !important;">${my}</td>`;
@@ -2175,12 +2199,12 @@
                 }
 
                 tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white">${rData.hub}</td>`;
-                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${rData.total}</td>`;
+                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${rData.total.toLocaleString('id-ID')}</td>`;
                 
                 if (sortedOpcodes.length > 0) {
                     sortedOpcodes.forEach(op => {
                         let val = rData.ops[op];
-                        let displayVal = val > 0 ? val : '';
+                        let displayVal = val > 0 ? val.toLocaleString('id-ID') : '';
                         let colorClass = displayVal ? 'text-blue-600 bg-blue-50/30 font-bold' : 'text-slate-300';
                         tbody += `<td class="${colorClass} border-l border-slate-100 text-center transition-colors hover:bg-slate-50">${displayVal}</td>`;
                     });
@@ -2190,11 +2214,10 @@
                 tbody += `</tr>`;
             });
             
-            // Baris Grand Total Khusus Freeze
             tbody += `<tr class="bg-slate-100">`;
             tbody += `<td colspan="2" class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
-            tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandFreezeTotal}</td>`;
-            tbody += `<td colspan="${opCols}" class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreezeTotal}</td>`;
+            tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandFreezeTotal.toLocaleString('id-ID')}</td>`;
+            tbody += `<td colspan="${opCols}" class="font-black text-blue-700 bg-blue-200/50 border-l border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandFreezeTotal.toLocaleString('id-ID')}</td>`;
             tbody += `</tr>`;
 
             tbody += `</tbody>`;
@@ -2267,7 +2290,7 @@
                             align: 'top',
                             offset: 6,
                             font: { weight: '800', family: 'Plus Jakarta Sans', size: 12 },
-                            formatter: function(value) { return value > 0 ? value : ''; }
+                            formatter: function(value) { return value > 0 ? value.toLocaleString('id-ID') : ''; }
                         }
                     },
                     scales: {
@@ -2292,7 +2315,6 @@
 
                 const hubContainer = document.getElementById('hub-options-container');
                 if(hubContainer && hubContainer.innerHTML.trim() === '') {
-                    // MENGUBAH SUMBER LIST HUB DARI DATABASE MENJADI DARI SETTING WHITELIST
                     let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
                     const hubSet = new Set(confHubs);
                     
@@ -2309,7 +2331,6 @@
                         `;
                     });
                     
-                    // Jika belum ada hub yang disetel di konfigurasi Admin
                     if(currentHtml === '') {
                         currentHtml = `<p class="text-[10px] text-slate-400 px-2 italic">Hub Whitelist kosong. Atur di menu Admin.</p>`;
                     }
@@ -2346,7 +2367,6 @@
                         let hubOps = (row['hub_operator_internal'] || '').toString().trim();
                         let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
                         
-                        // KHUSUS FREEZE: Prioritaskan Hub Delivery. Jika masih kosong, gunakan Hub Ops agar data tidak hilang/tersembunyi.
                         let currentHubValue = hubOps;
                         if (row._ui_status === 'Freeze' && hubDel !== '') {
                             currentHubValue = hubDel;
@@ -2367,23 +2387,22 @@
                 let dataWarning = filteredArray.filter(r => r._ui_status === 'Warning');
 
                 let totalData = filteredArray.length;
-                window.setText('kpi-total', totalData.toLocaleString());
-                window.setText('kpi-warning', dataWarning.length.toLocaleString());
-                window.setText('kpi-pending', dataStuck.length.toLocaleString());
-                window.setText('kpi-resolved', dataResolved.length.toLocaleString());
-                window.setText('kpi-freeze', dataFreeze.length.toLocaleString());
+                window.setText('kpi-total', totalData.toLocaleString('id-ID'));
+                window.setText('kpi-warning', dataWarning.length.toLocaleString('id-ID'));
+                window.setText('kpi-pending', dataStuck.length.toLocaleString('id-ID'));
+                window.setText('kpi-resolved', dataResolved.length.toLocaleString('id-ID'));
+                window.setText('kpi-freeze', dataFreeze.length.toLocaleString('id-ID'));
 
-                // Format persentase
                 const getPct = (count) => totalData > 0 ? ((count / totalData) * 100).toFixed(1) + '%' : '0%';
                 window.setText('kpi-pct-warning', getPct(dataWarning.length));
                 window.setText('kpi-pct-pending', getPct(dataStuck.length));
                 window.setText('kpi-pct-resolved', getPct(dataResolved.length));
                 window.setText('kpi-pct-freeze', getPct(dataFreeze.length));
 
-                window.setText('count-stuck', dataStuck.length.toLocaleString());
-                window.setText('count-resolved', dataResolved.length.toLocaleString());
-                window.setText('count-freeze', dataFreeze.length.toLocaleString());
-                window.setText('count-warning', dataWarning.length.toLocaleString());
+                window.setText('count-stuck', dataStuck.length.toLocaleString('id-ID'));
+                window.setText('count-resolved', dataResolved.length.toLocaleString('id-ID'));
+                window.setText('count-freeze', dataFreeze.length.toLocaleString('id-ID'));
+                window.setText('count-warning', dataWarning.length.toLocaleString('id-ID'));
 
                 window.updateChart(filteredArray);
                 window.renderSummaryTable(filteredArray);
@@ -2409,7 +2428,6 @@
             let isWarnStuck = (tableType === 'warning' || tableType === 'stuck');
             let isResolved = tableType === 'resolved';
 
-            // 1. Tindakan (Semua Tab) - 10%
             columns.push({
                 title: "Tindakan",
                 data: null,
@@ -2448,7 +2466,6 @@
                 }
             });
 
-            // 2. Hub Ops (Hapus dari tab Freeze) - 8%
             if (!isFreeze) {
                 columns.push({ 
                     title: "Hub", data: "hub_operator_internal", width: "8%", defaultContent: "-", 
@@ -2456,14 +2473,12 @@
                 });
             }
 
-            // 3. AWB
             let awbW = isWarnStuck ? "12%" : (isFreeze ? "12%" : "15%");
             columns.push({ 
                 title: "No. Resi", data: "AWB", width: awbW, defaultContent: "-", 
                 className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm whitespace-nowrap" 
             });
 
-            // 4. Last Scan
             let lsW = isResolved ? "12%" : "10%";
             columns.push({ 
                 title: "Last Scan", data: "Last Scan", width: lsW, defaultContent: "-", 
@@ -2471,7 +2486,6 @@
                 render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
             });
 
-            // 5. Opcode
             let opW = isResolved ? "10%" : "8%";
             columns.push({ 
                 title: "Opcode", data: "Update Opcode", width: opW, defaultContent: "-", 
@@ -2479,7 +2493,6 @@
                 render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-xs px-2 py-0.5 rounded-md font-bold">${data || '-'}</span>`; }
             });
 
-            // 6. Item (Deskripsi)
             let itW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "22%");
             columns.push({ 
                 title: "Item", data: "item_name", width: itW, defaultContent: "-", 
@@ -2492,7 +2505,6 @@
                 }
             });
 
-            // 7. Feedback Sistem
             let fbW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "23%");
             columns.push({ 
                 title: "Feedback", data: "Feedback", width: fbW, defaultContent: "-", 
@@ -2505,7 +2517,6 @@
                 }
             });
 
-            // 8. Expect Delivery (HANYA Warning & Stuck) - 12%
             if (isWarnStuck) {
                 columns.push({
                     title: "Expect Delivery", data: "Expect Delivery", width: "12%", defaultContent: "-", 
@@ -2514,7 +2525,6 @@
                 });
             }
 
-            // 9. Kolom Tambahan (HANYA Freeze) - Masing-masing 10%
             if (isFreeze) {
                 columns.push({
                     title: "HUB Delivery", data: "staging_operator_internal", width: "10%", defaultContent: "-", 
@@ -2655,7 +2665,7 @@
             
             XLSX.writeFile(wb, `Laporan_HubOps_${new Date().toISOString().split('T')[0]}.xlsx`);
             window.hideExportModal();
-            window.showToast(`Berhasil mengunduh ${exportData.length} data.`, "success");
+            window.showToast(`Berhasil mengunduh ${exportData.length.toLocaleString('id-ID')} data.`, "success");
         };
 
     </script>

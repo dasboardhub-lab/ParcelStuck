@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Hub - Parcel Stuck</title>
+    <title>Parcel Stuck</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2130,7 +2130,7 @@
                 if (!hub || hub === '-') {
                     hub = "TIDAK ADA HUB";
                 } else if (confHubs.length > 0 && !confHubs.includes(hub)) {
-                    hub = "EXTERNAL";
+                    return;
                 }
                 
                 hasValidData = true;
@@ -2180,8 +2180,6 @@
 
                 if (hubA === "TIDAK ADA HUB") return 1;
                 if (hubB === "TIDAK ADA HUB") return -1;
-                if (hubA === "EXTERNAL") return 1;
-                if (hubB === "EXTERNAL") return -1;
 
                 return rowsData[b].total - rowsData[a].total;
             });

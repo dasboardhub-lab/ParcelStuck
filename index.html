@@ -124,12 +124,13 @@
         .dt-input:focus { background: white; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
         /* Summary Table Styles */
-        .summary-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .summary-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
         .summary-table th { 
-            padding: 12px 16px; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; 
-            letter-spacing: 0.05em; text-align: center; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0;
+            padding: 8px 4px; font-size: 0.6rem; text-transform: uppercase; font-weight: 800; 
+            letter-spacing: 0.02em; text-align: center; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0;
+            word-wrap: break-word; line-height: 1.2;
         }
-        .summary-table td { padding: 14px 16px; font-size: 0.85rem; text-align: center; border-bottom: 1px solid #f1f5f9; }
+        .summary-table td { padding: 8px 4px; font-size: 0.7rem; text-align: center; border-bottom: 1px solid #f1f5f9; word-wrap: break-word; }
         .summary-table tbody tr:hover td { background-color: #f8fafc; }
 
         /* Glassmorphism utility */
@@ -458,6 +459,17 @@
                 <div id="badge-publik" class="text-xs bg-slate-100 border border-slate-200 text-slate-500 px-3.5 py-2 rounded-xl flex items-center gap-1.5 font-bold shadow-inner">
                     <i data-lucide="eye" class="w-4 h-4"></i> Publik
                 </div>
+
+                <!-- Admin Tab & Tools (Pindah ke sini) -->
+                <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-slate-100 border border-indigo-200 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                </button>
+                <button id="btn-tab-settings" onclick="window.switchTab('settings')" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Aturan
+                </button>
+                <button id="btn-bulk-feedback-container" onclick="window.showBulkFeedbackModal()" class="hidden bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="message-square-plus" class="w-4 h-4"></i> Feedback Massal
+                </button>
                 
                 <button id="btn-head-upload-1" onclick="document.getElementById('file1').click()" class="hidden bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-md shadow-slate-200 flex items-center gap-2 hover:-translate-y-0.5">
                     <i data-lucide="upload-cloud" class="w-4 h-4"></i> Ingest Data
@@ -481,25 +493,7 @@
     <input type="file" id="file2" accept=".csv" class="hidden">
 
     <!-- Main Content (Full Width) -->
-    <main class="w-full px-6 lg:px-8 max-w-[1600px] mx-auto">
-        
-        <!-- Navigation Menu -->
-        <nav class="flex flex-wrap items-center justify-between mb-6 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex space-x-2" aria-label="Tabs">
-                <button onclick="window.switchTab('dashboard')" id="tab-dashboard" class="px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all bg-indigo-50 text-indigo-700">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Monitoring Board
-                </button>
-                <button onclick="window.switchTab('settings')" id="tab-settings" class="hidden px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-50">
-                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Automation Rules
-                </button>
-            </div>
-            <!-- Tombol Input Feedback Massal (Khusus Admin) -->
-            <div id="btn-bulk-feedback-container" class="hidden pr-1">
-                <button onclick="window.showBulkFeedbackModal()" class="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm">
-                    <i data-lucide="message-square-plus" class="w-4 h-4"></i> Input Feedback Massal
-                </button>
-            </div>
-        </nav>
+    <main class="w-full px-4 lg:px-6 mx-auto">
 
         <!-- SECTION: DASHBOARD -->
         <div id="section-dashboard" class="block space-y-6">
@@ -644,134 +638,150 @@
                 </div>
             </div>
 
-            <!-- ROW 3: Diagram Garis (Trend Chart) Full Width -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative z-10 flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
-                        <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
-                        Tren AWB Berdasarkan Last Scan
-                    </h4>
-                </div>
-                <div class="w-full h-[260px] relative">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-
-            <!-- ROW 4: Summary Pivot Table Full Width -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative z-10 flex flex-col hidden" id="summary-section">
-                <div class="flex flex-wrap gap-4 justify-between items-center mb-4">
-                    <h4 id="summary-title" class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
-                        <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="calendar-days" class="w-4 h-4"></i></div>
-                        Rekapitulasi Berdasarkan Tanggal
-                    </h4>
-                    <!-- Toggle Switch -->
-                    <div class="bg-slate-100 p-1 rounded-xl flex items-center shadow-inner border border-slate-200">
-                        <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600">Per Tanggal</button>
-                        <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700">Per HUB</button>
-                    </div>
-                </div>
-                <div class="w-full overflow-x-auto rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
-                    <table class="summary-table" id="summaryTable">
-                        <!-- Di-render via JS -->
-                    </table>
-                </div>
-            </div>
-
-            <!-- ROW 4.5: Summary Khusus Freeze -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative z-10 hidden flex-col mt-6" id="freeze-summary-section">
-                <div class="flex justify-between items-center mb-4">
-                    <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
-                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="snowflake" class="w-4 h-4"></i></div>
-                        Rekapitulasi Khusus Freeze (Berdasarkan Last < 92)
-                    </h4>
-                </div>
-                <div class="w-full overflow-x-auto rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
-                    <table class="summary-table" id="freezeSummaryTable">
-                        <!-- Di-render via JS -->
-                    </table>
-                </div>
-            </div>
-
-            <!-- ROW 5: Table Section & Actions -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative z-10 mt-6">
+            <!-- LAYOUT 2 KOLOM (Desktop Lebar 50/50) -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10">
                 
-                <div id="empty-state" class="text-center py-24">
-                    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-slate-100 shadow-sm">
-                        <i data-lucide="inbox" class="w-10 h-10 text-slate-300"></i>
-                    </div>
-                    <h3 class="text-xl font-extrabold text-slate-700 mb-1">Ruang Kerja Kosong</h3>
-                    <p class="text-slate-500 text-sm font-medium">Belum ada data resi yang diunggah. Silakan Ingest Data melalui akses Admin.</p>
-                </div>
-
-                <div id="table-container" class="w-full hidden flex-col">
+                <!-- KOLOM KIRI: Trend Chart & Table Utama (Lebar 50%) -->
+                <div class="flex flex-col space-y-6 min-w-0">
                     
-                    <!-- Header Tabel (Tabs & Buttons) -->
-                    <div class="flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-0 border-b border-slate-100 bg-white">
-                        
-                        <!-- Tabs Kategori -->
-                        <div class="flex space-x-1.5 overflow-x-auto whitespace-nowrap pb-1">
-                            <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="px-5 py-3 rounded-t-xl font-extrabold text-sm bg-rose-600 text-white transition-all flex items-center gap-2 shadow-[0_-4px_10px_-2px_rgba(225,29,72,0.2)] relative transform origin-bottom scale-100 z-10 border border-b-0 border-rose-600">
-                                Warning <span id="count-warning" class="bg-white/20 text-white px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
-                            </button>
-                            <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
-                                Pending <span id="count-stuck" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
-                            </button>
-                            <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
-                                Resolved <span id="count-resolved" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
-                            </button>
-                            <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
-                                Freeze <span id="count-freeze" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
-                            </button>
+                    <!-- ROW 3: Diagram Garis (Trend Chart) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col w-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
+                                <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+                                Tren AWB Berdasarkan Last Scan
+                            </h4>
                         </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex items-center gap-2.5 pb-3">
-                            <button onclick="window.commitChanges()" id="btn-save-changes" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-2 px-4 rounded-xl transition-all items-center gap-2 text-xs shadow-sm shadow-indigo-200">
-                                <i data-lucide="save" class="w-4 h-4"></i> Simpan Perubahan
-                            </button>
-                            <button onclick="window.copyAWBWarnPend()" id="btn-copy-awb-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                <i data-lucide="list" class="w-4 h-4"></i> Salin AWB
-                            </button>
-                            <button onclick="window.copyDataWarnPend()" id="btn-copy-data-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                <i data-lucide="copy" class="w-4 h-4"></i> Salin Data Laporan
-                            </button>
-                            <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                <i data-lucide="copy" class="w-4 h-4"></i> Salin AWB
-                            </button>
-                            <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
-                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Unduh Excel
-                            </button>
+                        <div class="w-full h-[350px] relative">
+                            <canvas id="trendChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="p-6 bg-white">
-                        <!-- Tabel Warning -->
-                        <div id="tc-warning" class="w-full block overflow-x-auto">
-                            <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5 text-sm text-rose-800 flex items-start gap-3 shadow-inner">
-                                <div class="bg-rose-200 p-1.5 rounded-lg text-rose-700 mt-0.5"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
-                                <div>
-                                    <p class="font-extrabold mb-0.5 text-rose-900">Eskalasi Tim Pencarian</p>
-                                    <p class="text-rose-700 text-xs font-medium">Data berikut terdeteksi memiliki Opcode kritis (603, 618, 21, 22, 207, 43). Admin dapat mengubah status ke Resolved jika investigasi selesai.</p>
+                    <!-- ROW 5: Table Section & Actions -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col w-full">
+                        
+                        <div id="empty-state" class="text-center py-24">
+                            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-slate-100 shadow-sm">
+                                <i data-lucide="inbox" class="w-10 h-10 text-slate-300"></i>
+                            </div>
+                            <h3 class="text-xl font-extrabold text-slate-700 mb-1">Ruang Kerja Kosong</h3>
+                            <p class="text-slate-500 text-sm font-medium">Belum ada data resi yang diunggah. Silakan Ingest Data melalui akses Admin.</p>
+                        </div>
+
+                        <div id="table-container" class="w-full hidden flex-col">
+                            
+                            <!-- Header Tabel (Tabs & Buttons) -->
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-6 pt-6 pb-0 border-b border-slate-100 bg-white">
+                                
+                                <!-- Tabs Kategori -->
+                                <div class="flex space-x-1.5 overflow-x-auto whitespace-nowrap pb-1 w-full lg:w-auto">
+                                    <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="px-5 py-3 rounded-t-xl font-extrabold text-sm bg-rose-600 text-white transition-all flex items-center gap-2 shadow-[0_-4px_10px_-2px_rgba(225,29,72,0.2)] relative transform origin-bottom scale-100 z-10 border border-b-0 border-rose-600">
+                                        Warning <span id="count-warning" class="bg-white/20 text-white px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
+                                    </button>
+                                    <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
+                                        Pending <span id="count-stuck" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
+                                    </button>
+                                    <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
+                                        Resolved <span id="count-resolved" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
+                                    </button>
+                                    <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="px-5 py-3 bg-slate-50 hover:bg-slate-100 border border-b-0 border-slate-200 text-slate-500 hover:text-slate-700 rounded-t-xl font-bold text-sm transition-all flex items-center gap-2">
+                                        Freeze <span id="count-freeze" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[11px] font-black">0</span>
+                                    </button>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center gap-2.5 pb-3 overflow-x-auto whitespace-nowrap">
+                                    <button onclick="window.commitChanges()" id="btn-save-changes" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-2 px-4 rounded-xl transition-all items-center gap-2 text-xs shadow-sm shadow-indigo-200">
+                                        <i data-lucide="save" class="w-4 h-4"></i> Simpan
+                                    </button>
+                                    <button onclick="window.copyAWBWarnPend()" id="btn-copy-awb-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="list" class="w-4 h-4"></i> AWB
+                                    </button>
+                                    <button onclick="window.copyDataWarnPend()" id="btn-copy-data-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> Data
+                                    </button>
+                                    <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> AWB
+                                    </button>
+                                    <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
+                                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel
+                                    </button>
                                 </div>
                             </div>
-                            <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                        </div>
-                        <!-- Tabel Stuck / Pending -->
-                        <div id="tc-stuck" class="w-full hidden overflow-x-auto">
-                            <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                        </div>
-                        <!-- Tabel Resolved -->
-                        <div id="tc-resolved" class="w-full hidden overflow-x-auto">
-                            <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                        </div>
-                        <!-- Tabel Freeze -->
-                        <div id="tc-freeze" class="w-full hidden overflow-x-auto">
-                            <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+
+                            <div class="p-6 bg-white">
+                                <!-- Tabel Warning -->
+                                <div id="tc-warning" class="w-full block overflow-x-auto">
+                                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5 text-sm text-rose-800 flex items-start gap-3 shadow-inner">
+                                        <div class="bg-rose-200 p-1.5 rounded-lg text-rose-700 mt-0.5"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
+                                        <div>
+                                            <p class="font-extrabold mb-0.5 text-rose-900">Eskalasi Tim Pencarian</p>
+                                            <p class="text-rose-700 text-xs font-medium">Data berikut terdeteksi memiliki Opcode kritis. Admin dapat mengubah status ke Resolved jika investigasi selesai.</p>
+                                        </div>
+                                    </div>
+                                    <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                                </div>
+                                <!-- Tabel Stuck / Pending -->
+                                <div id="tc-stuck" class="w-full hidden overflow-x-auto">
+                                    <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                                </div>
+                                <!-- Tabel Resolved -->
+                                <div id="tc-resolved" class="w-full hidden overflow-x-auto">
+                                    <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                                </div>
+                                <!-- Tabel Freeze -->
+                                <div id="tc-freeze" class="w-full hidden overflow-x-auto">
+                                    <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
                 </div>
+
+                <!-- KOLOM KANAN: Summary Table (Lebar 50%) -->
+                <div class="flex flex-col space-y-6 min-w-0 w-full max-w-full">
+                    
+                    <!-- ROW 4: Summary Pivot Table -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hidden flex-col w-full" id="summary-section">
+                        <div class="flex flex-wrap gap-4 justify-between items-center mb-4">
+                            <h4 id="summary-title" class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
+                                <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="building-2" class="w-4 h-4"></i></div>
+                                Rekapitulasi Berdasarkan HUB
+                            </h4>
+                            <!-- Toggle Switch -->
+                            <div class="bg-slate-100 p-1 rounded-xl flex items-center shadow-inner border border-slate-200">
+                                <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all text-slate-500 hover:text-slate-700">Per Tanggal</button>
+                                <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all bg-white shadow text-indigo-600">Per HUB</button>
+                            </div>
+                        </div>
+                        <div class="w-full overflow-hidden rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
+                            <table class="summary-table" id="summaryTable">
+                                <!-- Di-render via JS -->
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ROW 4.5: Summary Khusus Freeze -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hidden flex-col w-full" id="freeze-summary-section">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
+                                <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="snowflake" class="w-4 h-4"></i></div>
+                                Rekap Khusus Freeze (< 92)
+                            </h4>
+                        </div>
+                        <div class="w-full overflow-hidden rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
+                            <table class="summary-table" id="freezeSummaryTable">
+                                <!-- Di-render via JS -->
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
+
         </div>
 
         <!-- SECTION: PENGATURAN (Khusus Admin) -->
@@ -1275,7 +1285,7 @@
         window.databaseMap = {}; 
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
-        window.summaryMode = 'date';
+        window.summaryMode = 'hub';
         window.modifiedAwbs = new Set();
 
         window.setSummaryMode = function(mode) {
@@ -1457,8 +1467,9 @@
                 window.toggleVisibility('btn-logout-ui', true, 'flex');
                 window.toggleVisibility('btn-head-upload-1', true, 'flex');
                 window.toggleVisibility('btn-head-upload-2', true, 'flex');
-                window.toggleVisibility('tab-settings', true, 'flex');
-                window.toggleVisibility('btn-bulk-feedback-container', true, 'block'); 
+                window.toggleVisibility('btn-tab-dashboard', true, 'flex');
+                window.toggleVisibility('btn-tab-settings', true, 'flex');
+                window.toggleVisibility('btn-bulk-feedback-container', true, 'flex'); 
                 window.toggleVisibility('btn-save-changes', true, 'flex');
             } else {
                 window.toggleVisibility('btn-login-ui', true, 'flex');
@@ -1466,7 +1477,8 @@
                 window.toggleVisibility('btn-logout-ui', false);
                 window.toggleVisibility('btn-head-upload-1', false);
                 window.toggleVisibility('btn-head-upload-2', false);
-                window.toggleVisibility('tab-settings', false);
+                window.toggleVisibility('btn-tab-dashboard', false);
+                window.toggleVisibility('btn-tab-settings', false);
                 window.toggleVisibility('btn-bulk-feedback-container', false); 
                 window.toggleVisibility('btn-save-changes', false);
             }
@@ -1477,19 +1489,21 @@
             const tabs = ['dashboard', 'settings'];
             tabs.forEach(t => {
                 let sec = document.getElementById(`section-${t}`);
-                let tab = document.getElementById(`tab-${t}`);
-                if(sec && tab) {
+                let tabBtn = document.getElementById(`btn-tab-${t}`);
+                if(sec && tabBtn) {
                     sec.classList.add('hidden');
-                    tab.classList.remove('bg-indigo-50', 'text-indigo-700');
-                    tab.classList.add('text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-50');
+                    tabBtn.className = "hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
                 }
             });
             const targetSec = document.getElementById(`section-${tabName}`);
-            const targetTab = document.getElementById(`tab-${tabName}`);
+            const targetTabBtn = document.getElementById(`btn-tab-${tabName}`);
             if(targetSec) targetSec.classList.remove('hidden');
-            if(targetTab) {
-                targetTab.classList.add('bg-indigo-50', 'text-indigo-700');
-                targetTab.classList.remove('text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-50');
+            if(targetTabBtn) {
+                targetTabBtn.className = "hidden bg-slate-100 border border-indigo-200 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
+            }
+            if (window.isAdminLoggedIn) {
+                window.toggleVisibility('btn-tab-dashboard', true, 'flex');
+                window.toggleVisibility('btn-tab-settings', true, 'flex');
             }
         };
 
@@ -2180,7 +2194,7 @@
             let thead = `
                 <thead>
                     <tr>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">${firstHeader}</th>
+                        <th rowspan="2" class="min-w-[130px] bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">${firstHeader}</th>
                         <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
                         <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode)</th>
                         <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center">Pending (Opcode)</th>
@@ -2217,7 +2231,7 @@
                 groupKeys.forEach((k) => {
                     let row = summary[k];
                     tbody += `<tr>`;
-                    tbody += `<td class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-50">${k}</td>`;
+                    tbody += `<td class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-50 text-[11px] break-words">${k}</td>`;
                     tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center">${row.Total.toLocaleString('id-ID')}</td>`;
 
                     if (warningOpcodes.length > 0) {
@@ -2238,7 +2252,7 @@
                 });
 
                 tbody += `<tr class="bg-slate-100">`;
-                tbody += `<td class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
+                tbody += `<td class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-2 border-t-2 border-slate-200 text-[10px]">TOTAL</td>`;
                 tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandTotal.toLocaleString('id-ID')}</td>`;
                 tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning.toLocaleString('id-ID')}</td>`;
                 tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center py-3">${grandPending.toLocaleString('id-ID')}</td>`;
@@ -2375,8 +2389,8 @@
             let thead = `
                 <thead>
                     <tr>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
+                        <th rowspan="2" class="min-w-[110px] bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
+                        <th rowspan="2" class="min-w-[100px] bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
                         <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
                         <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode < 92)</th>
                         <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center rounded-tr-xl">Pending (Opcode < 92)</th>
@@ -2422,11 +2436,11 @@
                 
                 if (!renderedMonthYears.has(my)) {
                     let rowspan = monthYearCounts[my];
-                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 whitespace-nowrap text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r-2 border-slate-200" style="vertical-align: middle !important; border-bottom: 2px solid #cbd5e1 !important;">${my}</td>`;
+                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r-2 border-slate-200 text-[10px] break-words" style="vertical-align: middle !important; border-bottom: 2px solid #cbd5e1 !important;">${my}</td>`;
                     renderedMonthYears.add(my);
                 }
 
-                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white" style="${borderStyle}">${rData.hub}</td>`;
+                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white text-[10px] break-words" style="${borderStyle}">${rData.hub}</td>`;
                 tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center" style="${borderStyle}">${rData.total.toLocaleString('id-ID')}</td>`;
                 
                 const renderCell = (val, colorClass) => {
@@ -2454,7 +2468,7 @@
             });
             
             tbody += `<tr class="bg-slate-100">`;
-            tbody += `<td colspan="2" class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-4 border-t-2 border-slate-200">TOTAL KESELURUHAN</td>`;
+            tbody += `<td colspan="2" class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-2 border-t-2 border-slate-200 text-[10px]">TOTAL</td>`;
             tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandFreezeTotal.toLocaleString('id-ID')}</td>`;
             tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning.toLocaleString('id-ID')}</td>`;
             tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandPending.toLocaleString('id-ID')}</td>`;

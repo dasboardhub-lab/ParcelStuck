@@ -807,7 +807,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Whitelist Opcode (Auto-Resolved)</label>
                             <textarea id="set-opcodes" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono font-medium" placeholder="Cth: 41, 90, 55"></textarea>
-                            <p class="text-[10px] leading-relaxed text-slate-400 mt-1.5 font-medium">Pisahkan dengan koma. Sistem memiliki *hardcode rule* mutlak untuk Opcode: 92, 603, 618, 21, 22, 207, 43.</p>
+                            <p class="text-[10px] leading-relaxed text-slate-400 mt-1.5 font-medium">Pisahkan dengan koma. Sistem memiliki aturan mutlak untuk Opcode: 92, 603, 618, 21, 22, 207, 43.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Filter Hub (Auto-Resolved Jika Tidak Cocok)</label>
@@ -837,6 +837,9 @@
                         </button>
                         <button onclick="window.resetOpcode92()" class="w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
                             <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Reset Opcode 92 ke Freeze
+                        </button>
+                        <button onclick="window.showBulkDeleteModal()" class="w-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm">
+                            <i data-lucide="trash" class="w-4 h-4"></i> Hapus AWB Massal
                         </button>
                     </div>
                 </div>
@@ -997,17 +1000,167 @@
         </div>
     </div>
 
+    <!-- CUSTOM MODAL HAPUS AWB MASSAL -->
+    <div id="bulk-delete-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative transform scale-95 transition-transform duration-300" id="bulk-delete-box">
+            <button onclick="window.hideBulkDeleteModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center border border-red-100 shadow-inner">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight">Hapus AWB Massal</h3>
+                    <p class="text-sm text-slate-500 font-medium">Masukkan daftar nomor resi yang ingin dihapus dari sistem.</p>
+                </div>
+            </div>
+            
+            <textarea id="bulk-delete-input" rows="8" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all font-mono whitespace-pre text-slate-700 shadow-inner" placeholder="Contoh:&#10;11003161720277&#10;11003418119166"></textarea>
+            
+            <div class="flex items-center justify-between mt-6 pt-5 border-t border-slate-100">
+                <p id="bulk-delete-status" class="text-xs font-bold text-slate-400"></p>
+                <button onclick="window.processBulkDelete()" id="btn-process-delete" class="bg-red-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-red-700 transition-all shadow-md shadow-red-200 text-sm flex items-center gap-2 hover:-translate-y-0.5">
+                    <i data-lucide="trash" class="w-4 h-4"></i> Eksekusi Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
-    <!-- Firebase SDK (ES Module) -->
+    <!-- Supabase SDK (ES Module) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { initializeFirestore, doc, setDoc, getDocs, collection, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const supabaseUrl = 'https://ktqgtutzgivxjwtdqcbw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0cWd0dXR6Z2l2eGp3dGRxY2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjU4NjcsImV4cCI6MjA5MDU0MTg2N30.VAg8ZCAb9pxluoU1hg6pqfPPr81N9DNH2qTIkcXgmYM';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        window.supabase = supabase; 
+
+        window.deleteBatchFromSupabase = async function(awbArray, progressCallback) {
+            let totalDeleted = 0;
+            let chunkSize = 500; 
+            
+            for (let i = 0; i < awbArray.length; i += chunkSize) {
+                const chunk = awbArray.slice(i, i + chunkSize);
+                const { error } = await supabase.from('parcel_data').delete().in('awb', chunk);
+                
+                if (error) {
+                    console.error(`Error delete batch ke-${(i/chunkSize) + 1}:`, error); 
+                } else {
+                    totalDeleted += chunk.length;
+                }
+                
+                if (progressCallback) progressCallback(totalDeleted, awbArray.length);
+            }
+            return totalDeleted;
+        };
+
+        window.showBulkDeleteModal = function() {
+            const modal = document.getElementById('bulk-delete-modal');
+            const box = document.getElementById('bulk-delete-box');
+            if (document.getElementById('bulk-delete-status')) document.getElementById('bulk-delete-status').textContent = '';
+            if (document.getElementById('bulk-delete-input')) document.getElementById('bulk-delete-input').value = '';
+            
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideBulkDeleteModal = function() {
+            const modal = document.getElementById('bulk-delete-modal');
+            const box = document.getElementById('bulk-delete-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.processBulkDelete = async function() {
+            if(!window.isAdminLoggedIn) return;
+            
+            const textInput = document.getElementById('bulk-delete-input').value;
+            if(!textInput.trim()) {
+                window.showToast('Kolom teks masih kosong.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btn-process-delete');
+            const statusText = document.getElementById('bulk-delete-status');
+            
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Memproses...`;
+            btn.disabled = true;
+            lucide.createIcons();
+
+            const awbRegex = /\b(\d{14})\b/g; 
+            const matches = [...textInput.matchAll(awbRegex)].map(m => m[1]);
+            const uniqueAwbs = [...new Set(matches)];
+            
+            let validAwbsToDelete = [];
+            
+            uniqueAwbs.forEach(awb => {
+                if (window.databaseMap[awb]) {
+                    validAwbsToDelete.push(awb);
+                }
+            });
+
+            if (uniqueAwbs.length === 0) {
+                statusText.innerText = "Tidak ditemukan nomor resi valid (14 digit) di teks.";
+                statusText.classList.replace('text-slate-400', 'text-rose-500');
+                btn.innerHTML = `<i data-lucide="trash" class="w-4 h-4"></i> Eksekusi Hapus`;
+                btn.disabled = false;
+                lucide.createIcons();
+            } else if (validAwbsToDelete.length === 0) {
+                statusText.innerText = `Ditemukan ${uniqueAwbs.length} resi, tetapi tidak ada di database.`;
+                statusText.classList.replace('text-slate-400', 'text-amber-500');
+                btn.innerHTML = `<i data-lucide="trash" class="w-4 h-4"></i> Eksekusi Hapus`;
+                btn.disabled = false;
+                lucide.createIcons();
+            } else {
+                window.hideBulkDeleteModal();
+                
+                const executeDelete = async () => {
+                    window.showUploadProgress("Menghapus Data", "Menghapus dari Supabase...");
+                    try {
+                        await window.deleteBatchFromSupabase(validAwbsToDelete, (current, total) => {
+                            window.updateUploadProgress(current, total, "Menghapus dari Supabase:");
+                        });
+                        
+                        validAwbsToDelete.forEach(awb => {
+                            delete window.databaseMap[awb];
+                        });
+                        
+                        window.updateDatabaseUI();
+                        window.finishUploadProgress(validAwbsToDelete.length, 0, "Data AWB berhasil dihapus secara permanen.");
+                    } catch(e) {
+                        window.finishUploadProgress(0, 0, "Gagal terhubung ke server.");
+                    }
+                    btn.innerHTML = `<i data-lucide="trash" class="w-4 h-4"></i> Eksekusi Hapus`;
+                    btn.disabled = false;
+                };
+
+                window.showConfirmModal("Konfirmasi Hapus", `Anda akan menghapus permanen ${validAwbsToDelete.length} resi dari sistem dan database. Lanjutkan?`, executeDelete);
+                
+                const oldCloseConfirm = window.closeConfirm;
+                window.closeConfirm = function() {
+                    btn.innerHTML = `<i data-lucide="trash" class="w-4 h-4"></i> Eksekusi Hapus`;
+                    btn.disabled = false;
+                    oldCloseConfirm();
+                    window.closeConfirm = oldCloseConfirm; 
+                }
+            }
+        };
 
         window.processBulkFeedback = async function() {
             if(!window.isAdminLoggedIn) return;
@@ -1080,12 +1233,12 @@
             } else {
                 window.hideBulkFeedbackModal();
                 setTimeout(async () => {
-                    window.showUploadProgress("Menyimpan Feedback", "Mentransfer data ke Cloud...");
+                    window.showUploadProgress("Menyimpan Feedback", "Mentransfer data ke Supabase...");
                     try {
-                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
-                            window.updateUploadProgress(current, total, "Menyimpan ke Database:");
+                        await window.saveBatchToSupabase(recordsToSave, (current, total) => {
+                            window.updateUploadProgress(current, total, "Menyimpan ke Supabase:");
                         });
-                        window.finishUploadProgress(updatedCount, skippedCount, "Feedback berhasil disimpan ke Cloud.");
+                        window.finishUploadProgress(updatedCount, skippedCount, "Feedback berhasil disimpan ke Supabase.");
                     } catch(e) {
                         window.finishUploadProgress(0, 0, "Gagal terhubung ke server.");
                     }
@@ -1094,38 +1247,6 @@
                 }, 350);
             }
         };
-
-        const firebaseConfigMain = {
-            apiKey: "AIzaSyDWzmwDrysLQ1dUO2-uY0j-KBaIIT4h5wg",
-            authDomain: "aging-hub.firebaseapp.com",
-            projectId: "aging-hub",
-            storageBucket: "aging-hub.firebasestorage.app",
-            messagingSenderId: "833661466757",
-            appId: "1:833661466757:web:b5b7828608f3b876a2d1ec",
-            measurementId: "G-JRFD5N4WKP"
-        };
-        let appMain, dbMain, authMain;
-        try {
-            appMain = initializeApp(firebaseConfigMain, "agingHub");
-            dbMain = initializeFirestore(appMain, { experimentalForceLongPolling: true });
-            authMain = getAuth(appMain);
-        } catch (e) { console.error("Firebase Main Error:", e); }
-
-        const firebaseConfigUpdate = {
-            apiKey: "AIzaSyAOATNS3eup_ysEXvlMEWoQgSasPTG1DF0",
-            authDomain: "data-awb.firebaseapp.com",
-            projectId: "data-awb",
-            storageBucket: "data-awb.firebasestorage.app",
-            messagingSenderId: "216263656910",
-            appId: "1:216263656910:web:38d6a40f4d8d3fda8dd79f",
-            measurementId: "G-TWM2ZP86CW"
-        };
-        let appUpdate, dbUpdate, authUpdate;
-        try {
-            appUpdate = initializeApp(firebaseConfigUpdate, "dataAwb");
-            dbUpdate = initializeFirestore(appUpdate, { experimentalForceLongPolling: true });
-            authUpdate = getAuth(appUpdate);
-        } catch (e) { console.error("Firebase Update Error:", e); }
 
         window.setDefaultDates = function() {
             const elStart = document.getElementById('filter-start');
@@ -1139,8 +1260,7 @@
             bootAttempt++;
             if ((typeof window.jQuery !== 'undefined' && 
                 typeof window.jQuery.fn.DataTable !== 'undefined' && 
-                typeof window.Chart !== 'undefined' && 
-                dbMain && dbUpdate) || bootAttempt > 30) { 
+                typeof window.Chart !== 'undefined') || bootAttempt > 30) { 
                 
                 clearInterval(bootstrapper);
                 try { lucide.createIcons(); } catch(e) {}
@@ -1210,31 +1330,56 @@
 
         async function fetchInitialData() {
             try {
-                try {
-                    await withTimeout(signInAnonymously(authMain), 15000);
-                    await withTimeout(signInAnonymously(authUpdate), 15000);
-                } catch (authErr) { console.warn("Anon Auth warn:", authErr.message); }
-
-                const settingsDoc = await withTimeout(getDoc(doc(dbMain, "settings", "admin")), 15000);
-                if (settingsDoc.exists()) window.appSettings = settingsDoc.data();
+                const { data: settingsData, error: settingsError } = await withTimeout(supabase.from('settings').select('data').eq('id', 'admin').single(), 15000);
+                
+                if (settingsData && settingsData.data) {
+                    window.appSettings = settingsData.data;
+                }
                 
                 const elOp = document.getElementById('set-opcodes');
                 if (elOp) elOp.value = window.appSettings.opcodes || '';
                 const elHub = document.getElementById('set-hubs');
                 if (elHub) elHub.value = window.appSettings.hubs || '';
 
-                const querySnapshot = await withTimeout(getDocs(collection(dbMain, "parcel_data")), 60000);
+                let allParcels = [];
+                let fetchMore = true;
+                let from = 0;
+                const step = 1000;
+
+                while (fetchMore) {
+                    const { data, error } = await withTimeout(
+                        supabase.from('parcel_data').select('data').range(from, from + step - 1), 
+                        15000
+                    );
+                    
+                    if (error) throw error;
+                    
+                    if (data && data.length > 0) {
+                        allParcels = allParcels.concat(data);
+                        from += step;
+                        if (data.length < step) fetchMore = false;
+                    } else {
+                        fetchMore = false;
+                    }
+                }
+
                 window.databaseMap = {};
-                querySnapshot.forEach((docSnap) => { window.databaseMap[docSnap.id] = docSnap.data(); });
+                if (allParcels.length > 0) {
+                    allParcels.forEach((row) => { 
+                        if (row.data && row.data.AWB) {
+                            window.databaseMap[row.data.AWB] = row.data; 
+                        }
+                    });
+                }
                 
                 window.updateDatabaseUI();
                 
                 const loader = document.getElementById('global-loader');
                 if(loader) loader.classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => window.showToast('Sistem tersinkronisasi dengan Cloud.', 'success'), 500);
+                setTimeout(() => window.showToast('Sistem tersinkronisasi dengan Supabase.', 'success'), 500);
                 
             } catch (error) {
-                console.error("Gagal memuat data Firebase:", error);
+                console.error("Gagal memuat data Supabase:", error);
                 window.toggleVisibility('offline-badge', true);
                 const icon = document.getElementById('loader-icon');
                 if(icon) {
@@ -1247,60 +1392,60 @@
                 const lTitle = document.getElementById('loader-title');
                 if(lTitle) lTitle.classList.replace('text-slate-800', 'text-rose-600');
                 const lDesc = document.getElementById('loader-desc');
-                if(lDesc) lDesc.innerHTML = `Gagal terhubung ke Cloud Database. Silakan periksa koneksi internet atau aturan Firebase (Rules) Anda.`;
+                if(lDesc) lDesc.innerHTML = `Gagal terhubung ke Supabase. Silakan periksa koneksi internet atau URL Anda.`;
                 window.setText('loader-error-msg', String(error.message));
                 window.toggleVisibility('loader-error-box', true);
             }
         }
 
-        window.saveBatchToFirebase = async function(recordsArray, progressCallback) {
-            const colRef = collection(dbMain, "parcel_data");
+        window.saveBatchToSupabase = async function(recordsArray, progressCallback) {
             let totalSaved = 0;
-            let chunkSize = 490;
+            let chunkSize = 500; 
             
             for (let i = 0; i < recordsArray.length; i += chunkSize) {
                 const chunk = recordsArray.slice(i, i + chunkSize);
-                let batch = writeBatch(dbMain);
                 
-                chunk.forEach(row => {
-                    if (row.AWB) {
-                        batch.set(doc(colRef, row.AWB), row);
-                    }
-                });
+                const mappedChunk = chunk.map(row => ({
+                    awb: row.AWB,
+                    data: row
+                }));
                 
-                try {
-                    await batch.commit();
+                const { error } = await supabase.from('parcel_data').upsert(mappedChunk, { onConflict: 'awb' });
+                
+                if (error) {
+                    console.error(`Error upsert batch ke-${(i/chunkSize) + 1}:`, error); 
+                } else {
                     totalSaved += chunk.length;
-                    if (progressCallback) progressCallback(totalSaved, recordsArray.length);
-                } catch (e) { 
-                    console.error(`Error pada batch ke-${(i/chunkSize) + 1}:`, e); 
                 }
+                
+                if (progressCallback) progressCallback(totalSaved, recordsArray.length);
             }
             return totalSaved;
         };
 
-        window.saveUpdateToFirebaseSecondary = async function(updateData, progressCallback) {
-            const colRef = collection(dbUpdate, "update_history_" + new Date().toISOString().split('T')[0]);
+        window.saveUpdateToSupabase = async function(updateData, progressCallback) {
             let totalSaved = 0;
-            let chunkSize = 490;
+            let chunkSize = 500;
+            let batchDate = new Date().toISOString().split('T')[0];
             
             for (let i = 0; i < updateData.length; i += chunkSize) {
                 const chunk = updateData.slice(i, i + chunkSize);
-                let batch = writeBatch(dbUpdate);
                 
-                chunk.forEach(row => {
-                    if (row.awb_no) {
-                        batch.set(doc(colRef, row.awb_no), row);
-                    }
-                });
+                const mappedChunk = chunk.map(row => ({
+                    awb: row.awb_no,
+                    batch_date: batchDate,
+                    data: row
+                }));
                 
-                try {
-                    await batch.commit();
+                const { error } = await supabase.from('update_history').insert(mappedChunk);
+                
+                if (error) {
+                    console.error(`Error history insert batch ke-${(i/chunkSize) + 1}:`, error); 
+                } else {
                     totalSaved += chunk.length;
-                    if (progressCallback) progressCallback(totalSaved, updateData.length);
-                } catch (e) { 
-                    console.error(`Error history pada batch ke-${(i/chunkSize) + 1}:`, e); 
                 }
+                
+                if (progressCallback) progressCallback(totalSaved, updateData.length);
             }
             return totalSaved;
         };
@@ -1418,8 +1563,11 @@
                 window.appSettings.opcodes = opcodes;
                 window.appSettings.hubs = hubs;
                 
-                try { await setDoc(doc(dbMain, "settings", "admin"), window.appSettings); } 
-                catch (error) { console.warn("Gagal save config:", error); }
+                try {
+                    await supabase.from('settings').upsert({ id: 'admin', data: window.appSettings });
+                } catch (error) { 
+                    console.warn("Gagal save config Supabase:", error); 
+                }
                 
                 let updatedCount = 0;
                 let recordsToSave = []; 
@@ -1445,8 +1593,8 @@
                 
                 if (recordsToSave.length > 0) {
                     window.showUploadProgress("Menerapkan Aturan", "Menyimpan perubahan status massal...");
-                    await window.saveBatchToFirebase(recordsToSave, (current, total) => {
-                        window.updateUploadProgress(current, total, "Penyimpanan Database:");
+                    await window.saveBatchToSupabase(recordsToSave, (current, total) => {
+                        window.updateUploadProgress(current, total, "Penyimpanan Supabase:");
                     });
                     window.finishUploadProgress(updatedCount, 0, "Konfigurasi dan pemulihan data berhasil disimpan.");
                 } else {
@@ -1479,8 +1627,8 @@
                     });
 
                     if (recordsToSave.length > 0) {
-                        window.showUploadProgress("Menghapus Feedback", "Menyinkronkan perubahan ke Cloud...");
-                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                        window.showUploadProgress("Menghapus Feedback", "Menyinkronkan perubahan ke Supabase...");
+                        await window.saveBatchToSupabase(recordsToSave, (current, total) => {
                             window.updateUploadProgress(current, total, "Memproses Data:");
                         });
                         window.updateDatabaseUI();
@@ -1515,7 +1663,7 @@
 
                     if (recordsToSave.length > 0) {
                         window.showUploadProgress("Mereset Data", "Menarik data kembali ke Freeze...");
-                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                        await window.saveBatchToSupabase(recordsToSave, (current, total) => {
                             window.updateUploadProgress(current, total, "Memproses Data:");
                         });
                         window.updateDatabaseUI();
@@ -1614,10 +1762,10 @@
             });
 
             if (recordsToSave.length > 1) {
-                window.showUploadProgress("Menyimpan Data", "Menyinkronkan ke Cloud...");
+                window.showUploadProgress("Menyimpan Data", "Menyinkronkan ke Supabase...");
             }
 
-            await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+            await window.saveBatchToSupabase(recordsToSave, (current, total) => {
                 if (recordsToSave.length > 1) window.updateUploadProgress(current, total, "Menyimpan:");
             });
 
@@ -1673,9 +1821,9 @@
                     if (hubContainer) hubContainer.innerHTML = '';
                     
                     if (recordsToSave.length > 0) {
-                        window.updateUploadProgress(0, recordsToSave.length, "Menyimpan ke Cloud:");
-                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
-                            window.updateUploadProgress(current, total, "Menyimpan ke Cloud:");
+                        window.updateUploadProgress(0, recordsToSave.length, "Menyimpan ke Supabase:");
+                        await window.saveBatchToSupabase(recordsToSave, (current, total) => {
+                            window.updateUploadProgress(current, total, "Menyimpan ke Supabase:");
                         });
                     }
 
@@ -1744,14 +1892,14 @@
 
                     if (tempUpdateData.length > 0) {
                         window.updateUploadProgress(0, tempUpdateData.length, "Backup Riwayat Data:");
-                        await window.saveUpdateToFirebaseSecondary(tempUpdateData, (current, total) => {
+                        await window.saveUpdateToSupabase(tempUpdateData, (current, total) => {
                              window.updateUploadProgress(current, total, "Backup Riwayat Data:");
                         });
                     }
                     
                     if (recordsToSave.length > 0) {
                         window.updateUploadProgress(0, recordsToSave.length, "Update Database Utama:");
-                        await window.saveBatchToFirebase(recordsToSave, (current, total) => {
+                        await window.saveBatchToSupabase(recordsToSave, (current, total) => {
                             window.updateUploadProgress(current, total, "Update Database Utama:");
                         });
                     }
@@ -2108,8 +2256,29 @@
             let section = document.getElementById('freeze-summary-section');
             let table = document.getElementById('freezeSummaryTable');
             
+            if(section) {
+                section.classList.remove('hidden');
+                section.classList.add('flex');
+            }
+
+            let emptyThead = `
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
+                        <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
+                        <th colspan="1" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode < 92)</th>
+                        <th colspan="1" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center rounded-tr-xl">Pending (Opcode < 92)</th>
+                    </tr>
+                    <tr>
+                        <th class="bg-white text-[10px] text-rose-600 border-l border-slate-100 text-center">-</th>
+                        <th class="bg-white text-[10px] text-orange-600 border-l border-slate-100 text-center">-</th>
+                    </tr>
+                </thead>
+            `;
+            
             if(freezeData.length === 0) {
-                if(section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-8 text-center rounded-b-xl">Tidak ada data resi Freeze</td></tr></tbody>`;
                 return;
             }
             
@@ -2175,10 +2344,8 @@
             });
 
             if (!hasValidData) {
-                if(section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-8 text-center rounded-b-xl">Belum ada kelengkapan data Opcode &lt; 92</td></tr></tbody>`;
                 return;
-            } else {
-                if(section) { section.classList.remove('hidden'); section.classList.add('flex'); }
             }
 
             let sortedWarningOpcodes = Array.from(warningOpcodes).sort();

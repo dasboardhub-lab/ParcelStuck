@@ -2694,7 +2694,11 @@
                     let uniqueOpcodes = new Set();
                     dbArray.forEach(row => {
                         let op = (row['Update Opcode'] || '').toString().trim();
-                        if (op) uniqueOpcodes.add(op);
+                        if (row._ui_status === 'Freeze') {
+                            let last92 = (row['Last Before 92'] || '').toString().trim();
+                            if (last92 && last92 !== '-') op = last92;
+                        }
+                        if (op && op !== '-') uniqueOpcodes.add(op);
                     });
 
                     let currentHtml = '';
@@ -2733,6 +2737,10 @@
 
                     if (window.selectedOpcodes.length > 0 && window.selectedOpcodes[0] !== 'NONE_SELECTED') {
                         let rowOpcode = (row['Update Opcode'] || '').toString().trim();
+                        if (row._ui_status === 'Freeze') {
+                            let last92 = (row['Last Before 92'] || '').toString().trim();
+                            if (last92 && last92 !== '-') rowOpcode = last92;
+                        }
                         if (!window.selectedOpcodes.includes(rowOpcode)) match = false;
                     } else if (window.selectedOpcodes.length === 1 && window.selectedOpcodes[0] === 'NONE_SELECTED') {
                         match = false; 

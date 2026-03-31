@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Hub - Parcel Stuck</title>
+    <title>Parcel Stuck</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -362,16 +362,29 @@
         };
 
         window.selectedHubs = [];
+        window.selectedOpcodes = [];
+
         window.toggleHubDropdown = function() {
             const dropdown = document.getElementById('hub-dropdown');
             if (dropdown) dropdown.classList.toggle('hidden');
         };
+
+        window.toggleOpcodeDropdown = function() {
+            const dropdown = document.getElementById('opcode-dropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        };
         
         document.addEventListener('click', function(e) {
-            const container = document.getElementById('hub-select-btn');
-            const dropdown = document.getElementById('hub-dropdown');
-            if (container && dropdown && !container.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
+            const hubContainer = document.getElementById('hub-select-btn');
+            const hubDropdown = document.getElementById('hub-dropdown');
+            if (hubContainer && hubDropdown && !hubContainer.contains(e.target) && !hubDropdown.contains(e.target)) {
+                hubDropdown.classList.add('hidden');
+            }
+
+            const opContainer = document.getElementById('opcode-select-btn');
+            const opDropdown = document.getElementById('opcode-dropdown');
+            if (opContainer && opDropdown && !opContainer.contains(e.target) && !opDropdown.contains(e.target)) {
+                opDropdown.classList.add('hidden');
             }
         });
         
@@ -415,6 +428,48 @@
             }
             if(typeof window.applyFilters === 'function') window.applyFilters();
         };
+
+        window.toggleAllOpcodes = function(checkbox) {
+            const checkboxes = document.querySelectorAll('.opcode-item-check');
+            if (checkbox.checked) {
+                checkboxes.forEach(cb => cb.checked = true);
+                window.selectedOpcodes = []; 
+                window.setText('opcode-selector-text', 'Semua Opcode');
+            } else {
+                checkboxes.forEach(cb => cb.checked = false);
+                window.selectedOpcodes = ['NONE_SELECTED']; 
+                window.setText('opcode-selector-text', '0 Opcode');
+            }
+            if(typeof window.applyFilters === 'function') window.applyFilters();
+        };
+
+        window.toggleSingleOpcode = function(val, checkbox) {
+            const allCheck = document.getElementById('opcode-all-check');
+            window.selectedOpcodes = [];
+            let allChecked = true;
+            let anyChecked = false;
+            
+            document.querySelectorAll('.opcode-item-check').forEach(cb => {
+                if (cb.checked) { window.selectedOpcodes.push(cb.value); anyChecked = true; } 
+                else { allChecked = false; }
+            });
+
+            if(allCheck) allCheck.checked = allChecked;
+
+            if (allChecked) {
+                window.selectedOpcodes = [];
+                window.setText('opcode-selector-text', 'Semua Opcode');
+            } else if (!anyChecked) {
+                window.selectedOpcodes = ['NONE_SELECTED'];
+                window.setText('opcode-selector-text', '0 Opcode');
+            } else {
+                let txt = window.selectedOpcodes.join(', ');
+                if (txt.length > 15) txt = window.selectedOpcodes.length + ' Opcode';
+                window.setText('opcode-selector-text', txt);
+            }
+            if(typeof window.applyFilters === 'function') window.applyFilters();
+        };
+
     </script>
 </head>
 <body class="text-slate-800 relative pb-12 w-full min-h-screen">
@@ -460,7 +515,7 @@
                     <i data-lucide="eye" class="w-4 h-4"></i> Publik
                 </div>
 
-                <!-- Admin Tab & Tools (Pindah ke sini) -->
+                <!-- Admin Tab & Tools -->
                 <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-slate-100 border border-indigo-200 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
                 </button>
@@ -498,35 +553,61 @@
         <!-- SECTION: DASHBOARD -->
         <div id="section-dashboard" class="block space-y-6">
             
-            <!-- ROW 1: Smart Filters Section (Sleek Toolbar 1 Baris) -->
+            <!-- ROW 1: Smart Filters Section (Sleek Toolbar) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 relative z-30">
-                <div class="flex flex-col lg:flex-row items-center gap-4">
+                <div class="flex flex-col lg:flex-row items-start lg:items-end gap-4">
                     
                     <!-- Title & Mobile Reset -->
-                    <div class="flex items-center justify-between w-full lg:w-auto lg:hidden">
+                    <div class="flex items-center justify-between w-full lg:w-auto lg:hidden mb-2">
                         <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2 tracking-tight">
                             <div class="p-1.5 bg-indigo-50 rounded-lg text-indigo-600"><i data-lucide="filter" class="w-4 h-4"></i></div>
                             Filter Data
                         </h4>
-                        <button onclick="window.resetFilters()" class="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">Reset</button>
+                        <button onclick="window.resetFilters()" class="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset</button>
                     </div>
 
                     <!-- Global Search Box -->
-                    <div class="flex-1 w-full relative group">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2 group-focus-within:text-indigo-500 transition-colors"></i>
-                        <input type="text" id="filter-search" oninput="window.applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 font-semibold placeholder:text-slate-400" placeholder="Cari Resi, Opcode, atau Item...">
+                    <div class="flex-1 w-full flex flex-col gap-1.5">
+                        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest pl-1">Pencarian Global</label>
+                        <div class="relative group">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2 group-focus-within:text-indigo-500 transition-colors"></i>
+                            <input type="text" id="filter-search" oninput="window.applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 font-semibold placeholder:text-slate-400 h-[42px]" placeholder="Cari Resi atau Item...">
+                        </div>
                     </div>
 
                     <!-- Filter Rentang Tanggal -->
-                    <div class="w-full lg:w-auto flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all h-[42px]">
-                        <i data-lucide="calendar" class="w-4 h-4 text-slate-400 ml-1.5 mr-1"></i>
-                        <input type="date" id="filter-start" onchange="window.applyFilters()" class="bg-transparent border-none outline-none text-xs py-1 flex-1 text-slate-700 font-bold text-center w-full cursor-pointer">
-                        <span class="text-slate-300 font-black px-1">-</span>
-                        <input type="date" id="filter-end" onchange="window.applyFilters()" class="bg-transparent border-none outline-none text-xs py-1 flex-1 text-slate-700 font-bold text-center w-full cursor-pointer pr-1">
+                    <div class="w-full lg:w-auto flex flex-col gap-1.5">
+                        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest pl-1">Rentang Tanggal</label>
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all h-[42px]">
+                            <i data-lucide="calendar" class="w-4 h-4 text-slate-400 ml-1.5 mr-1"></i>
+                            <input type="date" id="filter-start" onchange="window.applyFilters()" class="bg-transparent border-none outline-none text-xs py-1 flex-1 text-slate-700 font-bold text-center w-full cursor-pointer">
+                            <span class="text-slate-300 font-black px-1">-</span>
+                            <input type="date" id="filter-end" onchange="window.applyFilters()" class="bg-transparent border-none outline-none text-xs py-1 flex-1 text-slate-700 font-bold text-center w-full cursor-pointer pr-1">
+                        </div>
+                    </div>
+
+                    <!-- Filter Opcode (Multi-Select) -->
+                    <div class="w-full lg:w-36 flex flex-col gap-1.5 relative z-[60]">
+                        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest pl-1">Opcode</label>
+                        <div id="opcode-select-btn" onclick="window.toggleOpcodeDropdown()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm cursor-pointer flex justify-between items-center font-bold text-slate-700 hover:bg-slate-100 transition-colors h-[42px]">
+                            <span id="opcode-selector-text" class="truncate pr-2">Semua Opcode</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+                        </div>
+                        <div id="opcode-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl hidden p-2 dropdown-menu z-[100]">
+                            <div class="px-2 py-1 mb-1">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="opcode-all-check" checked onchange="window.toggleAllOpcodes(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-bold text-slate-800 group-hover:text-indigo-600">Semua Opcode</span>
+                                </label>
+                            </div>
+                            <hr class="border-slate-100 my-1">
+                            <div id="opcode-options-container" class="space-y-1"></div>
+                        </div>
                     </div>
                     
                     <!-- Custom Multi-Select Hub -->
-                    <div class="w-full lg:w-48 relative z-50">
+                    <div class="w-full lg:w-44 flex flex-col gap-1.5 relative z-50">
+                        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest pl-1">Pilih HUB</label>
                         <div id="hub-select-btn" onclick="window.toggleHubDropdown()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm cursor-pointer flex justify-between items-center font-bold text-slate-700 hover:bg-slate-100 transition-colors h-[42px]">
                             <span id="hub-selector-text" class="truncate pr-2">Semua Hub</span>
                             <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
@@ -544,21 +625,25 @@
                     </div>
 
                     <!-- Filter Status -->
-                    <div class="w-full lg:w-48 relative">
-                        <select id="filter-status" onchange="window.applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 font-bold appearance-none cursor-pointer h-[42px]">
-                            <option value="">Semua Kategori</option>
-                            <option value="Warning">Warning</option>
-                            <option value="Stuck">Pendingan</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Freeze">Freeze</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    <div class="w-full lg:w-36 flex flex-col gap-1.5">
+                        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest pl-1">Status Resi</label>
+                        <div class="relative">
+                            <select id="filter-status" onchange="window.applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 font-bold appearance-none cursor-pointer h-[42px]">
+                                <option value="">Semua</option>
+                                <option value="Warning">Warning</option>
+                                <option value="Stuck">Pendingan</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Freeze">Freeze</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Reset Button Desktop -->
-                    <div class="hidden lg:block">
+                    <div class="hidden lg:flex flex-col gap-1.5">
+                        <label class="text-[10px] font-extrabold text-transparent uppercase tracking-widest select-none pb-0.5">R</label>
                         <button onclick="window.resetFilters()" title="Reset Filter" class="flex items-center justify-center w-[42px] h-[42px] bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-xl transition-all shadow-sm">
                             <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                         </button>
@@ -1602,6 +1687,8 @@
                 
                 const hubContainer = document.getElementById('hub-options-container');
                 if (hubContainer) hubContainer.innerHTML = '';
+                const opContainer = document.getElementById('opcode-options-container');
+                if (opContainer) opContainer.innerHTML = '';
 
                 window.updateDatabaseUI();
                 
@@ -1833,6 +1920,8 @@
 
                     const hubContainer = document.getElementById('hub-options-container');
                     if (hubContainer) hubContainer.innerHTML = '';
+                    const opContainer = document.getElementById('opcode-options-container');
+                    if (opContainer) opContainer.innerHTML = '';
                     
                     if (recordsToSave.length > 0) {
                         window.updateUploadProgress(0, recordsToSave.length, "Menyimpan ke Supabase:");
@@ -1903,6 +1992,8 @@
 
                     const hubContainer = document.getElementById('hub-options-container');
                     if (hubContainer) hubContainer.innerHTML = '';
+                    const opContainer = document.getElementById('opcode-options-container');
+                    if (opContainer) opContainer.innerHTML = '';
 
                     if (tempUpdateData.length > 0) {
                         window.updateUploadProgress(0, tempUpdateData.length, "Backup Riwayat Data:");
@@ -1941,6 +2032,12 @@
             if(allCheck) allCheck.checked = true;
             window.selectedHubs = [];
             window.setText('hub-selector-text', 'Semua Hub');
+
+            document.querySelectorAll('.opcode-item-check').forEach(cb => cb.checked = true);
+            const allOpCheck = document.getElementById('opcode-all-check');
+            if(allOpCheck) allOpCheck.checked = true;
+            window.selectedOpcodes = [];
+            window.setText('opcode-selector-text', 'Semua Opcode');
             
             window.updateDatabaseUI();
             window.showToast("Semua filter telah di-reset.", "info");
@@ -2592,6 +2689,34 @@
                     hubContainer.innerHTML = currentHtml;
                 }
 
+                const opcodeContainer = document.getElementById('opcode-options-container');
+                if (opcodeContainer && opcodeContainer.innerHTML.trim() === '') {
+                    let uniqueOpcodes = new Set();
+                    dbArray.forEach(row => {
+                        let op = (row['Update Opcode'] || '').toString().trim();
+                        if (op) uniqueOpcodes.add(op);
+                    });
+
+                    let currentHtml = '';
+                    Array.from(uniqueOpcodes).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(op => {
+                        let isChecked = window.selectedOpcodes.length === 0 || window.selectedOpcodes.includes(op) ? 'checked' : '';
+                        if(window.selectedOpcodes.length === 1 && window.selectedOpcodes[0] === 'NONE_SELECTED') isChecked = '';
+                        
+                        currentHtml += `
+                            <label class="flex items-center gap-3 px-2 py-1.5 cursor-pointer hover:bg-slate-50 rounded-lg group">
+                                <input type="checkbox" value="${op}" ${isChecked} onchange="window.toggleSingleOpcode('${op}', this)" class="opcode-item-check w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-xs font-bold text-slate-700 group-hover:text-indigo-600">${op}</span>
+                            </label>
+                        `;
+                    });
+
+                    if(currentHtml === '') {
+                        currentHtml = `<p class="text-[10px] text-slate-400 px-2 italic">Data opcode kosong.</p>`;
+                    }
+                    
+                    opcodeContainer.innerHTML = currentHtml;
+                }
+
                 let fSearch = ""; let fStart = ""; let fEnd = ""; let fStatus = "";
                 if(document.getElementById('filter-search')) fSearch = document.getElementById('filter-search').value.toLowerCase().trim();
                 if(document.getElementById('filter-start')) fStart = document.getElementById('filter-start').value;
@@ -2604,6 +2729,13 @@
                     if (fSearch) {
                         let rowValuesStr = Object.values(row).join(' ').toLowerCase();
                         if (!rowValuesStr.includes(fSearch)) match = false;
+                    }
+
+                    if (window.selectedOpcodes.length > 0 && window.selectedOpcodes[0] !== 'NONE_SELECTED') {
+                        let rowOpcode = (row['Update Opcode'] || '').toString().trim();
+                        if (!window.selectedOpcodes.includes(rowOpcode)) match = false;
+                    } else if (window.selectedOpcodes.length === 1 && window.selectedOpcodes[0] === 'NONE_SELECTED') {
+                        match = false; 
                     }
 
                     if (fStart || fEnd) {
@@ -2683,7 +2815,7 @@
             let isResolved = tableType === 'resolved';
 
             columns.push({
-                title: "Tindakan",
+                title: `<div class="flex items-center justify-center gap-1.5"><i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i> Tindakan</div>`,
                 data: null,
                 orderable: false,
                 width: "10%", 

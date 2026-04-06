@@ -779,14 +779,8 @@
                                     <button onclick="window.commitChanges()" id="btn-save-changes" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-2 px-4 rounded-xl transition-all items-center gap-2 text-xs shadow-sm shadow-indigo-200">
                                         <i data-lucide="save" class="w-4 h-4"></i> Simpan
                                     </button>
-                                    <button onclick="window.copyAWBWarnPend()" id="btn-copy-awb-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                        <i data-lucide="list" class="w-4 h-4"></i> AWB
-                                    </button>
-                                    <button onclick="window.copyDataWarnPend()" id="btn-copy-data-wp" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                        <i data-lucide="copy" class="w-4 h-4"></i> Data
-                                    </button>
-                                    <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
-                                        <i data-lucide="copy" class="w-4 h-4"></i> AWB
+                                    <button onclick="window.showCopyModal()" id="btn-copy-custom" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> Salin Data
                                     </button>
                                     <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
                                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel
@@ -1092,6 +1086,62 @@
             <button onclick="window.executeExportExcel()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-200 text-sm flex items-center justify-center gap-2">
                 <i data-lucide="download" class="w-4 h-4"></i> Buat Excel
             </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL SALIN DATA -->
+    <div id="copy-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300" id="copy-box">
+            <button onclick="window.hideCopyModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-inner">
+                    <i data-lucide="copy" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight">Salin Data</h3>
+                    <p class="text-sm text-slate-500 font-medium">Sesuaikan format dan sumber data.</p>
+                </div>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2.5">Pilih Tabel Sumber</p>
+                    <div class="grid grid-cols-2 gap-2.5 text-sm font-bold text-slate-700">
+                        <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="cp-tab-warning" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" checked> Warning
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="cp-tab-pending" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" checked> Pending
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="cp-tab-resolved" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"> Resolved
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="checkbox" id="cp-tab-freeze" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"> Freeze
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2.5">Pilih Kolom Data</p>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm font-bold text-slate-700 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Hub" checked> Hub</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="AWB" checked> No. Resi</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Last Scan" checked> Last Scan</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Opcode" checked> Opcode</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Item" checked> Item</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Feedback" checked> Feedback</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-5 border-t border-slate-100">
+                <button onclick="window.executeCustomCopy()" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Salin ke Clipboard
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1614,21 +1664,6 @@
                 activeContainer.classList.add('block');
             }
 
-            let btnCopyAwbWp = document.getElementById('btn-copy-awb-wp');
-            let btnCopyDataWp = document.getElementById('btn-copy-data-wp');
-            let btnCopyFreeze = document.getElementById('btn-copy-freeze');
-            
-            if(btnCopyAwbWp) { btnCopyAwbWp.classList.add('hidden'); btnCopyAwbWp.classList.remove('flex'); }
-            if(btnCopyDataWp) { btnCopyDataWp.classList.add('hidden'); btnCopyDataWp.classList.remove('flex'); }
-            if(btnCopyFreeze) { btnCopyFreeze.classList.add('hidden'); btnCopyFreeze.classList.remove('flex'); }
-
-            if (tableName === 'warning' || tableName === 'stuck') {
-                if(btnCopyAwbWp) { btnCopyAwbWp.classList.remove('hidden'); btnCopyAwbWp.classList.add('flex'); }
-                if(btnCopyDataWp) { btnCopyDataWp.classList.remove('hidden'); btnCopyDataWp.classList.add('flex'); }
-            } else if (tableName === 'freeze') {
-                if(btnCopyFreeze) { btnCopyFreeze.classList.remove('hidden'); btnCopyFreeze.classList.add('flex'); }
-            }
-
             if(activeBtn) {
                 let activeSpan = activeBtn.querySelector(`span#count-${tableName}`);
                 if (tableName === 'warning') {
@@ -2043,6 +2078,97 @@
             window.showToast("Semua filter telah di-reset.", "info");
         };
 
+        window.showCopyModal = function() {
+            const modal = document.getElementById('copy-modal');
+            const box = document.getElementById('copy-box');
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideCopyModal = function() {
+            const modal = document.getElementById('copy-modal');
+            const box = document.getElementById('copy-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.executeCustomCopy = function() {
+            const tabs = [];
+            if(document.getElementById('cp-tab-warning').checked) tabs.push({id: 'warning', name: 'WARNING', dt: window.dtWarning});
+            if(document.getElementById('cp-tab-pending').checked) tabs.push({id: 'stuck', name: 'PENDING', dt: window.dtStuck});
+            if(document.getElementById('cp-tab-resolved').checked) tabs.push({id: 'resolved', name: 'RESOLVED', dt: window.dtResolved});
+            if(document.getElementById('cp-tab-freeze').checked) tabs.push({id: 'freeze', name: 'FREEZE', dt: window.dtFreeze});
+
+            const cols = Array.from(document.querySelectorAll('.cp-col-chk:checked')).map(cb => cb.value);
+            
+            if (tabs.length === 0) return window.showToast("Pilih minimal satu tabel.", "warning");
+            if (cols.length === 0) return window.showToast("Pilih minimal satu kolom.", "warning");
+
+            let textToCopy = "";
+            let totalCopied = 0;
+
+            tabs.forEach(tab => {
+                if (!tab.dt) return;
+                let rows = tab.dt.rows({ search: 'applied' }).data().toArray();
+                
+                if (rows.length > 0) {
+                    textToCopy += `> ${tab.name}\n`;
+                    
+                    rows.forEach(row => {
+                        let rowMain = [];
+                        let itemText = "";
+                        
+                        cols.forEach(col => {
+                            let val = "";
+                            if (col === 'Hub') {
+                                val = (row['hub_operator_internal'] || '-').toString().trim();
+                                if (tab.id === 'freeze') {
+                                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                                    if (hubDel) val = hubDel;
+                                }
+                                rowMain.push(val);
+                            } else if (col === 'AWB') {
+                                val = row['AWB'] || '-';
+                                rowMain.push(val);
+                            } else if (col === 'Last Scan') {
+                                val = window.formatStandardDate(row['Last Scan']);
+                                rowMain.push(val);
+                            } else if (col === 'Opcode') {
+                                val = row['Update Opcode'] || '-';
+                                rowMain.push(val);
+                            } else if (col === 'Item') {
+                                itemText = row['item_name'] || '-';
+                            } else if (col === 'Feedback') {
+                                val = row['Feedback'] || '-';
+                                rowMain.push(val);
+                            }
+                        });
+                        
+                        if (rowMain.length > 0) textToCopy += rowMain.join('\t') + '\n';
+                        if (itemText) textToCopy += itemText + '\n';
+                        
+                        totalCopied++;
+                    });
+                    textToCopy += '\n';
+                }
+            });
+
+            if (totalCopied === 0) {
+                return window.showToast("Tidak ada data untuk disalin pada tabel terpilih.", "warning");
+            }
+
+            window.copyToClipboard(textToCopy.trim(), `Berhasil menyalin ${totalCopied} baris data!`);
+            window.hideCopyModal();
+        };
+
         window.copyToClipboard = function(text, successMsg) {
             if (!text || text.trim() === "") {
                 window.showToast("Tidak ada data untuk disalin.", "warning");
@@ -2060,120 +2186,6 @@
                 window.showToast("Browser memblokir aksi salin otomatis.", "error"); 
             }
             document.body.removeChild(textArea);
-        };
-
-        window.formatGroupedData = function(rows) {
-            if (rows.length === 0) return "(Tidak ada data)\n";
-            let groupedData = {};
-
-            rows.forEach(row => {
-                let rawDate = row['Last Scan'];
-                let dateObj = window.parseCustomDate(rawDate);
-                
-                let timestamp = dateObj ? dateObj.getTime() : 0; 
-                let formattedDate = window.formatStandardDate(rawDate);
-
-                if (!groupedData[timestamp]) {
-                    groupedData[timestamp] = {
-                        dateLabel: formattedDate,
-                        items: []
-                    };
-                }
-                
-                groupedData[timestamp].items.push({
-                    awb: row['AWB'] || '',
-                    opcode: row['Update Opcode'] || '-',
-                    feedback: row['Feedback'] || '-'
-                });
-            });
-
-            let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
-            let resultText = "";
-
-            sortedTimestamps.forEach(ts => {
-                let group = groupedData[ts];
-                resultText += `${group.dateLabel}\n`;
-                group.items.forEach(item => {
-                    resultText += `${item.awb}\t${item.opcode}\t${item.feedback}\n`;
-                });
-                resultText += `\n`; 
-            });
-
-            return resultText;
-        };
-
-        window.copyAWBWarnPend = function() {
-            if (!window.dtWarning || !window.dtStuck) return;
-            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
-            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
-
-            let textToCopy = "> warning\n";
-            if (rowsWarn.length === 0) textToCopy += "-\n";
-            rowsWarn.forEach(row => { textToCopy += `${row['AWB']}\n`; });
-            
-            textToCopy += "\n> pending\n";
-            if (rowsStuck.length === 0) textToCopy += "-\n";
-            rowsStuck.forEach(row => { textToCopy += `${row['AWB']}\n`; });
-
-            window.copyToClipboard(textToCopy.trim(), `AWB Warning & Pending berhasil disalin!`);
-        };
-
-        window.copyDataWarnPend = function() {
-            if (!window.dtWarning || !window.dtStuck) return;
-            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
-            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
-
-            let hubText = "Semua Hub";
-            if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
-                hubText = window.selectedHubs.join(', ');
-            } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
-                hubText = "0 Hub";
-            }
-
-            let textToCopy = `*Parcel stuck HUB* *_${hubText}_*\n`;
-            textToCopy += `*_Visit Datanya di https://parcelstuck.vercel.app/_*\n\n`;
-            
-            textToCopy += `> *🆘 DATA WARNING*\n`;
-            textToCopy += window.formatGroupedData(rowsWarn);
-            
-            textToCopy += `\n> *⏳ DATA PENDING*\n`;
-            textToCopy += window.formatGroupedData(rowsStuck);
-
-            window.copyToClipboard(textToCopy.trim(), `Data Laporan Warning & Pending disalin!`);
-        };
-
-        window.copyFilteredData = function() {
-            if (window.currentActiveTable === 'freeze') {
-                if (!window.dtFreeze) return;
-                let textToCopy = "";
-                let copiedCount = 0;
-                
-                let nodes = window.dtFreeze.rows({ search: 'applied' }).nodes();
-                for (let i = 0; i < nodes.length; i++) {
-                    let rowData = window.dtFreeze.row(nodes[i]).data();
-                    if (rowData && rowData['AWB']) {
-                        let hubDel = (rowData['staging_operator_internal'] || rowData['HUB Delivery'] || '').toString().trim();
-                        let last92 = (rowData['Last Before 92'] || '').toString().trim();
-                        let date92 = (rowData['Date Last Before 92'] || '').toString().trim();
-
-                        let isHubEmpty = (hubDel === '' || hubDel === '-');
-                        let isLast92Empty = (last92 === '' || last92 === '-');
-                        let isDate92Empty = (date92 === '' || date92 === '-');
-
-                        if (isHubEmpty || isLast92Empty || isDate92Empty) {
-                            textToCopy += `${rowData['AWB']}\n`;
-                            copiedCount++;
-                        }
-                    }
-                }
-                
-                if (copiedCount === 0) {
-                    window.showToast("Semua AWB yang tampil saat ini datanya sudah lengkap.", "warning");
-                    return;
-                }
-
-                window.copyToClipboard(textToCopy.trim(), `${copiedCount.toLocaleString('id-ID')} AWB (Data belum lengkap) berhasil disalin!`);
-            }
         };
 
         window.renderSummaryTable = function(data) {

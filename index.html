@@ -2102,17 +2102,25 @@
 
         window.executeCustomCopy = function() {
             const tabs = [];
-            if(document.getElementById('cp-tab-warning').checked) tabs.push({id: 'warning', name: 'WARNING', dt: window.dtWarning});
-            if(document.getElementById('cp-tab-pending').checked) tabs.push({id: 'stuck', name: 'PENDING', dt: window.dtStuck});
-            if(document.getElementById('cp-tab-resolved').checked) tabs.push({id: 'resolved', name: 'RESOLVED', dt: window.dtResolved});
-            if(document.getElementById('cp-tab-freeze').checked) tabs.push({id: 'freeze', name: 'FREEZE', dt: window.dtFreeze});
+            if(document.getElementById('cp-tab-warning').checked) tabs.push({id: 'warning', name: '🆘 DATA WARNING', dt: window.dtWarning});
+            if(document.getElementById('cp-tab-pending').checked) tabs.push({id: 'stuck', name: '⏳ DATA PENDING', dt: window.dtStuck});
+            if(document.getElementById('cp-tab-resolved').checked) tabs.push({id: 'resolved', name: '✅ DATA RESOLVED', dt: window.dtResolved});
+            if(document.getElementById('cp-tab-freeze').checked) tabs.push({id: 'freeze', name: '❄️ DATA FREEZE', dt: window.dtFreeze});
 
             const cols = Array.from(document.querySelectorAll('.cp-col-chk:checked')).map(cb => cb.value);
             
             if (tabs.length === 0) return window.showToast("Pilih minimal satu tabel.", "warning");
             if (cols.length === 0) return window.showToast("Pilih minimal satu kolom.", "warning");
 
-            let textToCopy = "";
+            let hubText = "Semua Hub";
+            if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
+                hubText = window.selectedHubs.join(', ');
+            } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
+                hubText = "0 Hub";
+            }
+
+            let textToCopy = `Parcel stuck *${hubText}*\n`;
+            textToCopy += `Visit Datanya di https://parcelstuck.vercel.app/\n\n`;
             let totalCopied = 0;
 
             tabs.forEach(tab => {
@@ -2122,42 +2130,62 @@
                 if (rows.length > 0) {
                     textToCopy += `> ${tab.name}\n`;
                     
+                    let groupedData = {};
                     rows.forEach(row => {
-                        let rowMain = [];
-                        let itemText = "";
-                        
-                        cols.forEach(col => {
-                            let val = "";
-                            if (col === 'Hub') {
-                                val = (row['hub_operator_internal'] || '-').toString().trim();
-                                if (tab.id === 'freeze') {
-                                    let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
-                                    if (hubDel) val = hubDel;
-                                }
-                                rowMain.push(val);
-                            } else if (col === 'AWB') {
-                                val = row['AWB'] || '-';
-                                rowMain.push(val);
-                            } else if (col === 'Last Scan') {
-                                val = window.formatStandardDate(row['Last Scan']);
-                                rowMain.push(val);
-                            } else if (col === 'Opcode') {
-                                val = row['Update Opcode'] || '-';
-                                rowMain.push(val);
-                            } else if (col === 'Item') {
-                                itemText = row['item_name'] || '-';
-                            } else if (col === 'Feedback') {
-                                val = row['Feedback'] || '-';
-                                rowMain.push(val);
-                            }
-                        });
-                        
-                        if (rowMain.length > 0) textToCopy += rowMain.join('\t') + '\n';
-                        if (itemText) textToCopy += itemText + '\n';
-                        
-                        totalCopied++;
+                        let rawDate = row['Last Scan'];
+                        let dateObj = window.parseCustomDate(rawDate);
+                        let timestamp = dateObj ? dateObj.getTime() : 0; 
+                        let formattedDate = window.formatStandardDate(rawDate);
+
+                        if (!groupedData[timestamp]) {
+                            groupedData[timestamp] = {
+                                dateLabel: formattedDate,
+                                items: []
+                            };
+                        }
+                        groupedData[timestamp].items.push(row);
                     });
-                    textToCopy += '\n';
+
+                    let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+
+                    sortedTimestamps.forEach(ts => {
+                        let group = groupedData[ts];
+                        if (cols.includes('Last Scan')) textToCopy += `${group.dateLabel}\n`;
+                        
+                        group.items.forEach(row => {
+                            let rowMain = [];
+                            let itemText = "";
+                            
+                            cols.forEach(col => {
+                                let val = "";
+                                if (col === 'Hub') {
+                                    val = (row['hub_operator_internal'] || '-').toString().trim();
+                                    if (tab.id === 'freeze') {
+                                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                                        if (hubDel) val = hubDel;
+                                    }
+                                    rowMain.push(val);
+                                } else if (col === 'AWB') {
+                                    val = row['AWB'] || '-';
+                                    rowMain.push(val);
+                                } else if (col === 'Opcode') {
+                                    val = row['Update Opcode'] || '-';
+                                    rowMain.push(val);
+                                } else if (col === 'Feedback') {
+                                    val = row['Feedback'] || '-';
+                                    rowMain.push(val);
+                                } else if (col === 'Item') {
+                                    itemText = row['item_name'] || '-';
+                                }
+                            });
+                            
+                            if (rowMain.length > 0) textToCopy += rowMain.join(' ') + '\n';
+                            if (itemText) textToCopy += itemText + '\n';
+                            
+                            totalCopied++;
+                        });
+                        textToCopy += '\n';
+                    });
                 }
             });
 

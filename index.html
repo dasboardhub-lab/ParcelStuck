@@ -782,6 +782,9 @@
                                     <button onclick="window.showCopyModal()" id="btn-copy-custom" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
                                         <i data-lucide="copy" class="w-4 h-4"></i> Salin Data
                                     </button>
+                                    <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> AWB
+                                    </button>
                                     <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
                                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel
                                     </button>
@@ -1133,6 +1136,18 @@
                         <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Opcode" checked> Opcode</label>
                         <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Item" checked> Item</label>
                         <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Feedback" checked> Feedback</label>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-2.5">Filter Khusus Freeze</p>
+                    <div class="flex flex-col gap-2.5 text-sm font-bold text-slate-700">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors">
+                            <input type="radio" name="cp_filter_freeze" id="cp-filter-all" value="all" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500" checked> Semua Data
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors">
+                            <input type="radio" name="cp_filter_freeze" id="cp-filter-empty" value="empty" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"> Hanya Data Belum Lengkap (Last &lt; 92 Kosong)
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1664,6 +1679,21 @@
                 activeContainer.classList.add('block');
             }
 
+            let btnCopyAwbWp = document.getElementById('btn-copy-awb-wp');
+            let btnCopyDataWp = document.getElementById('btn-copy-data-wp');
+            let btnCopyFreeze = document.getElementById('btn-copy-freeze');
+            
+            if(btnCopyAwbWp) { btnCopyAwbWp.classList.add('hidden'); btnCopyAwbWp.classList.remove('flex'); }
+            if(btnCopyDataWp) { btnCopyDataWp.classList.add('hidden'); btnCopyDataWp.classList.remove('flex'); }
+            if(btnCopyFreeze) { btnCopyFreeze.classList.add('hidden'); btnCopyFreeze.classList.remove('flex'); }
+
+            if (tableName === 'warning' || tableName === 'stuck') {
+                if(btnCopyAwbWp) { btnCopyAwbWp.classList.remove('hidden'); btnCopyAwbWp.classList.add('flex'); }
+                if(btnCopyDataWp) { btnCopyDataWp.classList.remove('hidden'); btnCopyDataWp.classList.add('flex'); }
+            } else if (tableName === 'freeze') {
+                if(btnCopyFreeze) { btnCopyFreeze.classList.remove('hidden'); btnCopyFreeze.classList.add('flex'); }
+            }
+
             if(activeBtn) {
                 let activeSpan = activeBtn.querySelector(`span#count-${tableName}`);
                 if (tableName === 'warning') {
@@ -2108,6 +2138,7 @@
             if(document.getElementById('cp-tab-freeze').checked) tabs.push({id: 'freeze', name: '❄️ DATA FREEZE', dt: window.dtFreeze});
 
             const cols = Array.from(document.querySelectorAll('.cp-col-chk:checked')).map(cb => cb.value);
+            const isFilterEmpty = document.getElementById('cp-filter-empty') ? document.getElementById('cp-filter-empty').checked : false;
             
             if (tabs.length === 0) return window.showToast("Pilih minimal satu tabel.", "warning");
             if (cols.length === 0) return window.showToast("Pilih minimal satu kolom.", "warning");
@@ -2127,11 +2158,19 @@
                 if (!tab.dt) return;
                 let rows = tab.dt.rows({ search: 'applied' }).data().toArray();
                 
-                if (rows.length > 0) {
+                let filteredRows = rows;
+                if (tab.id === 'freeze' && isFilterEmpty) {
+                    filteredRows = rows.filter(row => {
+                        let last92 = (row['Last Before 92'] || '').toString().trim();
+                        return (last92 === '' || last92 === '-');
+                    });
+                }
+                
+                if (filteredRows.length > 0) {
                     textToCopy += `> ${tab.name}\n`;
                     
                     let groupedData = {};
-                    rows.forEach(row => {
+                    filteredRows.forEach(row => {
                         let rawDate = row['Last Scan'];
                         let dateObj = window.parseCustomDate(rawDate);
                         let timestamp = dateObj ? dateObj.getTime() : 0; 
@@ -2197,6 +2236,35 @@
             window.hideCopyModal();
         };
 
+        window.copyFilteredData = function() {
+            if (window.currentActiveTable === 'freeze') {
+                if (!window.dtFreeze) return;
+                let textToCopy = "";
+                let copiedCount = 0;
+                
+                let rows = window.dtFreeze.rows({ search: 'applied', order: 'applied' }).data().toArray();
+                for (let i = 0; i < rows.length; i++) {
+                    let rowData = rows[i];
+                    if (rowData && rowData['AWB']) {
+                        let last92 = (rowData['Last Before 92'] || '').toString().trim();
+                        let isLast92Empty = (last92 === '' || last92 === '-');
+
+                        if (isLast92Empty) {
+                            textToCopy += `${rowData['AWB']}\n`;
+                            copiedCount++;
+                        }
+                    }
+                }
+                
+                if (copiedCount === 0) {
+                    window.showToast("Semua AWB saat ini sudah memiliki data Last < 92.", "warning");
+                    return;
+                }
+
+                window.copyToClipboard(textToCopy.trim(), `${copiedCount.toLocaleString('id-ID')} AWB (Last < 92 Kosong) berhasil disalin!`);
+            }
+        };
+
         window.copyToClipboard = function(text, successMsg) {
             if (!text || text.trim() === "") {
                 window.showToast("Tidak ada data untuk disalin.", "warning");
@@ -2214,6 +2282,86 @@
                 window.showToast("Browser memblokir aksi salin otomatis.", "error"); 
             }
             document.body.removeChild(textArea);
+        };
+
+        window.formatGroupedData = function(rows) {
+            if (rows.length === 0) return "(Tidak ada data)\n";
+            let groupedData = {};
+
+            rows.forEach(row => {
+                let rawDate = row['Last Scan'];
+                let dateObj = window.parseCustomDate(rawDate);
+                
+                let timestamp = dateObj ? dateObj.getTime() : 0; 
+                let formattedDate = window.formatStandardDate(rawDate);
+
+                if (!groupedData[timestamp]) {
+                    groupedData[timestamp] = {
+                        dateLabel: formattedDate,
+                        items: []
+                    };
+                }
+                
+                groupedData[timestamp].items.push({
+                    awb: row['AWB'] || '',
+                    opcode: row['Update Opcode'] || '-',
+                    feedback: row['Feedback'] || '-'
+                });
+            });
+
+            let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+            let resultText = "";
+
+            sortedTimestamps.forEach(ts => {
+                let group = groupedData[ts];
+                resultText += `${group.dateLabel}\n`;
+                group.items.forEach(item => {
+                    resultText += `${item.awb}\t${item.opcode}\t${item.feedback}\n`;
+                });
+                resultText += `\n`; 
+            });
+
+            return resultText;
+        };
+
+        window.copyAWBWarnPend = function() {
+            if (!window.dtWarning || !window.dtStuck) return;
+            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
+            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
+
+            let textToCopy = "> warning\n";
+            if (rowsWarn.length === 0) textToCopy += "-\n";
+            rowsWarn.forEach(row => { textToCopy += `${row['AWB']}\n`; });
+            
+            textToCopy += "\n> pending\n";
+            if (rowsStuck.length === 0) textToCopy += "-\n";
+            rowsStuck.forEach(row => { textToCopy += `${row['AWB']}\n`; });
+
+            window.copyToClipboard(textToCopy.trim(), `AWB Warning & Pending berhasil disalin!`);
+        };
+
+        window.copyDataWarnPend = function() {
+            if (!window.dtWarning || !window.dtStuck) return;
+            let rowsWarn = window.dtWarning.rows({ search: 'applied' }).data().toArray();
+            let rowsStuck = window.dtStuck.rows({ search: 'applied' }).data().toArray();
+
+            let hubText = "Semua Hub";
+            if (window.selectedHubs.length > 0 && window.selectedHubs[0] !== 'NONE_SELECTED') {
+                hubText = window.selectedHubs.join(', ');
+            } else if (window.selectedHubs.length === 1 && window.selectedHubs[0] === 'NONE_SELECTED') {
+                hubText = "0 Hub";
+            }
+
+            let textToCopy = `*Parcel stuck HUB* *_${hubText}_*\n`;
+            textToCopy += `*_Visit Datanya di https://parcelstuck.vercel.app/_*\n\n`;
+            
+            textToCopy += `> *🆘 DATA WARNING*\n`;
+            textToCopy += window.formatGroupedData(rowsWarn);
+            
+            textToCopy += `\n> *⏳ DATA PENDING*\n`;
+            textToCopy += window.formatGroupedData(rowsStuck);
+
+            window.copyToClipboard(textToCopy.trim(), `Data Laporan Warning & Pending disalin!`);
         };
 
         window.renderSummaryTable = function(data) {

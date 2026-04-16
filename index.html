@@ -788,6 +788,9 @@
                                     <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
                                         <i data-lucide="copy" class="w-4 h-4"></i> AWB
                                     </button>
+                                    <button onclick="window.showExtractModal()" id="btn-extract" class="bg-white border border-slate-200 text-slate-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-xs shadow-sm">
+                                        <i data-lucide="search" class="w-4 h-4"></i> Ekstrak Resi
+                                    </button>
                                     <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-emerald-200 text-xs">
                                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel
                                     </button>
@@ -826,40 +829,40 @@
                 </div>
 
                 <!-- KOLOM KANAN: Summary Table (Lebar 50%) -->
-                <div class="flex flex-col space-y-6 min-w-0 w-full max-w-full">
+                <!-- KOLOM KANAN -->
+                <div class="flex flex-col space-y-8 min-w-0 w-full max-w-full">
                     
-                    <!-- ROW 4: Summary Pivot Table -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hidden flex-col w-full" id="summary-section">
-                        <div class="flex flex-wrap gap-4 justify-between items-center mb-4">
-                            <h4 id="summary-title" class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
-                                <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="building-2" class="w-4 h-4"></i></div>
-                                Rekapitulasi Berdasarkan HUB
+                    <!-- Tabel Pivot -->
+                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="summary-section">
+                        <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
+                            <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div>
+                                Rekapitulasi HUB
                             </h4>
-                            <!-- Toggle Switch -->
-                            <div class="bg-slate-100 p-1 rounded-xl flex items-center shadow-inner border border-slate-200">
-                                <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all text-slate-500 hover:text-slate-700">Per Tanggal</button>
-                                <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all bg-white shadow text-indigo-600">Per HUB</button>
+                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
+                                <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TANGGAL</button>
+                                <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-indigo-600">AREA HUB</button>
                             </div>
                         </div>
-                        <div class="w-full overflow-hidden rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
-                            <table class="summary-table" id="summaryTable">
-                                <!-- Di-render via JS -->
-                            </table>
+                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
+                            <table class="summary-table" id="summaryTable"></table>
                         </div>
                     </div>
 
-                    <!-- ROW 4.5: Summary Khusus Freeze -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hidden flex-col w-full" id="freeze-summary-section">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2.5 tracking-tight">
-                                <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="snowflake" class="w-4 h-4"></i></div>
-                                Rekap Khusus Freeze (< 92)
+                    <!-- Pivot Freeze -->
+                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="freeze-summary-section">
+                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="snowflake" class="w-5 h-5"></i></div>
+                                Analisis Freeze (&lt;92)
                             </h4>
+                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
+                                <button onclick="window.setFreezeSummaryMode('hub')" id="btn-freeze-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600">AREA HUB</button>
+                                <button onclick="window.setFreezeSummaryMode('date')" id="btn-freeze-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TGL &lt;92</button>
+                            </div>
                         </div>
-                        <div class="w-full overflow-hidden rounded-xl border border-slate-100 shadow-inner bg-slate-50/50">
-                            <table class="summary-table" id="freezeSummaryTable">
-                                <!-- Di-render via JS -->
-                            </table>
+                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
+                            <table class="summary-table" id="freezeSummaryTable"></table>
                         </div>
                     </div>
 
@@ -1092,6 +1095,33 @@
             <button onclick="window.executeExportExcel()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-200 text-sm flex items-center justify-center gap-2">
                 <i data-lucide="download" class="w-4 h-4"></i> Buat Excel
             </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL EKSTRAK RESI -->
+    <div id="extract-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative transform scale-95 transition-transform duration-300" id="extract-box">
+            <button onclick="window.hideExtractModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-100 shadow-inner">
+                    <i data-lucide="search" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight">Ekstrak Data Resi Spesifik</h3>
+                    <p class="text-sm text-slate-500 font-medium">Masukkan daftar resi untuk ditarik menjadi file Excel.</p>
+                </div>
+            </div>
+            
+            <textarea id="extract-input" rows="8" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all font-mono whitespace-pre text-slate-700 shadow-inner" placeholder="Masukkan 14 digit resi di sini...&#10;11003161720277&#10;11003418119166"></textarea>
+            
+            <div class="flex items-center justify-between mt-6 pt-5 border-t border-slate-100">
+                <p id="extract-status" class="text-xs font-bold text-slate-400"></p>
+                <button onclick="window.processExtractExcel()" id="btn-process-extract" class="bg-amber-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-amber-600 transition-all shadow-md shadow-amber-200 text-sm flex items-center gap-2 hover:-translate-y-0.5">
+                    <i data-lucide="download" class="w-4 h-4"></i> Unduh Excel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1439,6 +1469,7 @@
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
         window.summaryMode = 'hub';
+        window.freezeSummaryMode = 'hub';
         window.modifiedAwbs = new Set();
 
         window.setSummaryMode = function(mode) {
@@ -1448,15 +1479,30 @@
             const title = document.getElementById('summary-title');
             
             if (mode === 'date') {
-                if(btnDate) btnDate.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600";
-                if(btnHub) btnHub.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700";
-                if(title) title.innerHTML = `<div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="calendar-days" class="w-4 h-4"></i></div> Rekapitulasi Berdasarkan Tanggal`;
+                if(btnDate) btnDate.className = "px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-indigo-600";
+                if(btnHub) btnHub.className = "px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700";
+                if(title) title.innerHTML = `<div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="calendar-days" class="w-5 h-5"></i></div> Rekapitulasi Tanggal`;
             } else {
-                if(btnHub) btnHub.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow text-indigo-600";
-                if(btnDate) btnDate.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700";
-                if(title) title.innerHTML = `<div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="building-2" class="w-4 h-4"></i></div> Rekapitulasi Berdasarkan HUB`;
+                if(btnHub) btnHub.className = "px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-indigo-600";
+                if(btnDate) btnDate.className = "px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700";
+                if(title) title.innerHTML = `<div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div> Rekapitulasi HUB`;
             }
             lucide.createIcons();
+            window.updateDatabaseUI();
+        };
+
+        window.setFreezeSummaryMode = function(mode) {
+            window.freezeSummaryMode = mode;
+            const btnHub = document.getElementById('btn-freeze-sum-hub');
+            const btnDate = document.getElementById('btn-freeze-sum-date');
+            
+            if (mode === 'date') {
+                if(btnDate) btnDate.className = "px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600";
+                if(btnHub) btnHub.className = "px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700";
+            } else {
+                if(btnHub) btnHub.className = "px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600";
+                if(btnDate) btnDate.className = "px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700";
+            }
             window.updateDatabaseUI();
         };
 
@@ -2571,91 +2617,80 @@
                 section.classList.add('flex');
             }
 
+            let secondHeader = window.freezeSummaryMode === 'date' ? 'TGL &lt; 92' : 'AREA HUB';
+
             let emptyThead = `
                 <thead>
                     <tr>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
-                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
-                        <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
-                        <th colspan="1" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode < 92)</th>
-                        <th colspan="1" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center rounded-tr-xl">Pending (Opcode < 92)</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-500 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-tl-2xl">BULAN</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-100">${secondHeader}</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 border-l border-slate-100 text-center">TOTAL</th>
+                        <th colspan="1" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">KRITIS (&lt;92)</th>
+                        <th colspan="1" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">STUCK (&lt;92)</th>
                     </tr>
                     <tr>
-                        <th class="bg-white text-[10px] text-rose-600 border-l border-slate-100 text-center">-</th>
-                        <th class="bg-white text-[10px] text-orange-600 border-l border-slate-100 text-center">-</th>
+                        <th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">-</th>
+                        <th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">-</th>
                     </tr>
                 </thead>
             `;
             
             if(freezeData.length === 0) {
-                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-8 text-center rounded-b-xl">Tidak ada data resi Freeze</td></tr></tbody>`;
+                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-10 text-center rounded-b-xl font-bold">Nihil Resi Freeze</td></tr></tbody>`;
                 return;
             }
             
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
             const warningList = ['603', '618', '21', '22', '207', '43'];
-            let warningOpcodes = new Set();
-            let pendingOpcodes = new Set();
-            let rowsData = {}; 
-            let hasValidData = false;
-
-            let grandFreezeTotal = 0; 
-            let grandWarning = 0;
-            let grandPending = 0;
+            let warningOpcodes = new Set(); let pendingOpcodes = new Set();
+            let rowsData = {}; let hasValidData = false;
+            let grandFreezeTotal = 0; let grandWarning = 0; let grandPending = 0;
             
             let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim().toUpperCase()).filter(s => s !== '') : [];
 
             freezeData.forEach(row => {
                 let op = (row['Last Before 92'] || '').toString().trim();
-                
                 if (!op || op === '-') return;
                 
                 let hubRaw = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                 let hub = hubRaw;
-                if (!hub || hub === '-') {
-                    hub = "TIDAK ADA HUB";
-                } else if (confHubs.length > 0 && !confHubs.includes(hub)) {
-                    return;
-                }
+                if (!hub || hub === '-') hub = "KOSONG";
+                else if (confHubs.length > 0 && !confHubs.includes(hub)) return;
                 
                 hasValidData = true;
 
                 let rawDate = (row['Date Last Before 92'] || '').toString().trim();
                 if (rawDate === '-') rawDate = "";
                 let dateObj = window.parseCustomDate(rawDate);
-                let monthYear = "-";
-                let sortKey = "0000-00";
+                let monthYear = "-"; let sortKey = "0000-00";
+                let exactDate = "-"; let exactDateSort = "0000-00-00";
                 
                 if(dateObj) {
-                    let m = dateObj.getMonth();
-                    let y = dateObj.getFullYear();
+                    let m = dateObj.getMonth(); let y = dateObj.getFullYear(); let d = dateObj.getDate();
                     monthYear = `${monthNames[m]}-${y}`;
                     sortKey = `${y}-${String(m).padStart(2, '0')}`;
+                    exactDate = `${String(d).padStart(2, '0')}/${String(m + 1).padStart(2, '0')}/${y}`;
+                    exactDateSort = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 }
                 
                 let isWarn = warningList.includes(op);
                 if (isWarn) warningOpcodes.add(op);
                 else pendingOpcodes.add(op);
+
+                let col2Value = window.freezeSummaryMode === 'date' ? exactDate : hub;
+                let col2Sort = window.freezeSummaryMode === 'date' ? exactDateSort : hub;
                 
-                let rowKey = `${sortKey}|${hub}`;
-                if (!rowsData[rowKey]) {
-                    rowsData[rowKey] = { monthYear, hub, sortKey, warningOps: {}, pendingOps: {}, total: 0 };
-                }
+                let rowKey = `${sortKey}|${col2Sort}|${col2Value}`;
+                if (!rowsData[rowKey]) rowsData[rowKey] = { monthYear, col2Value, sortKey, col2Sort, warningOps: {}, pendingOps: {}, total: 0 };
                 
-                if (isWarn) {
-                    rowsData[rowKey].warningOps[op] = (rowsData[rowKey].warningOps[op] || 0) + 1;
-                    grandWarning++;
-                } else {
-                    rowsData[rowKey].pendingOps[op] = (rowsData[rowKey].pendingOps[op] || 0) + 1;
-                    grandPending++;
-                }
+                if (isWarn) { rowsData[rowKey].warningOps[op] = (rowsData[rowKey].warningOps[op] || 0) + 1; grandWarning++; } 
+                else { rowsData[rowKey].pendingOps[op] = (rowsData[rowKey].pendingOps[op] || 0) + 1; grandPending++; }
                 
-                rowsData[rowKey].total++;
-                grandFreezeTotal++; 
+                rowsData[rowKey].total++; grandFreezeTotal++; 
             });
 
             if (!hasValidData) {
-                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-8 text-center rounded-b-xl">Belum ada kelengkapan data Opcode &lt; 92</td></tr></tbody>`;
+                table.innerHTML = emptyThead + `<tbody><tr><td colspan="5" class="text-slate-400 py-10 text-center rounded-b-xl font-bold">Data Opcode &lt; 92 Belum Komplit</td></tr></tbody>`;
                 return;
             }
 
@@ -2663,21 +2698,18 @@
             let sortedPendingOpcodes = Array.from(pendingOpcodes).sort();
             
             let sortedRowKeys = Object.keys(rowsData).sort((a, b) => {
-                let partsA = a.split('|');
-                let partsB = b.split('|');
-                let monthA = partsA[0];
-                let monthB = partsB[0];
-                let hubA = partsA[1];
-                let hubB = partsB[1];
+                let partsA = a.split('|'); let partsB = b.split('|');
+                let monthSortA = partsA[0]; let monthSortB = partsB[0];
+                let col2SortA = partsA[1]; let col2SortB = partsB[1];
 
-                if (monthA !== monthB) {
-                    return monthA.localeCompare(monthB);
+                if (monthSortA !== monthSortB) return monthSortA.localeCompare(monthSortB);
+                
+                if (window.freezeSummaryMode === 'hub') {
+                    if (col2SortA === "KOSONG") return 1; if (col2SortB === "KOSONG") return -1;
+                    return rowsData[b].total - rowsData[a].total;
+                } else {
+                    return col2SortA.localeCompare(col2SortB);
                 }
-
-                if (hubA === "TIDAK ADA HUB") return 1;
-                if (hubB === "TIDAK ADA HUB") return -1;
-
-                return rowsData[b].total - rowsData[a].total;
             });
 
             let wCols = sortedWarningOpcodes.length > 0 ? sortedWarningOpcodes.length : 1;
@@ -2686,30 +2718,20 @@
             let thead = `
                 <thead>
                     <tr>
-                        <th rowspan="2" class="min-w-[110px] bg-slate-50 text-slate-700 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] rounded-tl-xl">Bulan-Tahun</th>
-                        <th rowspan="2" class="min-w-[100px] bg-slate-50 text-slate-700 text-left border-l border-slate-200">HUB Delivery</th>
-                        <th rowspan="2" class="bg-indigo-50 text-indigo-800 border-l border-slate-200 text-center">Total</th>
-                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-200 text-center">Warning (Opcode < 92)</th>
-                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-200 text-center rounded-tr-xl">Pending (Opcode < 92)</th>
+                        <th rowspan="2" class="min-w-[110px] bg-slate-50 text-slate-500 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-tl-2xl">BULAN</th>
+                        <th rowspan="2" class="min-w-[100px] bg-slate-50 text-slate-700 text-left border-l border-slate-100">${secondHeader}</th>
+                        <th rowspan="2" class="bg-slate-50 text-slate-700 border-l border-slate-100 text-center">TOTAL</th>
+                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">KRITIS (&lt;92)</th>
+                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">STUCK (&lt;92)</th>
                     </tr>
                     <tr>
             `;
             
-            if (sortedWarningOpcodes.length > 0) {
-                sortedWarningOpcodes.forEach(op => {
-                    thead += `<th class="bg-white text-[10px] text-rose-600 border-l border-slate-100 text-center">${op}</th>`;
-                });
-            } else {
-                thead += `<th class="bg-white text-[10px] text-rose-600 border-l border-slate-100 text-center">-</th>`;
-            }
+            if (sortedWarningOpcodes.length > 0) sortedWarningOpcodes.forEach(op => { thead += `<th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">${op}</th>`; });
+            else thead += `<th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">-</th>`;
 
-            if (sortedPendingOpcodes.length > 0) {
-                sortedPendingOpcodes.forEach(op => {
-                    thead += `<th class="bg-white text-[10px] text-orange-600 border-l border-slate-100 text-center">${op}</th>`;
-                });
-            } else {
-                thead += `<th class="bg-white text-[10px] text-orange-600 border-l border-slate-100 text-center">-</th>`;
-            }
+            if (sortedPendingOpcodes.length > 0) sortedPendingOpcodes.forEach(op => { thead += `<th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">${op}</th>`; });
+            else thead += `<th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">-</th>`;
             
             thead += `</tr></thead>`;
 
@@ -2719,56 +2741,43 @@
                 monthYearCounts[my] = (monthYearCounts[my] || 0) + 1;
             });
 
-            let renderedMonthYears = new Set();
-            let tbody = `<tbody>`;
+            let renderedMonthYears = new Set(); let tbody = `<tbody>`;
             
             sortedRowKeys.forEach((key, index) => {
-                let rData = rowsData[key];
-                let my = rData.monthYear;
-                
+                let rData = rowsData[key]; let my = rData.monthYear;
                 let isLastRowOfMonth = (index === sortedRowKeys.length - 1) || (rowsData[sortedRowKeys[index + 1]].monthYear !== my);
-                let borderStyle = isLastRowOfMonth ? 'border-bottom: 2px solid #cbd5e1 !important;' : '';
+                let borderStyle = isLastRowOfMonth ? 'border-bottom: 2px solid #e2e8f0 !important;' : '';
                 
                 tbody += `<tr>`;
                 
                 if (!renderedMonthYears.has(my)) {
                     let rowspan = monthYearCounts[my];
-                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r-2 border-slate-200 text-[10px] break-words" style="vertical-align: middle !important; border-bottom: 2px solid #cbd5e1 !important;">${my}</td>`;
+                    tbody += `<td rowspan="${rowspan}" class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] border-r border-slate-100 text-xs" style="vertical-align: middle !important; ${borderStyle}">${my}</td>`;
                     renderedMonthYears.add(my);
                 }
 
-                tbody += `<td class="font-bold text-slate-600 text-left border-l border-slate-100 bg-white text-[10px] break-words" style="${borderStyle}">${rData.hub}</td>`;
-                tbody += `<td class="font-black text-indigo-600 bg-indigo-50/20 border-l border-slate-100 text-center" style="${borderStyle}">${rData.total.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-bold text-slate-500 text-left border-l border-slate-50 bg-white text-xs" style="${borderStyle}">${rData.col2Value}</td>`;
+                tbody += `<td class="font-black text-slate-600 bg-slate-50 border-l border-slate-50 text-center" style="${borderStyle}">${rData.total.toLocaleString('id-ID')}</td>`;
                 
                 const renderCell = (val, colorClass) => {
                     const displayVal = val > 0 ? val.toLocaleString('id-ID') : ''; 
-                    return `<td class="${displayVal ? colorClass + ' font-bold' : 'text-slate-300'} border-l border-slate-100 text-center transition-colors hover:bg-slate-50" style="${borderStyle}">${displayVal}</td>`;
+                    return `<td class="${displayVal ? colorClass + ' font-black' : 'text-slate-300'} border-l border-slate-50 text-center transition-colors" style="${borderStyle}">${displayVal}</td>`;
                 };
 
-                if (sortedWarningOpcodes.length > 0) {
-                    sortedWarningOpcodes.forEach(op => {
-                        tbody += renderCell(rData.warningOps[op], 'text-rose-600 bg-rose-50/30');
-                    });
-                } else {
-                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center" style="${borderStyle}"></td>`;
-                }
+                if (sortedWarningOpcodes.length > 0) sortedWarningOpcodes.forEach(op => { tbody += renderCell(rData.warningOps[op], 'text-rose-600 bg-rose-50/50'); });
+                else tbody += `<td class="text-slate-300 border-l border-slate-50 text-center" style="${borderStyle}"></td>`;
 
-                if (sortedPendingOpcodes.length > 0) {
-                    sortedPendingOpcodes.forEach(op => {
-                        tbody += renderCell(rData.pendingOps[op], 'text-orange-600 bg-orange-50/30');
-                    });
-                } else {
-                    tbody += `<td class="text-slate-300 border-l border-slate-100 text-center" style="${borderStyle}"></td>`;
-                }
+                if (sortedPendingOpcodes.length > 0) sortedPendingOpcodes.forEach(op => { tbody += renderCell(rData.pendingOps[op], 'text-orange-600 bg-orange-50/50'); });
+                else tbody += `<td class="text-slate-300 border-l border-slate-50 text-center" style="${borderStyle}"></td>`;
 
                 tbody += `</tr>`;
             });
             
-            tbody += `<tr class="bg-slate-100">`;
-            tbody += `<td colspan="2" class="font-black text-slate-800 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-bl-xl py-3 px-2 border-t-2 border-slate-200 text-[10px]">TOTAL</td>`;
-            tbody += `<td class="font-black text-indigo-700 bg-indigo-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandFreezeTotal.toLocaleString('id-ID')}</td>`;
-            tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-200/50 border-l border-t-2 border-slate-200 text-center py-3">${grandWarning.toLocaleString('id-ID')}</td>`;
-            tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-200/50 border-l border-r border-t-2 border-slate-200 text-center rounded-br-xl py-3">${grandPending.toLocaleString('id-ID')}</td>`;
+            tbody += `<tr class="bg-slate-100/50">`;
+            tbody += `<td colspan="2" class="font-black text-slate-500 text-right sticky left-0 bg-slate-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] rounded-bl-2xl py-4 px-3 border-t-2 border-slate-200 text-xs">TOTAL</td>`;
+            tbody += `<td class="font-black text-slate-800 bg-slate-200 border-l border-t-2 border-slate-200 text-center py-4">${grandFreezeTotal.toLocaleString('id-ID')}</td>`;
+            tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-100 border-l border-t-2 border-slate-200 text-center py-4">${grandWarning.toLocaleString('id-ID')}</td>`;
+            tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-100 border-l border-r border-t-2 border-slate-200 text-center rounded-br-2xl py-4">${grandPending.toLocaleString('id-ID')}</td>`;
             tbody += `</tr>`;
 
             tbody += `</tbody>`;
@@ -3279,6 +3288,98 @@
             XLSX.writeFile(wb, `Laporan_HubOps_${new Date().toISOString().split('T')[0]}.xlsx`);
             window.hideExportModal();
             window.showToast(`Berhasil mengunduh ${exportData.length.toLocaleString('id-ID')} data.`, "success");
+        };
+
+        window.showExtractModal = function() {
+            const modal = document.getElementById('extract-modal');
+            const box = document.getElementById('extract-box');
+            if (document.getElementById('extract-status')) document.getElementById('extract-status').textContent = '';
+            if (document.getElementById('extract-input')) document.getElementById('extract-input').value = '';
+            
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideExtractModal = function() {
+            const modal = document.getElementById('extract-modal');
+            const box = document.getElementById('extract-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.processExtractExcel = function() {
+            const textInput = document.getElementById('extract-input').value;
+            if(!textInput.trim()) {
+                window.showToast('Kolom teks masih kosong.', 'warning');
+                return;
+            }
+
+            const statusText = document.getElementById('extract-status');
+            const awbRegex = /\b(\d{14})\b/g; 
+            const matches = [...textInput.matchAll(awbRegex)].map(m => m[1]);
+            const uniqueAwbs = [...new Set(matches)];
+            
+            if (uniqueAwbs.length === 0) {
+                statusText.innerText = "Tidak ada resi valid 14 digit.";
+                statusText.classList.replace('text-slate-400', 'text-rose-500');
+                return;
+            }
+
+            const exportData = [];
+            let foundCount = 0;
+
+            uniqueAwbs.forEach(awb => {
+                const row = window.databaseMap[awb];
+                if (row) {
+                    foundCount++;
+                    let opcode = (row['Update Opcode'] || '').toString().trim();
+                    let hubValue = (row['hub_operator_internal'] || '-').toString().trim();
+                    
+                    if (row._ui_status === 'Freeze') {
+                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
+                        if (hubDel) hubValue = hubDel;
+                    }
+
+                    let newRow = {
+                        "Hub": hubValue,
+                        "AWB": awb,
+                        "Last Scan": row['Last Scan'] || '-',
+                        "Opcode": opcode,
+                        "Last < 92": "-",
+                        "Tgl Last < 92": "-",
+                        "Item": row['item_name'] || '-'
+                    };
+
+                    if (opcode === '92' || row._ui_status === 'Freeze') {
+                        newRow["Last < 92"] = row['Last Before 92'] || '-';
+                        newRow["Tgl Last < 92"] = row['Date Last Before 92'] || '-';
+                    }
+
+                    exportData.push(newRow);
+                }
+            });
+
+            if (exportData.length === 0) {
+                statusText.innerText = "Resi tidak ada di database.";
+                statusText.classList.replace('text-slate-400', 'text-amber-500');
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Ekstrak Resi");
+            
+            XLSX.writeFile(wb, `Ekstrak_Resi_${new Date().toISOString().split('T')[0]}.xlsx`);
+            window.hideExtractModal();
+            window.showToast(`Berhasil mengunduh ${foundCount} data resi.`, "success");
         };
 
     </script>

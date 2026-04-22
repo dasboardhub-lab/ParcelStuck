@@ -783,21 +783,24 @@
                                 </div>
 
                                 <!-- Action Buttons -->
-                                <div class="flex items-center gap-3 overflow-x-auto whitespace-nowrap">
-                                    <button onclick="window.commitChanges()" id="btn-save-changes" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-2.5 px-5 rounded-xl transition-all items-center gap-2 text-sm shadow-md shadow-indigo-200 active:scale-95">
-                                        <i data-lucide="save" class="w-4 h-4"></i> Simpan
+                                <div class="flex items-center gap-2.5 pb-3 overflow-x-auto whitespace-nowrap">
+                                    <button onclick="window.commitChanges()" id="btn-save-changes" title="Simpan Perubahan" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold p-2.5 rounded-xl transition-all items-center justify-center shadow-md shadow-indigo-200 active:scale-95">
+                                        <i data-lucide="save" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" class="bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95">
-                                        <i data-lucide="copy" class="w-4 h-4"></i> Salin AWB
+                                    <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" title="Salin AWB" class="bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
+                                        <i data-lucide="copy" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="window.showCopyModal()" id="btn-copy-custom" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95">
-                                        <i data-lucide="copy" class="w-4 h-4"></i> Salin Data
+                                    <button onclick="window.showCopyModal()" id="btn-copy-custom" title="Salin Data" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
+                                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="window.showExtractModal()" id="btn-extract" class="bg-white border border-slate-200 text-slate-700 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95">
-                                        <i data-lucide="search" class="w-4 h-4"></i> Ekstrak Resi
+                                    <button onclick="window.copyFilteredData()" id="btn-copy-freeze" title="Salin AWB" class="hidden bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
+                                        <i data-lucide="copy" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="window.showExportModal()" id="btn-download" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 shadow-md shadow-emerald-200 text-sm active:scale-95">
-                                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel
+                                    <button onclick="window.showExtractModal()" id="btn-extract" title="Ekstrak Resi" class="bg-white border border-slate-200 text-slate-700 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
+                                        <i data-lucide="search" class="w-5 h-5"></i>
+                                    </button>
+                                    <button onclick="window.showExportModal()" id="btn-download" title="Unduh Excel" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-md shadow-emerald-200 active:scale-95">
+                                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                                     </button>
                                 </div>
                             </div>

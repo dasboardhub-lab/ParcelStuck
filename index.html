@@ -708,7 +708,7 @@
                         <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Telah Selesai</p>
+                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Resolved</p>
                         <div class="flex items-baseline gap-2.5">
                             <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-resolved">0</h4>
                             <span id="kpi-pct-resolved" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg border border-emerald-100">0%</span>
@@ -2342,10 +2342,10 @@
                     <tr>
                         <th rowspan="2" class="min-w-[130px] bg-slate-50 text-slate-500 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-tl-2xl">${firstHeader}</th>
                         <th rowspan="2" class="bg-slate-50 text-slate-700 border-l border-slate-100 text-center">SEMUA</th>
-                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">KRITIS (W)</th>
-                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center">STUCK (P)</th>
-                        <th rowspan="2" class="bg-emerald-50 text-emerald-800 text-center">AMAN</th>
-                        <th rowspan="2" class="bg-blue-50 text-blue-800 border-l border-slate-100 text-center rounded-tr-2xl">BEKU</th>
+                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">WARNING</th>
+                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center">PENDING</th>
+                        <th rowspan="2" class="bg-emerald-50 text-emerald-800 text-center">RESOLVED</th>
+                        <th rowspan="2" class="bg-blue-50 text-blue-800 border-l border-slate-100 text-center rounded-tr-2xl">FREEZE</th>
                     </tr>
                     <tr>
             `;
@@ -2416,8 +2416,8 @@
                         <th rowspan="2" class="bg-slate-50 text-slate-500 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-tl-2xl">BULAN</th>
                         <th rowspan="2" class="bg-slate-50 text-slate-700 text-left border-l border-slate-100">${secondHeader}</th>
                         <th rowspan="2" class="bg-slate-50 text-slate-700 border-l border-slate-100 text-center">TOTAL</th>
-                        <th colspan="1" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">KRITIS (&lt;92)</th>
-                        <th colspan="1" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">STUCK (&lt;92)</th>
+                        <th colspan="1" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">WARNING (&lt;92)</th>
+                        <th colspan="1" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">PENDING (&lt;92)</th>
                     </tr>
                     <tr>
                         <th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">-</th>
@@ -2512,8 +2512,8 @@
                         <th rowspan="2" class="min-w-[110px] bg-slate-50 text-slate-500 text-left sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] rounded-tl-2xl">BULAN</th>
                         <th rowspan="2" class="min-w-[100px] bg-slate-50 text-slate-700 text-left border-l border-slate-100">${secondHeader}</th>
                         <th rowspan="2" class="bg-slate-50 text-slate-700 border-l border-slate-100 text-center">TOTAL</th>
-                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">KRITIS (&lt;92)</th>
-                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">STUCK (&lt;92)</th>
+                        <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">WARNING (&lt;92)</th>
+                        <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center rounded-tr-2xl">PENDING (&lt;92)</th>
                     </tr>
                     <tr>
             `;

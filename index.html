@@ -5,27 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parcel Stuck</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z'/><path d='m7 16.5-4.74-2.85'/><path d='m7 16.5 5-3'/><path d='M7 16.5v5.17'/><path d='M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z'/><path d='m17 16.5-5-3'/><path d='m17 16.5 4.74-2.85'/><path d='M17 16.5v5.17'/><path d='M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z'/><path d='M12 8 7.26 5.15'/><path d='m12 8 4.74-2.85'/><path d='M12 13.5V8'/></svg>">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Chart.js & DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-
-    <!-- Custom Font (Plus Jakarta Sans) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS Fallback: Mencegah popup bocor jika koneksi internet melambat/memblokir CSS utama */
         [hidden] { display: none !important; }
         
         body { 
@@ -33,22 +22,19 @@
             background-color: #f8fafc; 
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Custom Dropdown Multi-Select */
         .dropdown-menu { max-height: 350px; overflow-y: auto; }
         .dropdown-menu::-webkit-scrollbar { width: 4px; }
 
-        /* DataTables Custom UI - FIX WIDTH */
         table.dataTable { 
             border-collapse: collapse !important; 
             width: 100% !important; 
-            min-width: 1100px !important; /* Mencegah tabel hilang/hancur di layar kecil */
-            table-layout: fixed !important; /* FIX KUNCI: Memaksa lebar kolom sesuai persentase */
+            min-width: 1100px !important; 
+            table-layout: fixed !important; 
             margin-top: 0 !important; 
         }
         table.dataTable thead th {
@@ -68,7 +54,7 @@
             border-bottom: 1px solid #f8fafc !important;
             padding: 14px 12px !important;
             color: #334155;
-            vertical-align: top !important; /* Rata atas agar tetap rapi saat teks di-expand */
+            vertical-align: top !important; 
             font-size: 0.8rem;
             transition: background-color 0.2s;
         }
@@ -77,7 +63,6 @@
         .dt-center { text-align: center !important; }
         .dt-left { text-align: left !important; }
         
-        /* Custom Paging & Controls At Bottom */
         .dataTables_wrapper .dataTables_length select {
             border: 1px solid #e2e8f0;
             border-radius: 0.75rem;
@@ -108,7 +93,6 @@
         .paginate_button:hover:not(.current):not(.disabled) { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #334155 !important; }
         .paginate_button.disabled { opacity: 0.4; cursor: not-allowed !important; }
 
-        /* Status Button Group Styling */
         .status-btn-group {
             display: inline-flex; border-radius: 0.75rem; overflow: hidden;
             border: 1px solid #e2e8f0; background: white; box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
@@ -119,7 +103,6 @@
         }
         .status-btn:last-child { border-right: none; }
 
-        /* Input Khusus Freeze */
         .dt-input {
             border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.5rem 0.75rem;
             font-size: 0.8rem; width: 100%; outline: none; transition: all 0.2s;
@@ -127,7 +110,6 @@
         }
         .dt-input:focus { background: white; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-        /* Summary Table Styles */
         .summary-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
         .summary-table th { 
             padding: 10px 6px; font-size: 0.65rem; text-transform: uppercase; font-weight: 800; 
@@ -137,32 +119,121 @@
         .summary-table td { padding: 10px 6px; font-size: 0.75rem; text-align: center; border-bottom: 1px solid #f8fafc; word-wrap: break-word; }
         .summary-table tbody tr:hover td { background-color: #f1f5f9; }
 
-        /* Glassmorphism utility */
         .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         
-        /* Animasi Toast */
         @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         .toast-enter { animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: fadeOut 0.3s forwards; }
 
-        /* Card Hover Effects */
         .kpi-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); }
         
         .modern-input {
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
         }
+
+        /* Action Menu Animated Tabs & Buttons */
+        .action-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .icon-content {
+            position: relative;
+        }
+        .icon-content .tooltip {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            z-index: 50;
+            pointer-events: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .icon-content:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            top: -45px;
+        }
+        .action-btn {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            outline: none;
+        }
+        .action-btn:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            color: white;
+            border-color: transparent;
+        }
+        .action-btn.active {
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+        .action-btn svg, .action-btn span[id^="count-"] {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+        .action-btn .filled {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            transition: all 0.3s ease-in-out;
+            z-index: 0;
+        }
+        .action-btn:hover .filled, .action-btn.active .filled {
+            height: 100%;
+        }
+
+        /* Specific Colors */
+        .tab-warning .filled, .tab-warning + .tooltip { background-color: #f43f5e; }
+        .tab-pending .filled, .tab-pending + .tooltip { background-color: #f97316; }
+        .tab-resolved .filled, .tab-resolved + .tooltip { background-color: #10b981; }
+        .tab-freeze .filled, .tab-freeze + .tooltip { background-color: #3b82f6; }
+        
+        .btn-save .filled, .btn-save + .tooltip { background-color: #4f46e5; }
+        .btn-copy-awb .filled, .btn-copy-awb + .tooltip { background-color: #2563eb; }
+        .btn-copy-data .filled, .btn-copy-data + .tooltip { background-color: #4f46e5; }
+        .btn-extract .filled, .btn-extract + .tooltip { background-color: #f59e0b; }
+        .btn-excel .filled, .btn-excel + .tooltip { background-color: #059669; }
+
     </style>
 
     <script>
-        // Deklarasi Variabel Global untuk DataTables
         window.dtStuck = null; 
         window.dtResolved = null; 
         window.dtFreeze = null; 
         window.dtWarning = null;
 
-        // UI Helpers
         window.setText = function(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; };
         window.toggleVisibility = function(id, isVisible, displayClass = 'block') {
             const el = document.getElementById(id);
@@ -198,7 +269,6 @@
             }, 4000);
         };
 
-        // Modal UI Functions
         window.showLoginModal = function() {
             const modal = document.getElementById('login-modal');
             const box = document.getElementById('login-box');
@@ -306,7 +376,6 @@
             window.closeConfirm();
         };
 
-        // UI Modal Upload Progress
         window.showUploadProgress = function(title, desc) {
             window.setText('up-title', title);
             window.setText('up-desc', desc);
@@ -482,7 +551,6 @@
 </head>
 <body class="text-slate-800 relative pb-12 w-full min-h-screen">
 
-    <!-- Loading Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[200] flex flex-col items-center justify-center p-4 transition-opacity duration-300">
         <div class="p-8 bg-white rounded-[2rem] shadow-2xl border border-slate-100 flex flex-col items-center max-w-sm w-full">
             <div class="relative w-20 h-20 flex items-center justify-center mb-5">
@@ -503,7 +571,6 @@
         </div>
     </div>
 
-    <!-- Header / Navbar -->
     <header class="glass-header sticky top-0 z-40 mb-8 shadow-sm">
         <div class="w-full px-6 lg:px-10 py-4 flex flex-wrap items-center justify-between gap-5">
             <div class="flex items-center gap-4">
@@ -517,13 +584,11 @@
                 <span id="offline-badge" class="hidden text-[10px] bg-amber-100 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl font-bold ml-3 uppercase tracking-wide flex items-center gap-1.5 shadow-sm"><i data-lucide="wifi-off" class="w-3.5 h-3.5"></i> Offline</span>
             </div>
             
-            <!-- Actions -->
             <div class="flex items-center gap-3">
                 <div id="badge-publik" class="text-xs bg-white border border-slate-200 text-slate-500 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Publik
                 </div>
 
-                <!-- Admin Tab & Tools -->
                 <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
                 </button>
@@ -551,21 +616,16 @@
         </div>
     </header>
 
-    <!-- Hidden File Inputs -->
     <input type="file" id="file1" accept=".csv" class="hidden">
     <input type="file" id="file2" accept=".csv" class="hidden">
 
-    <!-- Main Content -->
     <main class="w-full px-4 lg:px-10 mx-auto">
 
-        <!-- SECTION: DASHBOARD -->
         <div id="section-dashboard" class="block space-y-8">
             
-            <!-- ROW 1: Smart Filters Section -->
             <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 relative z-30">
                 <div class="flex flex-col lg:flex-row items-start lg:items-end gap-5">
                     
-                    <!-- Title & Mobile Reset -->
                     <div class="flex items-center justify-between w-full lg:w-auto lg:hidden mb-2">
                         <h4 class="text-sm font-extrabold text-slate-800 flex items-center gap-2 tracking-tight">
                             <div class="p-2 bg-indigo-50 rounded-xl text-indigo-600"><i data-lucide="filter" class="w-4 h-4"></i></div>
@@ -574,7 +634,6 @@
                         <button onclick="window.resetFilters()" class="text-xs font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-1.5"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset</button>
                     </div>
 
-                    <!-- Global Search Box -->
                     <div class="flex-1 w-full flex flex-col gap-2">
                         <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">Pencarian</label>
                         <div class="relative group">
@@ -583,7 +642,6 @@
                         </div>
                     </div>
 
-                    <!-- Filter Rentang Tanggal -->
                     <div class="w-full lg:w-auto flex flex-col gap-2">
                         <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">Tanggal</label>
                         <div class="modern-input flex items-center bg-slate-50/50 border border-slate-200 rounded-2xl px-3 py-1 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all h-[46px]">
@@ -594,7 +652,6 @@
                         </div>
                     </div>
 
-                    <!-- Filter Opcode (Multi-Select) -->
                     <div class="w-full lg:w-40 flex flex-col gap-2 relative z-[60]">
                         <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">Opcode</label>
                         <div id="opcode-select-btn" onclick="window.toggleOpcodeDropdown()" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3 text-sm cursor-pointer flex justify-between items-center font-bold text-slate-800 hover:bg-slate-100 transition-colors h-[46px]">
@@ -613,7 +670,6 @@
                         </div>
                     </div>
                     
-                    <!-- Custom Multi-Select Hub -->
                     <div class="w-full lg:w-48 flex flex-col gap-2 relative z-50">
                         <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">HUB Area</label>
                         <div id="hub-select-btn" onclick="window.toggleHubDropdown()" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3 text-sm cursor-pointer flex justify-between items-center font-bold text-slate-800 hover:bg-slate-100 transition-colors h-[46px]">
@@ -632,7 +688,6 @@
                         </div>
                     </div>
 
-                    <!-- Filter Status -->
                     <div class="w-full lg:w-40 flex flex-col gap-2">
                         <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">Status</label>
                         <div class="relative">
@@ -649,7 +704,6 @@
                         </div>
                     </div>
 
-                    <!-- Reset Button Desktop -->
                     <div class="hidden lg:flex flex-col gap-2">
                         <label class="text-[11px] font-extrabold text-transparent uppercase tracking-widest select-none pb-0.5">R</label>
                         <button onclick="window.resetFilters()" title="Bersihkan Filter" class="flex items-center justify-center w-[46px] h-[46px] bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-2xl transition-all shadow-sm">
@@ -660,9 +714,7 @@
                 </div>
             </div>
 
-            <!-- ROW 2: KPI Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-5 gap-5 relative z-10">
-                <!-- Total Card -->
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-600 mb-4">
@@ -673,7 +725,6 @@
                         <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-total">0</h4>
                     </div>
                 </div>
-                <!-- Warning Card -->
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-200 mb-4">
@@ -687,7 +738,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Pending Card -->
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-orange-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-lg shadow-orange-200 mb-4">
@@ -701,7 +751,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Resolved Card -->
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200 mb-4">
@@ -715,7 +764,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Freeze Card -->
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 mb-4">
@@ -731,13 +779,10 @@
                 </div>
             </div>
 
-            <!-- LAYOUT 2 KOLOM -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
                 
-                <!-- KOLOM KIRI -->
                 <div class="flex flex-col space-y-8 min-w-0">
                     
-                    <!-- Diagram Garis -->
                     <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 flex flex-col w-full">
                         <div class="flex justify-between items-center mb-6">
                             <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -750,7 +795,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabel Section -->
                     <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col w-full">
                         
                         <div id="empty-state" class="text-center py-32">
@@ -763,50 +807,91 @@
 
                         <div id="table-container" class="w-full hidden flex-col">
                             
-                            <!-- Header Tabel & Tindakan -->
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5 px-7 pt-7 pb-5 border-b border-slate-100 bg-white">
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-8 pb-6 border-b border-slate-100 bg-white">
                                 
-                                <!-- Tab Modern (Kapsul) -->
-                                <div class="flex p-1.5 bg-slate-100/80 rounded-2xl w-fit overflow-x-auto space-x-1 border border-slate-200/50">
-                                    <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-800 hover:bg-white transition-all flex items-center gap-2">
-                                        Warning <span id="count-warning" class="bg-slate-200/70 text-slate-600 px-2 py-0.5 rounded-lg text-[11px] font-black">0</span>
-                                    </button>
-                                    <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-800 hover:bg-white transition-all flex items-center gap-2">
-                                        Pending <span id="count-stuck" class="bg-slate-200/70 text-slate-600 px-2 py-0.5 rounded-lg text-[11px] font-black">0</span>
-                                    </button>
-                                    <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-800 hover:bg-white transition-all flex items-center gap-2">
-                                        Resolved <span id="count-resolved" class="bg-slate-200/70 text-slate-600 px-2 py-0.5 rounded-lg text-[11px] font-black">0</span>
-                                    </button>
-                                    <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-800 hover:bg-white transition-all flex items-center gap-2">
-                                        Freeze <span id="count-freeze" class="bg-slate-200/70 text-slate-600 px-2 py-0.5 rounded-lg text-[11px] font-black">0</span>
-                                    </button>
-                                </div>
+                                <ul class="action-menu flex-wrap justify-center md:justify-start">
+                                    <li class="icon-content">
+                                        <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="action-btn tab-warning active">
+                                            <span class="filled"></span>
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 mb-0.5"></i>
+                                            <span id="count-warning" class="text-[10px] font-black leading-none">0</span>
+                                        </button>
+                                        <div class="tooltip">Warning</div>
+                                    </li>
+                                    <li class="icon-content">
+                                        <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="action-btn tab-pending">
+                                            <span class="filled"></span>
+                                            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
+                                            <span id="count-stuck" class="text-[10px] font-black leading-none">0</span>
+                                        </button>
+                                        <div class="tooltip">Pending</div>
+                                    </li>
+                                    <li class="icon-content">
+                                        <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="action-btn tab-resolved">
+                                            <span class="filled"></span>
+                                            <i data-lucide="check-circle-2" class="w-5 h-5 mb-0.5"></i>
+                                            <span id="count-resolved" class="text-[10px] font-black leading-none">0</span>
+                                        </button>
+                                        <div class="tooltip">Resolved</div>
+                                    </li>
+                                    <li class="icon-content">
+                                        <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="action-btn tab-freeze">
+                                            <span class="filled"></span>
+                                            <i data-lucide="snowflake" class="w-5 h-5 mb-0.5"></i>
+                                            <span id="count-freeze" class="text-[10px] font-black leading-none">0</span>
+                                        </button>
+                                        <div class="tooltip">Freeze</div>
+                                    </li>
+                                </ul>
 
-                                <!-- Action Buttons -->
-                                <div class="flex items-center gap-2.5 pb-3 overflow-x-auto whitespace-nowrap">
-                                    <button onclick="window.commitChanges()" id="btn-save-changes" title="Simpan Perubahan" class="hidden bg-indigo-600 text-white hover:bg-indigo-700 font-bold p-2.5 rounded-xl transition-all items-center justify-center shadow-md shadow-indigo-200 active:scale-95">
-                                        <i data-lucide="save" class="w-5 h-5"></i>
-                                    </button>
-                                    <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" title="Salin AWB" class="bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
-                                        <i data-lucide="copy" class="w-5 h-5"></i>
-                                    </button>
-                                    <button onclick="window.showCopyModal()" id="btn-copy-custom" title="Salin Data" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
-                                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                                    </button>
-                                    <button onclick="window.copyFilteredData()" id="btn-copy-freeze" title="Salin AWB" class="hidden bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
-                                        <i data-lucide="copy" class="w-5 h-5"></i>
-                                    </button>
-                                    <button onclick="window.showExtractModal()" id="btn-extract" title="Ekstrak Resi" class="bg-white border border-slate-200 text-slate-700 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-sm active:scale-95">
-                                        <i data-lucide="search" class="w-5 h-5"></i>
-                                    </button>
-                                    <button onclick="window.showExportModal()" id="btn-download" title="Unduh Excel" class="bg-emerald-600 text-white hover:bg-emerald-700 font-bold p-2.5 rounded-xl transition-all flex items-center justify-center shadow-md shadow-emerald-200 active:scale-95">
-                                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
-                                    </button>
-                                </div>
+                                <ul class="action-menu flex-wrap justify-center md:justify-end">
+                                    <li class="icon-content" id="li-save-changes" hidden>
+                                        <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
+                                            <span class="filled"></span>
+                                            <i data-lucide="save" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Simpan Perubahan</div>
+                                    </li>
+                                    <li class="icon-content" id="li-copy-awb">
+                                        <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" class="action-btn btn-copy-awb">
+                                            <span class="filled"></span>
+                                            <i data-lucide="copy" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Salin AWB</div>
+                                    </li>
+                                    <li class="icon-content" id="li-copy-custom">
+                                        <button onclick="window.showCopyModal()" id="btn-copy-custom" class="action-btn btn-copy-data">
+                                            <span class="filled"></span>
+                                            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Salin Data</div>
+                                    </li>
+                                    <li class="icon-content" id="li-copy-freeze" hidden>
+                                        <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="action-btn btn-copy-awb">
+                                            <span class="filled"></span>
+                                            <i data-lucide="copy" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Salin AWB (&lt;92 Kosong)</div>
+                                    </li>
+                                    <li class="icon-content" id="li-extract">
+                                        <button onclick="window.showExtractModal()" id="btn-extract" class="action-btn btn-extract">
+                                            <span class="filled"></span>
+                                            <i data-lucide="search" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Ekstrak Resi</div>
+                                    </li>
+                                    <li class="icon-content" id="li-download">
+                                        <button onclick="window.showExportModal()" id="btn-download" class="action-btn btn-excel">
+                                            <span class="filled"></span>
+                                            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                                        </button>
+                                        <div class="tooltip">Unduh Excel</div>
+                                    </li>
+                                </ul>
+
                             </div>
 
                             <div class="p-7 bg-white">
-                                <!-- Tabel Warning -->
                                 <div id="tc-warning" class="w-full block">
                                     <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-6 text-sm flex items-start gap-3 shadow-sm">
                                         <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
@@ -817,15 +902,12 @@
                                     </div>
                                     <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                                 </div>
-                                <!-- Tabel Stuck / Pending -->
                                 <div id="tc-stuck" class="w-full hidden">
                                     <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                                 </div>
-                                <!-- Tabel Resolved -->
                                 <div id="tc-resolved" class="w-full hidden">
                                     <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                                 </div>
-                                <!-- Tabel Freeze -->
                                 <div id="tc-freeze" class="w-full hidden">
                                     <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                                 </div>
@@ -836,10 +918,8 @@
 
                 </div>
 
-                <!-- KOLOM KANAN -->
                 <div class="flex flex-col space-y-8 min-w-0 w-full max-w-full">
                     
-                    <!-- Tabel Pivot -->
                     <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="summary-section">
                         <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                             <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -856,7 +936,6 @@
                         </div>
                     </div>
 
-                    <!-- Pivot Freeze -->
                     <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="freeze-summary-section">
                         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
                             <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -879,14 +958,12 @@
 
         </div>
 
-        <!-- SECTION: PENGATURAN -->
         <div id="section-settings" class="hidden">
             <div class="mb-8">
                 <h2 class="text-3xl font-black text-slate-800 tracking-tight">Aturan & Keamanan</h2>
                 <p class="text-base text-slate-500 mt-2 font-semibold">Kelola cara sistem memilah data dan melindungi akses privasi Anda.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
-                <!-- Card Akun -->
                 <div class="md:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8">
                     <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-6">
                         <div class="p-2.5 bg-slate-100 rounded-xl"><i data-lucide="key" class="w-5 h-5 text-slate-700"></i></div>
@@ -901,7 +978,6 @@
                     </div>
                 </div>
 
-                <!-- Card Aturan Status -->
                 <div class="md:col-span-3 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-bl-full -z-10"></div>
                     <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-6">
@@ -928,7 +1004,6 @@
                 </div>
             </div>
 
-            <!-- Utilitas Database -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8">
                     <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-4">
@@ -956,7 +1031,6 @@
 
     <div id="toast-container" class="fixed bottom-8 right-8 z-[250] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- Modal Upload -->
     <div id="upload-progress-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[250] flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300" id="upload-progress-box">
             <div class="text-center mb-6" id="up-header">
@@ -994,7 +1068,6 @@
         </div>
     </div>
 
-    <!-- Modal Konfirmasi -->
     <div id="custom-confirm-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full overflow-hidden transform scale-95 transition-transform duration-300" id="custom-confirm-box">
             <div class="p-8 text-center">
@@ -1011,7 +1084,6 @@
         </div>
     </div>
 
-    <!-- Modal Login -->
     <div id="login-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300" id="login-box">
             <button onclick="window.hideLoginModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1037,7 +1109,6 @@
         </div>
     </div>
 
-    <!-- Modal Feedback -->
     <div id="bulk-feedback-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-3xl relative transform scale-95 transition-transform duration-300" id="bulk-feedback-box">
             <button onclick="window.hideBulkFeedbackModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1069,7 +1140,6 @@
         </div>
     </div>
 
-    <!-- Modal Ekspor Excel -->
     <div id="export-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300" id="export-box">
             <button onclick="window.hideExportModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1102,7 +1172,6 @@
         </div>
     </div>
 
-    <!-- Modal Ekstrak Resi -->
     <div id="extract-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-2xl relative transform scale-95 transition-transform duration-300" id="extract-box">
             <button onclick="window.hideExtractModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1129,7 +1198,6 @@
         </div>
     </div>
 
-    <!-- Modal Salin Data -->
     <div id="copy-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300" id="copy-box">
             <button onclick="window.hideCopyModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1197,7 +1265,6 @@
         </div>
     </div>
 
-    <!-- Modal Salin AWB -->
     <div id="copy-awb-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm relative transform scale-95 transition-transform duration-300" id="copy-awb-box">
             <button onclick="window.hideCopyAwbModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1253,7 +1320,6 @@
         </div>
     </div>
 
-    <!-- Modal Hapus -->
     <div id="bulk-delete-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-2xl relative transform scale-95 transition-transform duration-300" id="bulk-delete-box">
             <button onclick="window.hideBulkDeleteModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -1280,13 +1346,11 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
-    <!-- Supabase SDK -->
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
@@ -1539,14 +1603,26 @@
         window.parseCustomDate = function(dateStr) {
             if (!dateStr) return null;
             let d = dateStr.split(' ')[0]; 
+            let year, month, day;
             if (d.includes('/')) { 
                 let p = d.split('/');
-                if (p.length === 3 && p[2].length === 4) return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+                if (p.length === 3) {
+                    if (p[2].length === 4) { day = parseInt(p[0]); month = parseInt(p[1]) - 1; year = parseInt(p[2]); }
+                    else if (p[0].length === 4) { year = parseInt(p[0]); month = parseInt(p[1]) - 1; day = parseInt(p[2]); }
+                }
             } else if (d.includes('-')) { 
                 let p = d.split('-');
-                if (p.length === 3 && p[0].length === 4) return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+                if (p.length === 3) {
+                    if (p[0].length === 4) { year = parseInt(p[0]); month = parseInt(p[1]) - 1; day = parseInt(p[2]); }
+                    else { day = parseInt(p[0]); month = parseInt(p[1]) - 1; year = parseInt(p[2]); }
+                }
             }
-            let parsed = new Date(d);
+            
+            if (year !== undefined && !isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                return new Date(year, month, day, 12, 0, 0);
+            }
+            
+            let parsed = new Date(dateStr);
             return isNaN(parsed.getTime()) ? null : parsed;
         };
 
@@ -1649,9 +1725,11 @@
             window.toggleVisibility('btn-login-ui', !showItems, 'flex');
             window.toggleVisibility('badge-publik', !showItems, 'flex');
             
-            ['btn-logout-ui', 'btn-head-upload-1', 'btn-head-upload-2', 'btn-tab-dashboard', 'btn-tab-settings', 'btn-bulk-feedback-container', 'btn-save-changes'].forEach(id => {
+            ['btn-logout-ui', 'btn-head-upload-1', 'btn-head-upload-2', 'btn-tab-dashboard', 'btn-tab-settings', 'btn-bulk-feedback-container'].forEach(id => {
                 window.toggleVisibility(id, showItems, 'flex');
             });
+            const liSave = document.getElementById('li-save-changes');
+            if(liSave) liSave.style.display = showItems ? 'block' : 'none';
             window.updateDatabaseUI(); 
         };
 
@@ -1677,13 +1755,12 @@
         window.switchTableTab = function(tableName) {
             window.currentActiveTable = tableName;
             const tabs = ['warning', 'stuck', 'resolved', 'freeze'];
+            
             tabs.forEach(t => {
                 let btn = document.getElementById(`ttab-${t}`);
                 let container = document.getElementById(`tc-${t}`);
                 if(btn && container) {
-                    btn.className = "px-5 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-800 hover:bg-white transition-all flex items-center gap-2";
-                    let spanCounter = btn.querySelector(`span#count-${t}`);
-                    if(spanCounter) spanCounter.className = "bg-slate-200/70 text-slate-600 px-2 py-0.5 rounded-lg text-[11px] font-black";
+                    btn.classList.remove('active');
                     container.classList.add('hidden');
                     container.classList.remove('block');
                 }
@@ -1696,25 +1773,27 @@
                 activeContainer.classList.add('block');
             }
 
+            let liCopyAwb = document.getElementById('li-copy-awb');
+            let liCopyData = document.getElementById('li-copy-custom');
+            let liCopyFreeze = document.getElementById('li-copy-freeze');
+            
+            if(liCopyAwb) { liCopyAwb.style.display = 'none'; }
+            if(liCopyData) { liCopyData.style.display = 'none'; }
+            if(liCopyFreeze) { liCopyFreeze.style.display = 'none'; }
+
+            if (tableName === 'warning' || tableName === 'stuck') {
+                if(liCopyAwb) { liCopyAwb.style.display = 'block'; }
+                if(liCopyData) { liCopyData.style.display = 'block'; }
+            } else if (tableName === 'freeze') {
+                if(liCopyFreeze) { liCopyFreeze.style.display = 'block'; }
+            }
+
             if(activeBtn) {
-                let activeSpan = activeBtn.querySelector(`span#count-${tableName}`);
-                if (tableName === 'warning') {
-                    activeBtn.className = "px-5 py-2.5 rounded-xl font-extrabold text-sm bg-rose-600 text-white transition-all flex items-center gap-2 shadow-md shadow-rose-200";
-                    if(activeSpan) activeSpan.className = "bg-white/20 text-white px-2 py-0.5 rounded-lg text-[11px] font-black";
-                    if (window.dtWarning) window.dtWarning.columns.adjust();
-                } else if (tableName === 'stuck') {
-                    activeBtn.className = "px-5 py-2.5 rounded-xl font-extrabold text-sm bg-orange-500 text-white transition-all flex items-center gap-2 shadow-md shadow-orange-200";
-                    if(activeSpan) activeSpan.className = "bg-white/20 text-white px-2 py-0.5 rounded-lg text-[11px] font-black";
-                    if (window.dtStuck) window.dtStuck.columns.adjust();
-                } else if (tableName === 'resolved') {
-                    activeBtn.className = "px-5 py-2.5 rounded-xl font-extrabold text-sm bg-emerald-500 text-white transition-all flex items-center gap-2 shadow-md shadow-emerald-200";
-                    if(activeSpan) activeSpan.className = "bg-white/20 text-white px-2 py-0.5 rounded-lg text-[11px] font-black";
-                    if (window.dtResolved) window.dtResolved.columns.adjust();
-                } else if (tableName === 'freeze') {
-                    activeBtn.className = "px-5 py-2.5 rounded-xl font-extrabold text-sm bg-blue-600 text-white transition-all flex items-center gap-2 shadow-md shadow-blue-200";
-                    if(activeSpan) activeSpan.className = "bg-white/20 text-white px-2 py-0.5 rounded-lg text-[11px] font-black";
-                    if (window.dtFreeze) window.dtFreeze.columns.adjust();
-                }
+                activeBtn.classList.add('active');
+                if (tableName === 'warning' && window.dtWarning) window.dtWarning.columns.adjust();
+                else if (tableName === 'stuck' && window.dtStuck) window.dtStuck.columns.adjust();
+                else if (tableName === 'resolved' && window.dtResolved) window.dtResolved.columns.adjust();
+                else if (tableName === 'freeze' && window.dtFreeze) window.dtFreeze.columns.adjust();
             }
         };
 
@@ -2740,12 +2819,12 @@
                 let filterStartLocal = null;
                 if (fStart) {
                     let p = fStart.split('-');
-                    filterStartLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 0, 0, 0);
+                    filterStartLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 0, 0, 0).getTime();
                 }
                 let filterEndLocal = null;
                 if (fEnd) {
                     let p = fEnd.split('-');
-                    filterEndLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 23, 59, 59);
+                    filterEndLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 23, 59, 59).getTime();
                 }
 
                 let filteredArray = dbArray.filter(row => {
@@ -2769,12 +2848,18 @@
 
                     if (filterStartLocal || filterEndLocal) {
                         let rawDateStr = row['Today'] || row['Last Scan'];
+                        if (row._ui_status === 'Freeze') {
+                            let last92 = (row['Date Last Before 92'] || '').toString().trim();
+                            if (last92 && last92 !== '-') rawDateStr = last92;
+                        }
+                        
                         let rowDate = window.parseCustomDate(rawDateStr);
                         
                         if (!rowDate) match = false;
                         else {
-                            if (filterStartLocal && rowDate < filterStartLocal) match = false;
-                            if (filterEndLocal && rowDate > filterEndLocal) match = false;
+                            let rTime = rowDate.getTime();
+                            if (filterStartLocal && rTime < filterStartLocal) match = false;
+                            if (filterEndLocal && rTime > filterEndLocal) match = false;
                         }
                     }
                     

@@ -145,6 +145,9 @@
         .icon-content {
             position: relative;
         }
+        .icon-content:hover {
+            z-index: 100;
+        }
         .icon-content .tooltip {
             position: absolute;
             top: -30px;
@@ -168,15 +171,15 @@
             visibility: visible;
             top: -45px;
         }
-        .action-btn {
+        .tab-btn {
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 60px;
-            height: 60px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             background-color: #fff;
             border: 1px solid #e2e8f0;
@@ -185,6 +188,53 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             outline: none;
+            flex-shrink: 0;
+            gap: 4px;
+        }
+        .tab-btn:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            color: white;
+            border-color: transparent;
+        }
+        .tab-btn.active {
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+        .tab-btn svg, .tab-btn span[id^="count-"] {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+        .tab-btn .filled {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            transition: all 0.3s ease-in-out;
+            z-index: 0;
+        }
+        .tab-btn:hover .filled, .tab-btn.active .filled {
+            height: 100%;
+        }
+        .action-btn {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            outline: none;
+            flex-shrink: 0;
         }
         .action-btn:hover {
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
@@ -196,7 +246,7 @@
             border-color: transparent;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
         }
-        .action-btn svg, .action-btn span[id^="count-"] {
+        .action-btn svg {
             position: relative;
             z-index: 1;
             transition: color 0.3s ease;
@@ -795,7 +845,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden flex flex-col w-full">
+                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full relative z-20">
                         
                         <div id="empty-state" class="text-center py-32">
                             <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm">
@@ -807,45 +857,45 @@
 
                         <div id="table-container" class="w-full hidden flex-col">
                             
-                            <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-8 pb-6 border-b border-slate-100 bg-white">
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-10 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
                                 
                                 <ul class="action-menu flex-wrap justify-center md:justify-start">
                                     <li class="icon-content">
-                                        <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="action-btn tab-warning active">
+                                        <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="tab-btn tab-warning active">
                                             <span class="filled"></span>
-                                            <i data-lucide="alert-triangle" class="w-5 h-5 mb-0.5"></i>
-                                            <span id="count-warning" class="text-[10px] font-black leading-none">0</span>
+                                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                                            <span id="count-warning" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
                                         <div class="tooltip">Warning</div>
                                     </li>
                                     <li class="icon-content">
-                                        <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="action-btn tab-pending">
+                                        <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="tab-btn tab-pending">
                                             <span class="filled"></span>
-                                            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
-                                            <span id="count-stuck" class="text-[10px] font-black leading-none">0</span>
+                                            <i data-lucide="clock" class="w-6 h-6"></i>
+                                            <span id="count-stuck" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
                                         <div class="tooltip">Pending</div>
                                     </li>
                                     <li class="icon-content">
-                                        <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="action-btn tab-resolved">
+                                        <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="tab-btn tab-resolved">
                                             <span class="filled"></span>
-                                            <i data-lucide="check-circle-2" class="w-5 h-5 mb-0.5"></i>
-                                            <span id="count-resolved" class="text-[10px] font-black leading-none">0</span>
+                                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                                            <span id="count-resolved" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
                                         <div class="tooltip">Resolved</div>
                                     </li>
                                     <li class="icon-content">
-                                        <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="action-btn tab-freeze">
+                                        <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="tab-btn tab-freeze">
                                             <span class="filled"></span>
-                                            <i data-lucide="snowflake" class="w-5 h-5 mb-0.5"></i>
-                                            <span id="count-freeze" class="text-[10px] font-black leading-none">0</span>
+                                            <i data-lucide="snowflake" class="w-6 h-6"></i>
+                                            <span id="count-freeze" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
                                         <div class="tooltip">Freeze</div>
                                     </li>
                                 </ul>
 
                                 <ul class="action-menu flex-wrap justify-center md:justify-end">
-                                    <li class="icon-content" id="li-save-changes" hidden>
+                                    <li class="icon-content hidden" id="li-save-changes">
                                         <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
                                             <span class="filled"></span>
                                             <i data-lucide="save" class="w-5 h-5"></i>
@@ -866,7 +916,7 @@
                                         </button>
                                         <div class="tooltip">Salin Data</div>
                                     </li>
-                                    <li class="icon-content" id="li-copy-freeze" hidden>
+                                    <li class="icon-content hidden" id="li-copy-freeze">
                                         <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="action-btn btn-copy-awb">
                                             <span class="filled"></span>
                                             <i data-lucide="copy" class="w-5 h-5"></i>
@@ -1729,7 +1779,10 @@
                 window.toggleVisibility(id, showItems, 'flex');
             });
             const liSave = document.getElementById('li-save-changes');
-            if(liSave) liSave.style.display = showItems ? 'block' : 'none';
+            if(liSave) {
+                if (showItems) liSave.classList.remove('hidden');
+                else liSave.classList.add('hidden');
+            }
             window.updateDatabaseUI(); 
         };
 
@@ -1777,15 +1830,15 @@
             let liCopyData = document.getElementById('li-copy-custom');
             let liCopyFreeze = document.getElementById('li-copy-freeze');
             
-            if(liCopyAwb) { liCopyAwb.style.display = 'none'; }
-            if(liCopyData) { liCopyData.style.display = 'none'; }
-            if(liCopyFreeze) { liCopyFreeze.style.display = 'none'; }
+            if(liCopyAwb) { liCopyAwb.classList.add('hidden'); }
+            if(liCopyData) { liCopyData.classList.add('hidden'); }
+            if(liCopyFreeze) { liCopyFreeze.classList.add('hidden'); }
 
             if (tableName === 'warning' || tableName === 'stuck') {
-                if(liCopyAwb) { liCopyAwb.style.display = 'block'; }
-                if(liCopyData) { liCopyData.style.display = 'block'; }
+                if(liCopyAwb) { liCopyAwb.classList.remove('hidden'); }
+                if(liCopyData) { liCopyData.classList.remove('hidden'); }
             } else if (tableName === 'freeze') {
-                if(liCopyFreeze) { liCopyFreeze.style.display = 'block'; }
+                if(liCopyFreeze) { liCopyFreeze.classList.remove('hidden'); }
             }
 
             if(activeBtn) {

@@ -916,13 +916,6 @@
                                         </button>
                                         <div class="tooltip">Salin Data</div>
                                     </li>
-                                    <li class="icon-content hidden" id="li-copy-freeze">
-                                        <button onclick="window.copyFilteredData()" id="btn-copy-freeze" class="action-btn btn-copy-awb">
-                                            <span class="filled"></span>
-                                            <i data-lucide="copy" class="w-5 h-5"></i>
-                                        </button>
-                                        <div class="tooltip">Salin AWB (&lt;92 Kosong)</div>
-                                    </li>
                                     <li class="icon-content" id="li-extract">
                                         <button onclick="window.showExtractModal()" id="btn-extract" class="action-btn btn-extract">
                                             <span class="filled"></span>
@@ -1828,17 +1821,13 @@
 
             let liCopyAwb = document.getElementById('li-copy-awb');
             let liCopyData = document.getElementById('li-copy-custom');
-            let liCopyFreeze = document.getElementById('li-copy-freeze');
             
             if(liCopyAwb) { liCopyAwb.classList.add('hidden'); }
             if(liCopyData) { liCopyData.classList.add('hidden'); }
-            if(liCopyFreeze) { liCopyFreeze.classList.add('hidden'); }
 
             if (tableName === 'warning' || tableName === 'stuck') {
                 if(liCopyAwb) { liCopyAwb.classList.remove('hidden'); }
                 if(liCopyData) { liCopyData.classList.remove('hidden'); }
-            } else if (tableName === 'freeze') {
-                if(liCopyFreeze) { liCopyFreeze.classList.remove('hidden'); }
             }
 
             if(activeBtn) {

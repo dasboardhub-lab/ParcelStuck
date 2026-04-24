@@ -2578,16 +2578,21 @@
         window.updateChart = function(filteredArray) {
             let dateCounts = {};
             
+            let dateNow = new Date();
+            dateNow.setHours(0, 0, 0, 0);
+            let dateLimit = new Date(dateNow);
+            dateLimit.setDate(dateLimit.getDate() - 7);
+            
             filteredArray.forEach(row => {
+                if (row._ui_status === 'Freeze') return;
+                
                 let ls = row['Last Scan'];
-                if (row._ui_status === 'Freeze') {
-                    let d92 = (row['Date Last Before 92'] || '').toString().trim();
-                    ls = (d92 && d92 !== '-') ? d92 : '';
-                }
                 if(!ls) return;
                 
                 let dateObj = window.parseCustomDate(ls);
                 if(!dateObj) return;
+
+                if (row._ui_status === 'Resolved' && dateObj < dateLimit) return;
 
                 let yyyy = dateObj.getFullYear();
                 let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -2732,6 +2737,17 @@
                 if(document.getElementById('filter-end')) fEnd = document.getElementById('filter-end').value;
                 if(document.getElementById('filter-status')) fStatus = document.getElementById('filter-status').value;
 
+                let filterStartLocal = null;
+                if (fStart) {
+                    let p = fStart.split('-');
+                    filterStartLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 0, 0, 0);
+                }
+                let filterEndLocal = null;
+                if (fEnd) {
+                    let p = fEnd.split('-');
+                    filterEndLocal = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), 23, 59, 59);
+                }
+
                 let filteredArray = dbArray.filter(row => {
                     let match = true;
 
@@ -2751,14 +2767,14 @@
                         match = false; 
                     }
 
-                    if (fStart || fEnd) {
+                    if (filterStartLocal || filterEndLocal) {
                         let rawDateStr = row['Today'] || row['Last Scan'];
                         let rowDate = window.parseCustomDate(rawDateStr);
                         
                         if (!rowDate) match = false;
                         else {
-                            if (fStart && rowDate < new Date(fStart + 'T00:00:00')) match = false;
-                            if (fEnd && rowDate > new Date(fEnd + 'T23:59:59')) match = false;
+                            if (filterStartLocal && rowDate < filterStartLocal) match = false;
+                            if (filterEndLocal && rowDate > filterEndLocal) match = false;
                         }
                     }
                     

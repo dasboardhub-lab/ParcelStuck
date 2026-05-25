@@ -1058,6 +1058,9 @@
                         <button onclick="window.clearSpecificFeedback()" class="w-full bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
                             <i data-lucide="eraser" class="w-4 h-4"></i> Hapus Semua Feedback
                         </button>
+                        <button onclick="window.clearResolvedData()" class="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Hapus Data Resolved
+                        </button>
                         <button onclick="window.resetOpcode92()" class="w-full bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
                             <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Kembalikan Opcode 92
                         </button>
@@ -1887,6 +1890,35 @@
                 }
                 const pInput = document.getElementById('set-password');
                 if(pInput) pInput.value = ''; 
+            });
+        };
+
+        window.clearResolvedData = async function() {
+            if(!window.isAdminLoggedIn) return;
+            window.showConfirmModal("Hapus Data Resolved?", "Tindakan ini akan menghapus permanen semua resi berstatus Resolved dari database. Lanjutkan?", async () => {
+                let awbsToDelete = [];
+                Object.values(window.databaseMap).forEach(row => {
+                    if (row._ui_status === 'Resolved') {
+                        awbsToDelete.push(row.AWB);
+                    }
+                });
+
+                if (awbsToDelete.length > 0) {
+                    window.showUploadProgress("Menghapus Data", "Membersihkan tabel Resolved...");
+                    try {
+                        await window.deleteBatchFromSupabase(awbsToDelete, (current, total) => {
+                            window.updateUploadProgress(current, total, "Hapus:");
+                        });
+                        
+                        awbsToDelete.forEach(awb => { delete window.databaseMap[awb]; });
+                        window.updateDatabaseUI();
+                        window.finishUploadProgress(awbsToDelete.length, 0, "Semua data Resolved telah dihapus permanen.");
+                    } catch(e) {
+                        window.finishUploadProgress(0, 0, "Gagal terhubung ke server.");
+                    }
+                } else {
+                    window.showToast("Tidak ada data Resolved di sistem.", "success");
+                }
             });
         };
 

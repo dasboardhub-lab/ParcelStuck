@@ -2128,25 +2128,48 @@
 
                     window.updateUploadProgress(0, tempUpdateData.length, "Sinkronisasi AWB:");
                     tempUpdateData.forEach(row => {
-                        let awb = row['awb'];
-                        if (!awb) awb = row['awb_no']; // Fallback jika format lama masuk
+                        // Normalisasi nama kolom untuk mencegah error akibat spasi berlebih
+                        let cleanRow = {};
+                        for (let key in row) {
+                            if (row.hasOwnProperty(key)) {
+                                cleanRow[key.trim()] = row[key];
+                            }
+                        }
+
+                        let awb = cleanRow['awb'] || cleanRow['awb_no'];
 
                         if (awb && window.databaseMap[awb]) {
                             let isUpdated = false;
-                            if (row['latest_opcode_tm']) { window.databaseMap[awb]['Last Scan'] = row['latest_opcode_tm']; isUpdated = true; }
                             
-                            if (row['latest_opcode_location']) { window.databaseMap[awb]['hub_operator_internal'] = row['latest_opcode_location']; isUpdated = true; }
+                            // Cek Opcode baru
+                            let newOpcode = (cleanRow['latest_op_code'] || cleanRow['fop_code_internal']);
+                            let currentOpcode = window.databaseMap[awb]['Update Opcode'];
+                            if (newOpcode && newOpcode !== currentOpcode) { 
+                                window.databaseMap[awb]['Update Opcode'] = newOpcode; 
+                                window.databaseMap[awb]._is_manual = false; // Buka kunci jika ada pergerakan resi baru
+                                isUpdated = true; 
+                            }
                             
-                            // Handling FOP Code using standard 'latest_opcode' to avoid collision with location
-                            if (row['latest_opcode']) { window.databaseMap[awb]['Update Opcode'] = row['latest_opcode']; isUpdated = true; }
+                            // Cek Waktu Scan
+                            let newTime = (cleanRow['latest_opcode_tm'] || cleanRow['time_scan_internal']);
+                            if (newTime) { window.databaseMap[awb]['Last Scan'] = newTime; isUpdated = true; }
                             
-                            if (row['80_tm']) { window.databaseMap[awb]['Opcode 80'] = row['80_tm']; isUpdated = true; }
+                            // Cek Lokasi Hub
+                            let newHub = (cleanRow['latest_opcode_location'] || cleanRow['hub_operator_internal']);
+                            if (newHub) { window.databaseMap[awb]['hub_operator_internal'] = newHub; isUpdated = true; }
                             
-                            if (row['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = row['expect_delivery_tm']; isUpdated = true; } 
+                            // Cek Staging
+                            if (cleanRow['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = cleanRow['staging_operator_internal']; isUpdated = true; }
                             
-                            if (row['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = row['staging_operator_internal']; isUpdated = true; }
-
-                            if (!window.databaseMap[awb]['item_name'] && row['item_name']) { window.databaseMap[awb]['item_name'] = row['item_name']; isUpdated = true; }
+                            // Cek Opcode 80
+                            let new80 = (cleanRow['80_tm'] || cleanRow['80_last']);
+                            if (new80) { window.databaseMap[awb]['Opcode 80'] = new80; isUpdated = true; }
+                            
+                            // Cek Expect Delivery
+                            if (cleanRow['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = cleanRow['expect_delivery_tm']; isUpdated = true; } 
+                            
+                            // Cek Item Name (hanya isi jika kosong)
+                            if (!window.databaseMap[awb]['item_name'] && cleanRow['item_name']) { window.databaseMap[awb]['item_name'] = cleanRow['item_name']; isUpdated = true; }
 
                             if (isUpdated) {
                                 window.databaseMap[awb]._ui_status = window.evaluateStatus(window.databaseMap[awb]);

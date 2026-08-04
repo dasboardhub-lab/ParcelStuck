@@ -1758,7 +1758,7 @@
             let batchDate = new Date().toISOString().split('T')[0];
             for (let i = 0; i < updateData.length; i += chunkSize) {
                 const chunk = updateData.slice(i, i + chunkSize);
-                const mappedChunk = chunk.map(row => ({ awb: row.awb_no, batch_date: batchDate, data: row }));
+                const mappedChunk = chunk.map(row => ({ awb: row.awb || row.awb_no, batch_date: batchDate, data: row }));
                 const { error } = await supabase.from('update_history').insert(mappedChunk);
                 if (!error) totalSaved += chunk.length;
                 if (progressCallback) progressCallback(totalSaved, updateData.length);
@@ -2120,23 +2120,32 @@
 
             window.showUploadProgress("Menyesuaikan Update", "Membaca file status...");
             Papa.parse(file, {
-                header: true, skipEmptyLines: true, delimiter: "|", 
+                header: true, skipEmptyLines: true, 
+                // Removed strict "|" delimiter to auto-detect standard CSVs
                 complete: async function(results) {
                     let tempUpdateData = results.data;
                     let updatedCount = 0; let skipCount = 0; let recordsToSave = []; 
 
                     window.updateUploadProgress(0, tempUpdateData.length, "Sinkronisasi AWB:");
                     tempUpdateData.forEach(row => {
-                        let awb = row['awb_no'];
-                        if (window.databaseMap[awb]) {
+                        let awb = row['awb'];
+                        if (!awb) awb = row['awb_no']; // Fallback jika format lama masuk
+
+                        if (awb && window.databaseMap[awb]) {
                             let isUpdated = false;
-                            if (row['time_scan_internal']) { window.databaseMap[awb]['Last Scan'] = row['time_scan_internal']; isUpdated = true; }
-                            if (row['hub_operator_internal']) { window.databaseMap[awb]['hub_operator_internal'] = row['hub_operator_internal']; isUpdated = true; }
-                            if (row['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = row['staging_operator_internal']; isUpdated = true; }
-                            if (row['fop_code_internal']) { window.databaseMap[awb]['Update Opcode'] = row['fop_code_internal']; isUpdated = true; }
-                            if (row['return_awb']) { window.databaseMap[awb]['Return'] = row['return_awb']; isUpdated = true; }
-                            if (row['80_last']) { window.databaseMap[awb]['Opcode 80'] = row['80_last']; isUpdated = true; }
+                            if (row['latest_opcode_tm']) { window.databaseMap[awb]['Last Scan'] = row['latest_opcode_tm']; isUpdated = true; }
+                            
+                            if (row['latest_opcode_location']) { window.databaseMap[awb]['hub_operator_internal'] = row['latest_opcode_location']; isUpdated = true; }
+                            
+                            // Handling FOP Code using standard 'latest_opcode' to avoid collision with location
+                            if (row['latest_opcode']) { window.databaseMap[awb]['Update Opcode'] = row['latest_opcode']; isUpdated = true; }
+                            
+                            if (row['80_tm']) { window.databaseMap[awb]['Opcode 80'] = row['80_tm']; isUpdated = true; }
+                            
                             if (row['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = row['expect_delivery_tm']; isUpdated = true; } 
+                            
+                            if (row['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = row['staging_operator_internal']; isUpdated = true; }
+
                             if (!window.databaseMap[awb]['item_name'] && row['item_name']) { window.databaseMap[awb]['item_name'] = row['item_name']; isUpdated = true; }
 
                             if (isUpdated) {
@@ -2594,12 +2603,12 @@
 
             freezeData.forEach(row => {
                 let op = (row['Last Before 92'] || '').toString().trim();
-                if (!op || op === '-') return;
+                if (!op || op === '-') op = "KOSONG";
                 
                 let hubRaw = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                 let hub = hubRaw;
                 if (!hub || hub === '-') hub = "KOSONG";
-                else if (confHubs.length > 0 && !confHubs.includes(hub)) return;
+                else if (confHubs.length > 0 && !confHubs.includes(hub)) hub = "EKSTERNAL";
                 
                 hasValidData = true;
 

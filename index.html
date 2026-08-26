@@ -829,35 +829,97 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10">
+            <!-- Visual Analytics Row 1: The Big Picture (Trend & Aging) -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
                 
-                <div class="flex flex-col space-y-8 min-w-0">
+                <!-- Trend Chart (Wider) -->
+                <div class="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 flex flex-col w-full h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
+                            Tren Volume Resi
+                        </h4>
+                    </div>
+                    <div class="w-full h-[280px] relative">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Aging Chart -->
+                <div class="xl:col-span-1 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="aging-chart-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-teal-50 text-teal-600 rounded-xl"><i data-lucide="timer" class="w-5 h-5"></i></div>
+                            Durasi Paket Stuck
+                        </h4>
+                    </div>
+                    <div class="w-full h-[240px] relative flex justify-center mt-2">
+                        <canvas id="agingChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-5 text-center font-semibold">Usia resi tertahan sejak Last Scan.</p>
+                </div>
+
+            </div>
+
+            <!-- Visual Analytics Row 2: The Breakdown (Origin, Dest, Items) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+                
+                <!-- Origin Hub -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="origin-chart-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                            Top Origin Terkendala
+                        </h4>
+                    </div>
+                    <div class="w-full h-[250px] relative">
+                        <canvas id="originChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Destination Bottleneck -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="dest-chart-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="map" class="w-5 h-5"></i></div>
+                            Destinasi Bottleneck
+                        </h4>
+                    </div>
+                    <div class="w-full h-[250px] relative">
+                        <canvas id="destChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Items -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="item-chart-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-pink-50 text-pink-600 rounded-xl"><i data-lucide="package-search" class="w-5 h-5"></i></div>
+                            Top Barang Terkendala
+                        </h4>
+                    </div>
+                    <div class="w-full flex-1 flex flex-col justify-center space-y-4" id="top-items-container">
+                        <!-- Konten list diinjeksi oleh JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tabel Data Utama (Berada di Atas Tabel Rekap agar cepat diakses) -->
+            <div class="w-full relative z-20">
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full relative">
                     
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 flex flex-col w-full">
-                        <div class="flex justify-between items-center mb-6">
-                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
-                                Tren Volume Resi
-                            </h4>
+                    <div id="empty-state" class="text-center py-32">
+                        <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm">
+                            <i data-lucide="inbox" class="w-12 h-12 text-slate-300"></i>
                         </div>
-                        <div class="w-full h-[320px] relative">
-                            <canvas id="trendChart"></canvas>
-                        </div>
+                        <h3 class="text-2xl font-black text-slate-700 mb-2">Belum Ada Data</h3>
+                        <p class="text-slate-500 text-sm font-semibold max-w-sm mx-auto">Sistem belum memuat data apapun. Anda perlu melakukan "Ingest Data" terlebih dahulu.</p>
                     </div>
 
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full relative z-20">
+                    <div id="table-container" class="w-full hidden flex-col">
                         
-                        <div id="empty-state" class="text-center py-32">
-                            <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm">
-                                <i data-lucide="inbox" class="w-12 h-12 text-slate-300"></i>
-                            </div>
-                            <h3 class="text-2xl font-black text-slate-700 mb-2">Belum Ada Data</h3>
-                            <p class="text-slate-500 text-sm font-semibold max-w-sm mx-auto">Sistem belum memuat data apapun. Anda perlu melakukan "Ingest Data" terlebih dahulu.</p>
-                        </div>
-
-                        <div id="table-container" class="w-full hidden flex-col">
-                            
-                            <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-10 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
                                 
                                 <ul class="action-menu flex-wrap justify-center md:justify-start">
                                     <li class="icon-content">
@@ -934,9 +996,9 @@
 
                             </div>
 
-                            <div class="p-7 bg-white">
+                            <div class="p-6 bg-white rounded-b-[2rem]">
                                 <div id="tc-warning" class="w-full block">
-                                    <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-6 text-sm flex items-start gap-3 shadow-sm">
+                                    <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm">
                                         <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
                                         <div>
                                             <p class="font-black mb-1 text-rose-900">Eskalasi Mendesak</p>
@@ -957,131 +1019,44 @@
                             </div>
 
                         </div>
-                    </div>
-
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="freeze-summary-section">
-                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="snowflake" class="w-5 h-5"></i></div>
-                                Analisis Freeze (&lt;92)
-                            </h4>
-                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
-                                <button onclick="window.setFreezeSummaryMode('hub')" id="btn-freeze-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600">AREA HUB</button>
-                                <button onclick="window.setFreezeSummaryMode('date')" id="btn-freeze-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TGL &lt;92</button>
-                            </div>
-                        </div>
-                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
-                            <table class="summary-table" id="freezeSummaryTable"></table>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="flex flex-col space-y-8 min-w-0 w-full max-w-full">
-                    
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="summary-section">
-                        <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
-                            <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div>
-                                Rekapitulasi HUB
-                            </h4>
-                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
-                                <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TANGGAL</button>
-                                <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-indigo-600">AREA HUB</button>
-                            </div>
-                        </div>
-                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
-                            <table class="summary-table" id="summaryTable"></table>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="origin-chart-section">
-                        <div class="flex justify-between items-center mb-6">
-                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
-                                Origin Hub Terkendala
-                            </h4>
-                        </div>
-                        <div class="w-full h-[280px] relative">
-                            <canvas id="originChart"></canvas>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-4 text-center font-semibold">Asal paket khusus status Warning & Pending (Top 10)</p>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div id="section-settings" class="hidden">
-            <div class="mb-8">
-                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Aturan & Keamanan</h2>
-                <p class="text-base text-slate-500 mt-2 font-semibold">Kelola cara sistem memilah data dan melindungi akses privasi Anda.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
-                <div class="md:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8">
-                    <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-slate-100 rounded-xl"><i data-lucide="key" class="w-5 h-5 text-slate-700"></i></div>
-                        Sandi Admin
-                    </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Sandi Baru</label>
-                            <input type="password" id="set-password" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold" placeholder="Masukkan sandi opsional...">
-                            <p class="text-xs text-slate-400 mt-2 font-semibold">Abaikan jika tidak ingin diganti.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="md:col-span-3 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-bl-full -z-10"></div>
-                    <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="cpu" class="w-5 h-5"></i></div>
-                        Aturan Resolusi Otomatis
-                    </h3>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Opcode Aman (Whitelist)</label>
-                            <textarea id="set-opcodes" rows="2" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono font-bold" placeholder="Misal: 41, 90, 55"></textarea>
-                            <p class="text-xs leading-relaxed text-slate-500 mt-2 font-medium">Beri koma sebagai pemisah. Opcode kritis (92, 603, 618, 21, 22, 207, 43) tidak akan terpengaruh.</p>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">HUB Terpantau</label>
-                            <textarea id="set-hubs" rows="2" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono font-bold" placeholder="Misal: MKS, SUB, CGK"></textarea>
-                            <p class="text-xs leading-relaxed text-slate-500 mt-2 font-medium">Resi yang masuk ke HUB di luar daftar ini akan langsung masuk kategori Resolved.</p>
-                        </div>
-                    </div>
-                    <div class="mt-8 flex justify-end pt-6 border-t border-slate-100">
-                        <button onclick="window.saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 px-8 rounded-xl transition-all flex items-center gap-2 shadow-md shadow-indigo-200 active:scale-95 text-sm">
-                            <i data-lucide="save" class="w-4 h-4"></i> Terapkan Pengaturan
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8">
-                    <h3 class="text-lg font-black text-slate-800 flex items-center gap-3 mb-4">
-                        <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><i data-lucide="database" class="w-5 h-5"></i></div>
-                        Pembersihan Data
-                    </h3>
-                    <p class="text-sm text-slate-500 mb-6 font-semibold leading-relaxed">Kelola umpan balik atau bersihkan sistem secara menyeluruh dari sini.</p>
-                    <div class="space-y-4">
-                        <button onclick="window.clearSpecificFeedback()" class="w-full bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
-                            <i data-lucide="eraser" class="w-4 h-4"></i> Hapus Semua Feedback
-                        </button>
-                        <button onclick="window.clearResolvedData()" class="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
-                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Hapus Data Resolved
-                        </button>
-                        <button onclick="window.resetOpcode92()" class="w-full bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
-                            <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Kembalikan Opcode 92
-                        </button>
-                        <button onclick="window.showBulkDeleteModal()" class="w-full bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus AWB Pilihan
-                        </button>
+            <!-- Summary Tables Row: Rekapitulasi & Freeze Summary -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10">
+                
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="summary-section">
+                    <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
+                        <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div>
+                            Rekapitulasi HUB
+                        </h4>
+                        <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
+                            <button onclick="window.setSummaryMode('date')" id="btn-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TANGGAL</button>
+                            <button onclick="window.setSummaryMode('hub')" id="btn-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-indigo-600">AREA HUB</button>
+                        </div>
+                    </div>
+                    <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
+                        <table class="summary-table" id="summaryTable"></table>
                     </div>
                 </div>
+
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="freeze-summary-section">
+                    <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="snowflake" class="w-5 h-5"></i></div>
+                            Analisis Freeze (&lt;92)
+                        </h4>
+                        <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
+                            <button onclick="window.setFreezeSummaryMode('hub')" id="btn-freeze-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600">AREA HUB</button>
+                            <button onclick="window.setFreezeSummaryMode('date')" id="btn-freeze-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TGL &lt;92</button>
+                        </div>
+                    </div>
+                    <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
+                        <table class="summary-table" id="freezeSummaryTable"></table>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -1618,6 +1593,8 @@
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
         window.originChartInstance = null;
+        window.destChartInstance = null;
+        window.agingChartInstance = null;
         window.summaryMode = 'hub';
         window.freezeSummaryMode = 'hub';
         window.modifiedAwbs = new Set();
@@ -2945,6 +2922,249 @@
             });
         };
 
+        window.updateDestinationChart = function(filteredArray) {
+            let destCounts = {};
+            
+            filteredArray.forEach(row => {
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
+                    // Coba ambil dari staging dulu, kalau kosong ambil dari UZ
+                    let dest = (row['destination_staging'] || row['destination_uz'] || 'KOSONG').toString().trim();
+                    if(dest === '') dest = 'KOSONG';
+                    destCounts[dest] = (destCounts[dest] || 0) + 1;
+                }
+            });
+
+            // Urutkan dari yang terbanyak
+            let sortedDest = Object.keys(destCounts).sort((a, b) => destCounts[b] - destCounts[a]);
+            let topDest = sortedDest.slice(0, 10); 
+            let chartLabels = topDest;
+            let chartData = topDest.map(d => destCounts[d]);
+
+            const canvas = document.getElementById('destChart');
+            const section = document.getElementById('dest-chart-section');
+            
+            if (chartData.length === 0) {
+                if (section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if (section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (window.destChartInstance) {
+                window.destChartInstance.destroy();
+            }
+
+            window.destChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Total Stuck & Warning',
+                        data: chartData,
+                        backgroundColor: '#a855f7', // Warna Ungu
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Memutar bar menjadi horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { right: 30, top: 20 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: '600' },
+                            bodyFont: { size: 14, family: 'Plus Jakarta Sans', weight: 'bold' },
+                            cornerRadius: 8
+                        },
+                        datalabels: {
+                            color: '#475569', 
+                            anchor: 'end',
+                            align: 'right',
+                            offset: 4,
+                            font: { weight: '800', family: 'Plus Jakarta Sans', size: 11 },
+                            formatter: function(value) { return value > 0 ? value.toLocaleString('id-ID') : ''; }
+                        }
+                    },
+                    scales: {
+                        x: { display: false }, // Sembunyikan axis x bawah karena ada datalabels
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                font: { family: 'Plus Jakarta Sans', size: 10, weight: '700' }, 
+                                color: '#64748b' 
+                            },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        };
+
+        window.updateItemChart = function(filteredArray) {
+            let itemCounts = {};
+            let totalItems = 0;
+            
+            filteredArray.forEach(row => {
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
+                    let item = (row['item_name'] || '').toString().trim();
+                    // Cegah nilai kosong atau null mendominasi jika ada
+                    if(item === '' || item === '-' || item.toLowerCase() === 'null') item = 'Tidak Teridentifikasi / Kosong';
+                    
+                    itemCounts[item] = (itemCounts[item] || 0) + 1;
+                    totalItems++;
+                }
+            });
+
+            const section = document.getElementById('item-chart-section');
+            const container = document.getElementById('top-items-container');
+            
+            if (totalItems === 0) {
+                if (section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if (section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            if (!container) return;
+            
+            // Urutkan dari yang terbanyak
+            let sortedItems = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
+            let topItems = sortedItems.slice(0, 5); // Ambil Top 5
+            
+            let html = '';
+            let maxCount = topItems.length > 0 ? itemCounts[topItems[0]] : 1;
+
+            topItems.forEach((item, index) => {
+                let count = itemCounts[item];
+                let percentage = Math.round((count / maxCount) * 100); // Persentase relatif terhadap yang terbesar
+                
+                // Variasi warna untuk setiap ranking
+                let colors = ['bg-pink-500', 'bg-pink-400', 'bg-slate-400', 'bg-slate-300', 'bg-slate-200'];
+                let color = colors[index] || 'bg-slate-200';
+
+                html += `
+                    <div class="flex flex-col gap-1.5 w-full">
+                        <div class="flex justify-between items-end gap-2">
+                            <span class="text-[11px] font-bold text-slate-700 truncate w-[80%]" title="${item}">${item}</span>
+                            <span class="text-[11px] font-black text-slate-800">${count.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 shadow-inner overflow-hidden">
+                            <div class="${color} h-2 rounded-full transition-all duration-700 ease-out" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        };
+
+        window.updateAgingChart = function(filteredArray) {
+            let agingCounts = {
+                '1-3 Hari': 0,
+                '4-7 Hari': 0,
+                '8-14 Hari': 0,
+                '> 14 Hari': 0
+            };
+            let totalAged = 0;
+            
+            // Ambil waktu hari ini untuk menghitung selisih durasi
+            const now = new Date().getTime();
+
+            filteredArray.forEach(row => {
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
+                    let rawDateStr = row['Last Scan'];
+                    let dateObj = window.parseCustomDate(rawDateStr);
+                    
+                    if (dateObj) {
+                        // Hitung selisih waktu dalam milidetik lalu ubah ke hari
+                        let diffTime = Math.abs(now - dateObj.getTime());
+                        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        
+                        if (diffDays <= 3) agingCounts['1-3 Hari']++;
+                        else if (diffDays <= 7) agingCounts['4-7 Hari']++;
+                        else if (diffDays <= 14) agingCounts['8-14 Hari']++;
+                        else agingCounts['> 14 Hari']++;
+                        
+                        totalAged++;
+                    }
+                }
+            });
+
+            const section = document.getElementById('aging-chart-section');
+            const canvas = document.getElementById('agingChart');
+            
+            if (totalAged === 0) {
+                if (section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if (section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (window.agingChartInstance) {
+                window.agingChartInstance.destroy();
+            }
+
+            window.agingChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1-3 Hari', '4-7 Hari', '8-14 Hari', '> 14 Hari'],
+                    datasets: [{
+                        data: [
+                            agingCounts['1-3 Hari'], 
+                            agingCounts['4-7 Hari'], 
+                            agingCounts['8-14 Hari'], 
+                            agingCounts['> 14 Hari']
+                        ],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'], // Emerald, Amber, Orange, Red
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    layout: { padding: { top: 10, bottom: 20 } },
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: { family: 'Plus Jakarta Sans', size: 10, weight: '800' },
+                                color: '#64748b'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: '600' },
+                            bodyFont: { size: 14, family: 'Plus Jakarta Sans', weight: 'bold' },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + context.raw.toLocaleString('id-ID') + ' Paket';
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#ffffff', 
+                            font: { weight: '800', family: 'Plus Jakarta Sans', size: 12 },
+                            formatter: function(value) { return value > 0 ? value : ''; }
+                        }
+                    }
+                }
+            });
+        };
+
         window.updateDatabaseUI = function() {
             const dbArray = Object.values(window.databaseMap);
 
@@ -3106,6 +3326,9 @@
 
                 window.updateChart(filteredArray);
                 window.updateOriginChart(filteredArray);
+                window.updateDestinationChart(filteredArray);
+                window.updateItemChart(filteredArray);
+                window.updateAgingChart(filteredArray);
                 window.renderSummaryTable(filteredArray);
                 window.renderFreezeSummaryTable(filteredArray);
 
@@ -3197,7 +3420,32 @@
             columns.push({ 
                 title: "Last Scan", data: "Last Scan", width: lsW, defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
-                render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
+                render: function(data, type, row) { 
+                    if (type === 'display' && data) {
+                        let formattedDate = window.formatStandardDate(data);
+                        if (isWarnStuck) {
+                            let dateObj = window.parseCustomDate(data);
+                            if (dateObj) {
+                                let now = new Date().getTime();
+                                let diffTime = Math.abs(now - dateObj.getTime());
+                                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                
+                                let dotClass = '';
+                                if (diffDays <= 3) dotClass = 'bg-emerald-500';
+                                else if (diffDays <= 7) dotClass = 'bg-amber-400';
+                                else if (diffDays <= 14) dotClass = 'bg-orange-500';
+                                else dotClass = 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)] animate-pulse';
+                                
+                                return `<div class="flex items-center justify-center gap-1.5 cursor-help" title="Tertahan selama ${diffDays} Hari">
+                                            <span class="w-2 h-2 rounded-full flex-shrink-0 ${dotClass}"></span>
+                                            <span>${formattedDate}</span>
+                                        </div>`;
+                            }
+                        }
+                        return formattedDate;
+                    }
+                    return data; 
+                }
             });
 
             let opW = isResolved ? "10%" : "8%";

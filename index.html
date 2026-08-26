@@ -959,6 +959,22 @@
                         </div>
                     </div>
 
+                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="freeze-summary-section">
+                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="snowflake" class="w-5 h-5"></i></div>
+                                Analisis Freeze (&lt;92)
+                            </h4>
+                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
+                                <button onclick="window.setFreezeSummaryMode('hub')" id="btn-freeze-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600">AREA HUB</button>
+                                <button onclick="window.setFreezeSummaryMode('date')" id="btn-freeze-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TGL &lt;92</button>
+                            </div>
+                        </div>
+                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
+                            <table class="summary-table" id="freezeSummaryTable"></table>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="flex flex-col space-y-8 min-w-0 w-full max-w-full">
@@ -979,20 +995,17 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="freeze-summary-section">
-                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-7 hidden flex-col w-full" id="origin-chart-section">
+                        <div class="flex justify-between items-center mb-6">
                             <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="snowflake" class="w-5 h-5"></i></div>
-                                Analisis Freeze (&lt;92)
+                                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                                Origin Hub Terkendala
                             </h4>
-                            <div class="bg-slate-100 p-1.5 rounded-xl flex items-center border border-slate-200/60 shadow-sm">
-                                <button onclick="window.setFreezeSummaryMode('hub')" id="btn-freeze-sum-hub" class="px-4 py-2 rounded-lg text-[11px] font-black transition-all bg-white shadow text-blue-600">AREA HUB</button>
-                                <button onclick="window.setFreezeSummaryMode('date')" id="btn-freeze-sum-date" class="px-4 py-2 rounded-lg text-[11px] font-bold transition-all text-slate-500 hover:text-slate-700">TGL &lt;92</button>
-                            </div>
                         </div>
-                        <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
-                            <table class="summary-table" id="freezeSummaryTable"></table>
+                        <div class="w-full h-[280px] relative">
+                            <canvas id="originChart"></canvas>
                         </div>
+                        <p class="text-xs text-slate-400 mt-4 text-center font-semibold">Asal paket khusus status Warning & Pending (Top 10)</p>
                     </div>
 
                 </div>
@@ -1604,6 +1617,7 @@
         window.databaseMap = {}; 
         window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
         window.trendChartInstance = null;
+        window.originChartInstance = null;
         window.summaryMode = 'hub';
         window.freezeSummaryMode = 'hub';
         window.modifiedAwbs = new Set();
@@ -2160,6 +2174,11 @@
                             
                             // Cek Staging
                             if (cleanRow['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = cleanRow['staging_operator_internal']; isUpdated = true; }
+                            
+                            // Tambahan Field Asal & Tujuan
+                            if (cleanRow['origin_hub']) { window.databaseMap[awb]['origin_hub'] = cleanRow['origin_hub']; isUpdated = true; }
+                            if (cleanRow['destination_staging']) { window.databaseMap[awb]['destination_staging'] = cleanRow['destination_staging']; isUpdated = true; }
+                            if (cleanRow['destination_uz'] || cleanRow['destination_u']) { window.databaseMap[awb]['destination_uz'] = cleanRow['destination_uz'] || cleanRow['destination_u']; isUpdated = true; }
                             
                             // Cek Opcode 80
                             let new80 = (cleanRow['80_tm'] || cleanRow['80_last']);
@@ -2763,21 +2782,18 @@
         window.updateChart = function(filteredArray) {
             let dateCounts = {};
             
-            let dateNow = new Date();
-            dateNow.setHours(0, 0, 0, 0);
-            let dateLimit = new Date(dateNow);
-            dateLimit.setDate(dateLimit.getDate() - 7);
-            
             filteredArray.forEach(row => {
-                if (row._ui_status === 'Freeze') return;
+                // Selaraskan logika penarikan tanggal dengan Tabel Rekapitulasi & Filter
+                let rawDateStr = row['Today'] || row['Last Scan'];
+                if (row._ui_status === 'Freeze') {
+                    let last92 = (row['Date Last Before 92'] || '').toString().trim();
+                    if (last92 && last92 !== '-') rawDateStr = last92;
+                }
                 
-                let ls = row['Last Scan'];
-                if(!ls) return;
+                if(!rawDateStr || rawDateStr === '-') return;
                 
-                let dateObj = window.parseCustomDate(ls);
+                let dateObj = window.parseCustomDate(rawDateStr);
                 if(!dateObj) return;
-
-                if (row._ui_status === 'Resolved' && dateObj < dateLimit) return;
 
                 let yyyy = dateObj.getFullYear();
                 let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -2847,6 +2863,84 @@
                         y: { display: false } 
                     },
                     interaction: { mode: 'index', intersect: false }
+                }
+            });
+        };
+
+        window.updateOriginChart = function(filteredArray) {
+            let originCounts = {};
+            
+            filteredArray.forEach(row => {
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
+                    let origin = (row['origin_hub'] || 'KOSONG').toString().trim();
+                    if(origin === '') origin = 'KOSONG';
+                    originCounts[origin] = (originCounts[origin] || 0) + 1;
+                }
+            });
+
+            // Urutkan dari yang terbanyak
+            let sortedOrigins = Object.keys(originCounts).sort((a, b) => originCounts[b] - originCounts[a]);
+            let topOrigins = sortedOrigins.slice(0, 10); 
+            let chartLabels = topOrigins;
+            let chartData = topOrigins.map(o => originCounts[o]);
+
+            const canvas = document.getElementById('originChart');
+            const section = document.getElementById('origin-chart-section');
+            
+            if (chartData.length === 0) {
+                if (section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if (section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (window.originChartInstance) {
+                window.originChartInstance.destroy();
+            }
+
+            window.originChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Total Stuck & Warning',
+                        data: chartData,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: '600' },
+                            bodyFont: { size: 14, family: 'Plus Jakarta Sans', weight: 'bold' },
+                            cornerRadius: 8
+                        },
+                        datalabels: {
+                            color: '#475569', 
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 2,
+                            font: { weight: '800', family: 'Plus Jakarta Sans', size: 11 },
+                            formatter: function(value) { return value > 0 ? value.toLocaleString('id-ID') : ''; }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 10, weight: '700' }, color: '#64748b' },
+                            border: { display: false }
+                        },
+                        y: { display: false }
+                    }
                 }
             });
         };
@@ -3011,6 +3105,7 @@
                 window.setText('count-warning', dataWarning.length.toLocaleString('id-ID'));
 
                 window.updateChart(filteredArray);
+                window.updateOriginChart(filteredArray);
                 window.renderSummaryTable(filteredArray);
                 window.renderFreezeSummaryTable(filteredArray);
 
@@ -3078,6 +3173,19 @@
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap" 
                 });
             }
+
+            columns.push({ 
+                title: "Origin Hub", data: "origin_hub", width: "8%", defaultContent: "-", 
+                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
+            });
+            columns.push({ 
+                title: "Dest Staging", data: "destination_staging", width: "8%", defaultContent: "-", 
+                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
+            });
+            columns.push({ 
+                title: "Dest UZ", data: "destination_uz", width: "8%", defaultContent: "-", 
+                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
+            });
 
             let awbW = isWarnStuck ? "12%" : (isFreeze ? "12%" : "15%");
             columns.push({ 

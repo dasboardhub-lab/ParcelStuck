@@ -30,11 +30,10 @@
         .dropdown-menu { max-height: 350px; overflow-y: auto; }
         .dropdown-menu::-webkit-scrollbar { width: 4px; }
 
+        /* TABEL RESPONSIVE FIX: Dicabutnya table-layout fixed dan min-width kaku */
         table.dataTable { 
             border-collapse: collapse !important; 
             width: 100% !important; 
-            min-width: 1100px !important; 
-            table-layout: fixed !important; 
             margin-top: 0 !important; 
         }
         table.dataTable thead th {
@@ -47,8 +46,6 @@
             border-bottom: 1px solid #f1f5f9 !important;
             padding: 16px 12px !important;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         table.dataTable tbody td {
             border-bottom: 1px solid #f8fafc !important;
@@ -611,7 +608,7 @@
             <div class="relative w-20 h-20 flex items-center justify-center mb-5">
                 <div class="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
-                <i data-lucide="package" class="w-8 h-8 text-indigo-600"></i>
+                <i data-lucide="package" class="w-8 h-8 text-indigo-600" id="loader-icon"></i>
             </div>
             <h2 id="loader-title" class="text-2xl font-black text-slate-800 text-center tracking-tight">Menyinkronkan Sistem</h2>
             <p id="loader-desc" class="text-slate-500 text-sm mt-2 text-center font-semibold">Membangun koneksi ke Cloud Database...</p>
@@ -627,14 +624,14 @@
     </div>
 
     <header class="glass-header sticky top-0 z-40 mb-8 shadow-sm">
-        <div class="w-full px-6 lg:px-10 py-4 flex flex-wrap items-center justify-between gap-5">
+        <div class="w-full px-4 lg:px-10 py-4 flex flex-wrap items-center justify-between gap-5">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-3 rounded-2xl text-white shadow-lg shadow-indigo-200 ring-4 ring-white">
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-3 rounded-2xl text-white shadow-lg shadow-indigo-200 ring-4 ring-white hidden md:block">
                     <i data-lucide="boxes" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black text-slate-800 leading-none tracking-tight">HubOps Workspace</h1>
-                    <p class="text-[11px] text-slate-500 font-extrabold uppercase tracking-widest mt-1.5">Parcel Monitoring System</p>
+                    <h1 class="text-lg md:text-xl font-black text-slate-800 leading-none tracking-tight">HubOps Workspace</h1>
+                    <p class="text-[10px] md:text-[11px] text-slate-500 font-extrabold uppercase tracking-widest mt-1.5">Parcel Monitoring System</p>
                 </div>
                 <span id="offline-badge" class="hidden text-[10px] bg-amber-100 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl font-bold ml-3 uppercase tracking-wide flex items-center gap-1.5 shadow-sm"><i data-lucide="wifi-off" class="w-3.5 h-3.5"></i> Offline</span>
             </div>
@@ -835,7 +832,6 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
-                
                 <div class="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 flex flex-col w-full h-full">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -860,11 +856,9 @@
                     </div>
                     <p class="text-[11px] text-slate-400 mt-5 text-center font-semibold leading-relaxed px-4">Mengukur usia paket berstatus Warning & Pending berdasarkan tanggal Last Scan.</p>
                 </div>
-
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 relative z-10">
-                
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="origin-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -911,7 +905,6 @@
                     <div class="w-full flex-1 flex flex-col justify-center space-y-4" id="top-items-container">
                     </div>
                 </div>
-
             </div>
 
             <div class="w-full relative z-20">
@@ -926,112 +919,108 @@
                     </div>
 
                     <div id="table-container" class="w-full hidden flex-col">
-                        
                         <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-4 md:px-8 pt-6 md:pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
-                                
-                                <ul class="action-menu flex-wrap justify-center md:justify-start">
-                                    <li class="icon-content">
-                                        <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="tab-btn tab-warning active">
-                                            <span class="filled"></span>
-                                            <i data-lucide="alert-triangle" class="w-5 h-5 md:w-6 md:h-6"></i>
-                                            <span id="count-warning" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Warning</div>
-                                    </li>
-                                    <li class="icon-content">
-                                        <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="tab-btn tab-pending">
-                                            <span class="filled"></span>
-                                            <i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>
-                                            <span id="count-stuck" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Pending</div>
-                                    </li>
-                                    <li class="icon-content">
-                                        <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="tab-btn tab-resolved">
-                                            <span class="filled"></span>
-                                            <i data-lucide="check-circle-2" class="w-5 h-5 md:w-6 md:h-6"></i>
-                                            <span id="count-resolved" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Resolved</div>
-                                    </li>
-                                    <li class="icon-content">
-                                        <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="tab-btn tab-freeze">
-                                            <span class="filled"></span>
-                                            <i data-lucide="snowflake" class="w-5 h-5 md:w-6 md:h-6"></i>
-                                            <span id="count-freeze" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Freeze</div>
-                                    </li>
-                                </ul>
+                            
+                            <ul class="action-menu flex-wrap justify-center md:justify-start">
+                                <li class="icon-content">
+                                    <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="tab-btn tab-warning active">
+                                        <span class="filled"></span>
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                        <span id="count-warning" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Warning</div>
+                                </li>
+                                <li class="icon-content">
+                                    <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="tab-btn tab-pending">
+                                        <span class="filled"></span>
+                                        <i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                        <span id="count-stuck" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Pending</div>
+                                </li>
+                                <li class="icon-content">
+                                    <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="tab-btn tab-resolved">
+                                        <span class="filled"></span>
+                                        <i data-lucide="check-circle-2" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                        <span id="count-resolved" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Resolved</div>
+                                </li>
+                                <li class="icon-content">
+                                    <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="tab-btn tab-freeze">
+                                        <span class="filled"></span>
+                                        <i data-lucide="snowflake" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                        <span id="count-freeze" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Freeze</div>
+                                </li>
+                            </ul>
 
-                                <ul class="action-menu flex-wrap justify-center md:justify-end">
-                                    <li class="icon-content hidden" id="li-save-changes">
-                                        <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
-                                            <span class="filled"></span>
-                                            <i data-lucide="save" class="w-4 h-4 md:w-5 md:h-5"></i>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Simpan Perubahan</div>
-                                    </li>
-                                    <li class="icon-content" id="li-copy-awb">
-                                        <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" class="action-btn btn-copy-awb">
-                                            <span class="filled"></span>
-                                            <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5"></i>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Salin AWB</div>
-                                    </li>
-                                    <li class="icon-content" id="li-copy-custom">
-                                        <button onclick="window.showCopyModal()" id="btn-copy-custom" class="action-btn btn-copy-data">
-                                            <span class="filled"></span>
-                                            <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5"></i>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Salin Data</div>
-                                    </li>
-                                    <li class="icon-content" id="li-extract">
-                                        <button onclick="window.showExtractModal()" id="btn-extract" class="action-btn btn-extract">
-                                            <span class="filled"></span>
-                                            <i data-lucide="search" class="w-4 h-4 md:w-5 md:h-5"></i>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Ekstrak Resi</div>
-                                    </li>
-                                    <li class="icon-content" id="li-download">
-                                        <button onclick="window.showExportModal()" id="btn-download" class="action-btn btn-excel">
-                                            <span class="filled"></span>
-                                            <i data-lucide="file-spreadsheet" class="w-4 h-4 md:w-5 md:h-5"></i>
-                                        </button>
-                                        <div class="tooltip hidden md:block">Unduh Excel</div>
-                                    </li>
-                                </ul>
-
-                            </div>
-
-                            <div class="p-2 md:p-6 bg-white rounded-b-[2rem]">
-                                <div id="tc-warning" class="w-full block">
-                                    <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm mx-2 md:mx-0">
-                                        <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
-                                        <div>
-                                            <p class="font-black mb-1 text-rose-900">Eskalasi Mendesak</p>
-                                            <p class="text-rose-700 text-xs font-semibold leading-relaxed">Resi di bawah ini memiliki Opcode kritis yang memerlukan investigasi lanjutan. Ubah statusnya jika masalah sudah ditangani.</p>
-                                        </div>
-                                    </div>
-                                    <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                                </div>
-                                <div id="tc-stuck" class="w-full hidden">
-                                    <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                                </div>
-                                <div id="tc-resolved" class="w-full hidden">
-                                    <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                                </div>
-                                <div id="tc-freeze" class="w-full hidden">
-                                    <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
-                                </div>
-                            </div>
-
+                            <ul class="action-menu flex-wrap justify-center md:justify-end">
+                                <li class="icon-content hidden" id="li-save-changes">
+                                    <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
+                                        <span class="filled"></span>
+                                        <i data-lucide="save" class="w-4 h-4 md:w-5 md:h-5"></i>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Simpan Perubahan</div>
+                                </li>
+                                <li class="icon-content" id="li-copy-awb">
+                                    <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" class="action-btn btn-copy-awb">
+                                        <span class="filled"></span>
+                                        <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5"></i>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Salin AWB</div>
+                                </li>
+                                <li class="icon-content" id="li-copy-custom">
+                                    <button onclick="window.showCopyModal()" id="btn-copy-custom" class="action-btn btn-copy-data">
+                                        <span class="filled"></span>
+                                        <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5"></i>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Salin Data</div>
+                                </li>
+                                <li class="icon-content" id="li-extract">
+                                    <button onclick="window.showExtractModal()" id="btn-extract" class="action-btn btn-extract">
+                                        <span class="filled"></span>
+                                        <i data-lucide="search" class="w-4 h-4 md:w-5 md:h-5"></i>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Ekstrak Resi</div>
+                                </li>
+                                <li class="icon-content" id="li-download">
+                                    <button onclick="window.showExportModal()" id="btn-download" class="action-btn btn-excel">
+                                        <span class="filled"></span>
+                                        <i data-lucide="file-spreadsheet" class="w-4 h-4 md:w-5 md:h-5"></i>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Unduh Excel</div>
+                                </li>
+                            </ul>
                         </div>
+
+                        <div class="p-2 md:p-6 bg-white rounded-b-[2rem]">
+                            <div id="tc-warning" class="w-full block">
+                                <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm mx-2 md:mx-0">
+                                    <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
+                                    <div>
+                                        <p class="font-black mb-1 text-rose-900">Eskalasi Mendesak</p>
+                                        <p class="text-rose-700 text-xs font-semibold leading-relaxed">Resi di bawah ini memiliki Opcode kritis yang memerlukan investigasi lanjutan. Ubah statusnya jika masalah sudah ditangani.</p>
+                                    </div>
+                                </div>
+                                <table id="tableWarning" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                            </div>
+                            <div id="tc-stuck" class="w-full hidden">
+                                <table id="tableStuck" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                            </div>
+                            <div id="tc-resolved" class="w-full hidden">
+                                <table id="tableResolved" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                            </div>
+                            <div id="tc-freeze" class="w-full hidden">
+                                <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10">
-                
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="summary-section">
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -1063,7 +1052,6 @@
                         <table class="summary-table" id="freezeSummaryTable"></table>
                     </div>
                 </div>
-
             </div>
 
         </div>
@@ -1128,6 +1116,14 @@
                                 <p class="text-[10px] text-slate-400 font-medium mt-0.5">Tarik resi 92 kembali ke tabel Freeze.</p>
                             </div>
                             <button onclick="window.resetOpcode92()" class="bg-blue-50 text-blue-600 p-2.5 rounded-lg hover:bg-blue-100 transition-colors"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Hapus Resi Spesifik</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">Hapus permanen kumpulan AWB tertentu (Bulk).</p>
+                            </div>
+                            <button onclick="window.showBulkDeleteModal()" class="bg-rose-50 text-rose-600 p-2.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 </div>
@@ -2564,7 +2560,9 @@
             if (warningOpcodes.length > 0) warningOpcodes.forEach(op => thead += `<th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">${op}</th>`);
             else thead += `<th class="bg-white text-[10px] text-rose-500 border-l border-slate-50 text-center">-</th>`;
 
-            if (pendingOpcodes.length > 0) pendingOpcodes.forEach(op => thead += `<th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">${op}</th>`);
+            if (pendingOpcodes.length > 0) pendingOpcodes.forEach(op => {
+                thead += `<th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">${op}</th>`;
+            });
             else thead += `<th class="bg-white text-[10px] text-orange-500 border-l border-slate-50 text-center">-</th>`;
             
             thead += `</tr></thead>`;
@@ -2955,7 +2953,6 @@
             
             filteredArray.forEach(row => {
                 if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
-                    // Hanya menggunakan staging untuk grafik Bottleneck (Staging)
                     let dest = (row['destination_staging'] || 'KOSONG').toString().trim();
                     if(dest === '') dest = 'KOSONG';
                     destCounts[dest] = (destCounts[dest] || 0) + 1;
@@ -3037,7 +3034,6 @@
             
             filteredArray.forEach(row => {
                 if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
-                    // Fokus mengambil data destination_uz
                     let dest = (row['destination_uz'] || row['destination_u'] || 'KOSONG').toString().trim();
                     if(dest === '') dest = 'KOSONG';
                     destCounts[dest] = (destCounts[dest] || 0) + 1;
@@ -3512,7 +3508,11 @@
             });
             columns.push({ 
                 title: "Dest UZ", data: "destination_uz", width: "8%", defaultContent: "-", 
-                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
+                className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
+                render: function(data, type, row) { 
+                    if (!data) return row['destination_u'] || '-';
+                    return data;
+                }
             });
 
             let awbW = isWarnStuck ? "12%" : (isFreeze ? "12%" : "15%");
@@ -3560,10 +3560,11 @@
                 render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${data || '-'}</span>`; }
             });
 
+            // TABEL RESPONSIVE FIX: Menambahkan min-w-[200px] atau min-w-[250px]
             let itW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "22%");
             columns.push({ 
                 title: "Item", data: "item_name", width: itW, defaultContent: "-", 
-                className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-600",
+                className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-600 min-w-[200px]",
                 render: function(data, type, row) {
                     if (type === 'display') {
                         return `<div class="line-clamp-2 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-2');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
@@ -3575,7 +3576,7 @@
             let fbW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "23%");
             columns.push({ 
                 title: "Feedback", data: "Feedback", width: fbW, defaultContent: "-", 
-                className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-500 italic",
+                className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-500 italic min-w-[250px]",
                 render: function(data, type, row) {
                     if (type === 'display') {
                         return `<div class="line-clamp-2 whitespace-normal break-words cursor-pointer hover:text-indigo-600 transition-colors w-full leading-relaxed" onclick="this.classList.toggle('line-clamp-2');" title="Klik untuk melihat teks lengkap">${data || '-'}</div>`;
@@ -3595,7 +3596,7 @@
             if (isFreeze) {
                 columns.push({
                     title: "HUB Delivery", data: "staging_operator_internal", width: "10%", defaultContent: "-", 
-                    className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap",
+                    className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap min-w-[120px]",
                     render: function(data, type, row) { 
                         let displayData = data || row['HUB Delivery'] || '';
                         if (type === 'display') {
@@ -3608,7 +3609,7 @@
 
                 columns.push({
                     title: "Last < 92", data: "Last Before 92", width: "10%", defaultContent: "", 
-                    className: "dt-center whitespace-nowrap",
+                    className: "dt-center whitespace-nowrap min-w-[100px]",
                     render: function(data, type, row) {
                         if (type === 'display') {
                             if (!window.isAdminLoggedIn) return data ? `<span class="font-extrabold bg-slate-100 px-2 py-1 rounded-lg">${data}</span>` : '-';
@@ -3620,7 +3621,7 @@
                 
                 columns.push({
                     title: "Tgl Last < 92", data: "Date Last Before 92", width: "10%", defaultContent: "", 
-                    className: "dt-center whitespace-nowrap",
+                    className: "dt-center whitespace-nowrap min-w-[120px]",
                     render: function(data, type, row) {
                         let inputVal = "";
                         let displayVal = data || "";
@@ -3670,177 +3671,6 @@
                 dtInstance.clear(); dtInstance.rows.add(dataArray); dtInstance.draw(false);
                 return dtInstance;
             }
-        };
-
-        window.showExportModal = function() {
-            const modal = document.getElementById('export-modal');
-            const box = document.getElementById('export-box');
-            if(modal && box) {
-                modal.classList.remove('hidden', 'pointer-events-none');
-                requestAnimationFrame(() => {
-                    modal.classList.remove('opacity-0');
-                    box.classList.remove('scale-95'); box.classList.add('scale-100');
-                });
-            }
-        };
-
-        window.hideExportModal = function() {
-            const modal = document.getElementById('export-modal');
-            const box = document.getElementById('export-box');
-            if(modal && box) {
-                modal.classList.add('opacity-0');
-                box.classList.remove('scale-100'); box.classList.add('scale-95');
-                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
-            }
-        };
-
-        window.executeExportExcel = function() {
-            const checkboxes = document.querySelectorAll('.export-cb:checked');
-            const selectedStatuses = Array.from(checkboxes).map(cb => cb.value);
-            
-            if (selectedStatuses.length === 0) {
-                window.showToast("Pilih minimal satu kategori.", "warning");
-                return;
-            }
-
-            const exportData = [];
-            const includeFreezeCols = selectedStatuses.includes('Freeze');
-
-            Object.values(window.databaseMap).forEach(row => {
-                let status = row._ui_status || 'Stuck';
-                
-                if (selectedStatuses.includes(status)) {
-                    let hubValue = (row['hub_operator_internal'] || '-').toString().trim();
-                    if (status === 'Freeze') {
-                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
-                        if (hubDel) hubValue = hubDel;
-                    }
-
-                    let newRow = {
-                        "HUB": hubValue,
-                        "Status": status === 'Stuck' ? 'Pending' : status,
-                        "AWB / No Resi": row['AWB'] || '-',
-                        "Last Scan": row['Last Scan'] || '-',
-                        "Opcode": row['Update Opcode'] || '-'
-                    };
-
-                    if (includeFreezeCols) {
-                        newRow["Opcode sebelum 92"] = status === 'Freeze' ? (row['Last Before 92'] || '-') : '-';
-                        newRow["Tgl Last < 92"] = status === 'Freeze' ? (row['Date Last Before 92'] || '-') : '-';
-                    }
-
-                    newRow["Item"] = row['item_name'] || '-';
-                    newRow["Feedback"] = row['Feedback'] || '-';
-
-                    exportData.push(newRow);
-                }
-            });
-
-            if (exportData.length === 0) {
-                window.showToast("Tidak ada data untuk kategori terpilih.", "warning");
-                return;
-            }
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Data Laporan");
-            
-            XLSX.writeFile(wb, `Laporan_HubOps_${new Date().toISOString().split('T')[0]}.xlsx`);
-            window.hideExportModal();
-            window.showToast(`Berhasil mengunduh ${exportData.length.toLocaleString('id-ID')} data.`, "success");
-        };
-
-        window.showExtractModal = function() {
-            const modal = document.getElementById('extract-modal');
-            const box = document.getElementById('extract-box');
-            if (document.getElementById('extract-status')) document.getElementById('extract-status').textContent = '';
-            if (document.getElementById('extract-input')) document.getElementById('extract-input').value = '';
-            
-            if(modal && box) {
-                modal.classList.remove('hidden', 'pointer-events-none');
-                requestAnimationFrame(() => {
-                    modal.classList.remove('opacity-0');
-                    box.classList.remove('scale-95'); box.classList.add('scale-100');
-                });
-            }
-        };
-
-        window.hideExtractModal = function() {
-            const modal = document.getElementById('extract-modal');
-            const box = document.getElementById('extract-box');
-            if(modal && box) {
-                modal.classList.add('opacity-0');
-                box.classList.remove('scale-100'); box.classList.add('scale-95');
-                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
-            }
-        };
-
-        window.processExtractExcel = function() {
-            const textInput = document.getElementById('extract-input').value;
-            if(!textInput.trim()) {
-                window.showToast('Kolom teks masih kosong.', 'warning');
-                return;
-            }
-
-            const statusText = document.getElementById('extract-status');
-            const awbRegex = /\b(\d{14})\b/g; 
-            const matches = [...textInput.matchAll(awbRegex)].map(m => m[1]);
-            const uniqueAwbs = [...new Set(matches)];
-            
-            if (uniqueAwbs.length === 0) {
-                statusText.innerText = "Tidak ada resi valid 14 digit.";
-                statusText.classList.replace('text-slate-400', 'text-rose-500');
-                return;
-            }
-
-            const exportData = [];
-            let foundCount = 0;
-
-            uniqueAwbs.forEach(awb => {
-                const row = window.databaseMap[awb];
-                if (row) {
-                    foundCount++;
-                    let opcode = (row['Update Opcode'] || '').toString().trim();
-                    let hubValue = (row['hub_operator_internal'] || '-').toString().trim();
-                    
-                    if (row._ui_status === 'Freeze') {
-                        let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim();
-                        if (hubDel) hubValue = hubDel;
-                    }
-
-                    let newRow = {
-                        "Hub": hubValue,
-                        "AWB": awb,
-                        "Last Scan": row['Last Scan'] || '-',
-                        "Opcode": opcode,
-                        "Last < 92": "-",
-                        "Tgl Last < 92": "-",
-                        "Item": row['item_name'] || '-',
-                        "Feedback": row['Feedback'] || '-'
-                    };
-
-                    if (opcode === '92' || row._ui_status === 'Freeze') {
-                        newRow["Last < 92"] = row['Last Before 92'] || '-';
-                        newRow["Tgl Last < 92"] = row['Date Last Before 92'] || '-';
-                    }
-
-                    exportData.push(newRow);
-                }
-            });
-
-            if (exportData.length === 0) {
-                statusText.innerText = "Resi tidak ada di database.";
-                statusText.classList.replace('text-slate-400', 'text-amber-500');
-                return;
-            }
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Ekstrak Resi");
-            
-            XLSX.writeFile(wb, `Ekstrak_Resi_${new Date().toISOString().split('T')[0]}.xlsx`);
-            window.hideExtractModal();
-            window.showToast(`Berhasil mengunduh ${foundCount} data resi.`, "success");
         };
 
     </script>

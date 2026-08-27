@@ -133,7 +133,6 @@
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
         }
 
-        /* Action Menu Animated Tabs & Buttons */
         .action-menu {
             display: flex;
             align-items: center;
@@ -171,6 +170,13 @@
             visibility: visible;
             top: -45px;
         }
+        
+        @media (max-width: 640px) {
+            .tab-btn { width: 60px !important; height: 60px !important; }
+            .action-btn { width: 48px !important; height: 48px !important; }
+            .action-menu { gap: 8px !important; }
+        }
+        
         .tab-btn {
             position: relative;
             overflow: hidden;
@@ -264,7 +270,6 @@
             height: 100%;
         }
 
-        /* Specific Colors */
         .tab-warning .filled, .tab-warning + .tooltip { background-color: #f43f5e; }
         .tab-pending .filled, .tab-pending + .tooltip { background-color: #f97316; }
         .tab-resolved .filled, .tab-resolved + .tooltip { background-color: #10b981; }
@@ -634,33 +639,33 @@
                 <span id="offline-badge" class="hidden text-[10px] bg-amber-100 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl font-bold ml-3 uppercase tracking-wide flex items-center gap-1.5 shadow-sm"><i data-lucide="wifi-off" class="w-3.5 h-3.5"></i> Offline</span>
             </div>
             
-            <div class="flex items-center gap-3">
-                <div id="badge-publik" class="text-xs bg-white border border-slate-200 text-slate-500 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Publik
+            <div class="flex items-center gap-2 md:gap-3">
+                <div id="badge-publik" class="text-xs bg-white border border-slate-200 text-slate-500 px-3 md:px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> <span class="hidden md:inline">Publik</span>
                 </div>
 
-                <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-indigo-50 text-indigo-700 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span class="hidden md:inline">Dashboard</span>
                 </button>
-                <button id="btn-tab-settings" onclick="window.switchTab('settings')" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
-                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Aturan
+                <button id="btn-tab-settings" onclick="window.switchTab('settings')" class="hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> <span class="hidden md:inline">Aturan</span>
                 </button>
-                <button id="btn-bulk-feedback-container" onclick="window.showBulkFeedbackModal()" class="hidden bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
-                    <i data-lucide="message-square-plus" class="w-4 h-4"></i> Feedback Massal
+                <button id="btn-bulk-feedback-container" onclick="window.showBulkFeedbackModal()" class="hidden bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                    <i data-lucide="message-square-plus" class="w-4 h-4"></i> <span class="hidden md:inline">Feedback</span>
                 </button>
                 
-                <button id="btn-head-upload-1" onclick="document.getElementById('file1').click()" class="hidden bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-200 flex items-center gap-2 hover:-translate-y-0.5">
-                    <i data-lucide="upload-cloud" class="w-4 h-4"></i> Ingest Data
+                <button id="btn-head-upload-1" onclick="document.getElementById('file1').click()" class="hidden bg-slate-800 text-white px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-200 flex items-center gap-2 hover:-translate-y-0.5">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i> <span class="hidden md:inline">Ingest Data</span>
                 </button>
-                <button id="btn-head-upload-2" onclick="document.getElementById('file2').click()" class="hidden bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 hover:-translate-y-0.5">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Update Status
+                <button id="btn-head-upload-2" onclick="document.getElementById('file2').click()" class="hidden bg-indigo-600 text-white px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 hover:-translate-y-0.5">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span class="hidden md:inline">Update</span>
                 </button>
 
-                <button id="btn-login-ui" onclick="window.showLoginModal()" class="bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
-                    <i data-lucide="shield" class="w-4 h-4"></i> Admin Login
+                <button id="btn-login-ui" onclick="window.showLoginModal()" class="bg-white border border-slate-200 text-slate-700 px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                    <i data-lucide="shield" class="w-4 h-4"></i> <span class="hidden md:inline">Admin</span>
                 </button>
-                <button id="btn-logout-ui" onclick="window.logout()" class="hidden bg-white border border-rose-200 text-rose-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-rose-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                <button id="btn-logout-ui" onclick="window.logout()" class="hidden bg-white border border-rose-200 text-rose-600 px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-rose-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden md:inline">Logout</span>
                 </button>
             </div>
         </div>
@@ -669,9 +674,9 @@
     <input type="file" id="file1" accept=".csv" class="hidden">
     <input type="file" id="file2" accept=".csv" class="hidden">
 
-    <main class="w-full px-4 lg:px-10 mx-auto">
+    <main class="w-full px-2 md:px-4 lg:px-10 mx-auto">
 
-        <div id="section-dashboard" class="block space-y-8">
+        <div id="section-dashboard" class="block space-y-6">
             
             <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 relative z-30">
                 <div class="flex flex-col lg:flex-row items-start lg:items-end gap-5">
@@ -764,75 +769,73 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-5 relative z-10">
-                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 relative z-10">
+                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-600 mb-4">
-                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-600 mb-3 md:mb-4">
+                        <i data-lucide="layers" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Total Data Tampil</p>
-                        <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-total">0</h4>
+                        <p class="text-[10px] md:text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Total Data Tampil</p>
+                        <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="kpi-total">0</h4>
                     </div>
                 </div>
-                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-200 mb-4">
-                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-200 mb-3 md:mb-4">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Warning (Kritis)</p>
-                        <div class="flex items-baseline gap-2.5">
-                            <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-warning">0</h4>
-                            <span id="kpi-pct-warning" class="text-[11px] font-bold bg-rose-50 text-rose-600 px-2 py-1 rounded-lg border border-rose-100">0%</span>
+                        <p class="text-[10px] md:text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Warning</p>
+                        <div class="flex flex-col xl:flex-row xl:items-baseline gap-1 xl:gap-2.5">
+                            <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="kpi-warning">0</h4>
+                            <span id="kpi-pct-warning" class="text-[10px] md:text-[11px] font-bold bg-rose-50 text-rose-600 px-2 py-0.5 md:py-1 rounded-lg border border-rose-100 w-fit">0%</span>
                         </div>
                     </div>
                 </div>
-                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-orange-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-lg shadow-orange-200 mb-4">
-                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-lg shadow-orange-200 mb-3 md:mb-4">
+                        <i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Pending (Stuck)</p>
-                        <div class="flex items-baseline gap-2.5">
-                            <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-pending">0</h4>
-                            <span id="kpi-pct-pending" class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2 py-1 rounded-lg border border-orange-100">0%</span>
+                        <p class="text-[10px] md:text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Pending</p>
+                        <div class="flex flex-col xl:flex-row xl:items-baseline gap-1 xl:gap-2.5">
+                            <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="kpi-pending">0</h4>
+                            <span id="kpi-pct-pending" class="text-[10px] md:text-[11px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 md:py-1 rounded-lg border border-orange-100 w-fit">0%</span>
                         </div>
                     </div>
                 </div>
-                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200 mb-4">
-                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200 mb-3 md:mb-4">
+                        <i data-lucide="check-circle-2" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Resolved</p>
-                        <div class="flex items-baseline gap-2.5">
-                            <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-resolved">0</h4>
-                            <span id="kpi-pct-resolved" class="text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg border border-emerald-100">0%</span>
+                        <p class="text-[10px] md:text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Resolved</p>
+                        <div class="flex flex-col xl:flex-row xl:items-baseline gap-1 xl:gap-2.5">
+                            <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="kpi-resolved">0</h4>
+                            <span id="kpi-pct-resolved" class="text-[10px] md:text-[11px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 md:py-1 rounded-lg border border-emerald-100 w-fit">0%</span>
                         </div>
                     </div>
                 </div>
-                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group lg:col-span-1 col-span-2 xl:col-span-1">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50/50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 mb-4">
-                        <i data-lucide="snowflake" class="w-6 h-6"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 mb-3 md:mb-4">
+                        <i data-lucide="snowflake" class="w-5 h-5 md:w-6 md:h-6"></i>
                     </div>
                     <div>
-                        <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Freeze (>92 Hari)</p>
-                        <div class="flex items-baseline gap-2.5">
-                            <h4 class="text-4xl font-black text-slate-800 tracking-tight" id="kpi-freeze">0</h4>
-                            <span id="kpi-pct-freeze" class="text-[11px] font-bold bg-blue-50 text-blue-600 px-2 py-1 rounded-lg border border-blue-100">0%</span>
+                        <p class="text-[10px] md:text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Freeze (>92 Hari)</p>
+                        <div class="flex flex-row xl:items-baseline gap-2.5">
+                            <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="kpi-freeze">0</h4>
+                            <span id="kpi-pct-freeze" class="text-[10px] md:text-[11px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 md:py-1 rounded-lg border border-blue-100 self-end xl:self-auto mb-1 xl:mb-0 w-fit">0%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Visual Analytics Row 1: The Big Picture (Trend & Aging) -->
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
                 
-                <!-- Trend Chart (Wider) -->
                 <div class="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 flex flex-col w-full h-full">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -845,7 +848,6 @@
                     </div>
                 </div>
 
-                <!-- Aging Chart -->
                 <div class="xl:col-span-1 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="aging-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -856,15 +858,13 @@
                     <div class="w-full h-[240px] relative flex justify-center mt-2">
                         <canvas id="agingChart"></canvas>
                     </div>
-                    <p class="text-[11px] text-slate-400 mt-5 text-center font-semibold">Usia resi tertahan sejak Last Scan.</p>
+                    <p class="text-[11px] text-slate-400 mt-5 text-center font-semibold leading-relaxed px-4">Mengukur usia paket berstatus Warning & Pending berdasarkan tanggal Last Scan.</p>
                 </div>
 
             </div>
 
-            <!-- Visual Analytics Row 2: The Breakdown (Origin, Dest, Items) -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 relative z-10">
                 
-                <!-- Origin Hub -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="origin-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -877,12 +877,11 @@
                     </div>
                 </div>
 
-                <!-- Destination Bottleneck -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="dest-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
                             <div class="p-2 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="map" class="w-5 h-5"></i></div>
-                            Destinasi Bottleneck
+                            Destinasi Staging
                         </h4>
                     </div>
                     <div class="w-full h-[250px] relative">
@@ -890,22 +889,31 @@
                     </div>
                 </div>
 
-                <!-- Top Items -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="dest-uz-chart-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                            <div class="p-2 bg-cyan-50 text-cyan-600 rounded-xl"><i data-lucide="map-pinned" class="w-5 h-5"></i></div>
+                            Destinasi UZ
+                        </h4>
+                    </div>
+                    <div class="w-full h-[250px] relative">
+                        <canvas id="destUzChart"></canvas>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="item-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
                             <div class="p-2 bg-pink-50 text-pink-600 rounded-xl"><i data-lucide="package-search" class="w-5 h-5"></i></div>
-                            Top Barang Terkendala
+                            Top Tipe Barang
                         </h4>
                     </div>
                     <div class="w-full flex-1 flex flex-col justify-center space-y-4" id="top-items-container">
-                        <!-- Konten list diinjeksi oleh JS -->
                     </div>
                 </div>
 
             </div>
 
-            <!-- Tabel Data Utama (Berada di Atas Tabel Rekap agar cepat diakses) -->
             <div class="w-full relative z-20">
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col w-full relative">
                     
@@ -919,40 +927,40 @@
 
                     <div id="table-container" class="w-full hidden flex-col">
                         
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-8 pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-4 md:px-8 pt-6 md:pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
                                 
                                 <ul class="action-menu flex-wrap justify-center md:justify-start">
                                     <li class="icon-content">
                                         <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="tab-btn tab-warning active">
                                             <span class="filled"></span>
-                                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-                                            <span id="count-warning" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                            <span id="count-warning" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
-                                        <div class="tooltip">Warning</div>
+                                        <div class="tooltip hidden md:block">Warning</div>
                                     </li>
                                     <li class="icon-content">
                                         <button onclick="window.switchTableTab('stuck')" id="ttab-stuck" class="tab-btn tab-pending">
                                             <span class="filled"></span>
-                                            <i data-lucide="clock" class="w-6 h-6"></i>
-                                            <span id="count-stuck" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                            <i data-lucide="clock" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                            <span id="count-stuck" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
-                                        <div class="tooltip">Pending</div>
+                                        <div class="tooltip hidden md:block">Pending</div>
                                     </li>
                                     <li class="icon-content">
                                         <button onclick="window.switchTableTab('resolved')" id="ttab-resolved" class="tab-btn tab-resolved">
                                             <span class="filled"></span>
-                                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
-                                            <span id="count-resolved" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                            <i data-lucide="check-circle-2" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                            <span id="count-resolved" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
-                                        <div class="tooltip">Resolved</div>
+                                        <div class="tooltip hidden md:block">Resolved</div>
                                     </li>
                                     <li class="icon-content">
                                         <button onclick="window.switchTableTab('freeze')" id="ttab-freeze" class="tab-btn tab-freeze">
                                             <span class="filled"></span>
-                                            <i data-lucide="snowflake" class="w-6 h-6"></i>
-                                            <span id="count-freeze" class="text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                            <i data-lucide="snowflake" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                            <span id="count-freeze" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
                                         </button>
-                                        <div class="tooltip">Freeze</div>
+                                        <div class="tooltip hidden md:block">Freeze</div>
                                     </li>
                                 </ul>
 
@@ -960,45 +968,45 @@
                                     <li class="icon-content hidden" id="li-save-changes">
                                         <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
                                             <span class="filled"></span>
-                                            <i data-lucide="save" class="w-5 h-5"></i>
+                                            <i data-lucide="save" class="w-4 h-4 md:w-5 md:h-5"></i>
                                         </button>
-                                        <div class="tooltip">Simpan Perubahan</div>
+                                        <div class="tooltip hidden md:block">Simpan Perubahan</div>
                                     </li>
                                     <li class="icon-content" id="li-copy-awb">
                                         <button onclick="window.showCopyAwbModal()" id="btn-copy-awb" class="action-btn btn-copy-awb">
                                             <span class="filled"></span>
-                                            <i data-lucide="copy" class="w-5 h-5"></i>
+                                            <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5"></i>
                                         </button>
-                                        <div class="tooltip">Salin AWB</div>
+                                        <div class="tooltip hidden md:block">Salin AWB</div>
                                     </li>
                                     <li class="icon-content" id="li-copy-custom">
                                         <button onclick="window.showCopyModal()" id="btn-copy-custom" class="action-btn btn-copy-data">
                                             <span class="filled"></span>
-                                            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                                            <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5"></i>
                                         </button>
-                                        <div class="tooltip">Salin Data</div>
+                                        <div class="tooltip hidden md:block">Salin Data</div>
                                     </li>
                                     <li class="icon-content" id="li-extract">
                                         <button onclick="window.showExtractModal()" id="btn-extract" class="action-btn btn-extract">
                                             <span class="filled"></span>
-                                            <i data-lucide="search" class="w-5 h-5"></i>
+                                            <i data-lucide="search" class="w-4 h-4 md:w-5 md:h-5"></i>
                                         </button>
-                                        <div class="tooltip">Ekstrak Resi</div>
+                                        <div class="tooltip hidden md:block">Ekstrak Resi</div>
                                     </li>
                                     <li class="icon-content" id="li-download">
                                         <button onclick="window.showExportModal()" id="btn-download" class="action-btn btn-excel">
                                             <span class="filled"></span>
-                                            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                                            <i data-lucide="file-spreadsheet" class="w-4 h-4 md:w-5 md:h-5"></i>
                                         </button>
-                                        <div class="tooltip">Unduh Excel</div>
+                                        <div class="tooltip hidden md:block">Unduh Excel</div>
                                     </li>
                                 </ul>
 
                             </div>
 
-                            <div class="p-6 bg-white rounded-b-[2rem]">
+                            <div class="p-2 md:p-6 bg-white rounded-b-[2rem]">
                                 <div id="tc-warning" class="w-full block">
-                                    <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm">
+                                    <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm mx-2 md:mx-0">
                                         <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
                                         <div>
                                             <p class="font-black mb-1 text-rose-900">Eskalasi Mendesak</p>
@@ -1022,7 +1030,6 @@
                 </div>
             </div>
 
-            <!-- Summary Tables Row: Rekapitulasi & Freeze Summary -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10">
                 
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="summary-section">
@@ -1273,6 +1280,8 @@
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="AWB" checked> Resi</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Last Scan" checked> Tanggal</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Opcode" checked> Opcode</label>
+                        <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Staging" checked> Dest. Staging</label>
+                        <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="UZ" checked> Dest. UZ</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Item" checked> Tipe Item</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Feedback" checked> Feedback</label>
                     </div>
@@ -1594,6 +1603,7 @@
         window.trendChartInstance = null;
         window.originChartInstance = null;
         window.destChartInstance = null;
+        window.destUzChartInstance = null;
         window.agingChartInstance = null;
         window.summaryMode = 'hub';
         window.freezeSummaryMode = 'hub';
@@ -1778,13 +1788,13 @@
                 let sec = document.getElementById(`section-${t}`);
                 let tabBtn = document.getElementById(`btn-tab-${t}`);
                 if(sec) sec.classList.add('hidden');
-                if(tabBtn) tabBtn.className = "hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
+                if(tabBtn) tabBtn.className = "hidden bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
             });
             
             const targetSec = document.getElementById(`section-${tabName}`);
             const targetTabBtn = document.getElementById(`btn-tab-${tabName}`);
             if(targetSec) targetSec.classList.remove('hidden');
-            if(targetTabBtn) targetTabBtn.className = "hidden bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
+            if(targetTabBtn) targetTabBtn.className = "hidden bg-indigo-50 text-indigo-700 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2";
             
             if (window.isAdminLoggedIn) {
                 window.toggleVisibility('btn-tab-dashboard', true, 'flex');
@@ -1811,17 +1821,6 @@
             if(activeContainer) {
                 activeContainer.classList.remove('hidden');
                 activeContainer.classList.add('block');
-            }
-
-            let liCopyAwb = document.getElementById('li-copy-awb');
-            let liCopyData = document.getElementById('li-copy-custom');
-            
-            if(liCopyAwb) { liCopyAwb.classList.add('hidden'); }
-            if(liCopyData) { liCopyData.classList.add('hidden'); }
-
-            if (tableName === 'warning' || tableName === 'stuck') {
-                if(liCopyAwb) { liCopyAwb.classList.remove('hidden'); }
-                if(liCopyData) { liCopyData.classList.remove('hidden'); }
             }
 
             if(activeBtn) {
@@ -2112,14 +2111,12 @@
             window.showUploadProgress("Menyesuaikan Update", "Membaca file status...");
             Papa.parse(file, {
                 header: true, skipEmptyLines: true, 
-                // Removed strict "|" delimiter to auto-detect standard CSVs
                 complete: async function(results) {
                     let tempUpdateData = results.data;
                     let updatedCount = 0; let skipCount = 0; let recordsToSave = []; 
 
                     window.updateUploadProgress(0, tempUpdateData.length, "Sinkronisasi AWB:");
                     tempUpdateData.forEach(row => {
-                        // Normalisasi nama kolom untuk mencegah error akibat spasi berlebih
                         let cleanRow = {};
                         for (let key in row) {
                             if (row.hasOwnProperty(key)) {
@@ -2132,39 +2129,31 @@
                         if (awb && window.databaseMap[awb]) {
                             let isUpdated = false;
                             
-                            // Cek Opcode baru
                             let newOpcode = (cleanRow['latest_op_code'] || cleanRow['fop_code_internal']);
                             let currentOpcode = window.databaseMap[awb]['Update Opcode'];
                             if (newOpcode && newOpcode !== currentOpcode) { 
                                 window.databaseMap[awb]['Update Opcode'] = newOpcode; 
-                                window.databaseMap[awb]._is_manual = false; // Buka kunci jika ada pergerakan resi baru
+                                window.databaseMap[awb]._is_manual = false; 
                                 isUpdated = true; 
                             }
                             
-                            // Cek Waktu Scan
                             let newTime = (cleanRow['latest_opcode_tm'] || cleanRow['time_scan_internal']);
                             if (newTime) { window.databaseMap[awb]['Last Scan'] = newTime; isUpdated = true; }
                             
-                            // Cek Lokasi Hub
                             let newHub = (cleanRow['latest_opcode_location'] || cleanRow['hub_operator_internal']);
                             if (newHub) { window.databaseMap[awb]['hub_operator_internal'] = newHub; isUpdated = true; }
                             
-                            // Cek Staging
                             if (cleanRow['staging_operator_internal']) { window.databaseMap[awb]['staging_operator_internal'] = cleanRow['staging_operator_internal']; isUpdated = true; }
                             
-                            // Tambahan Field Asal & Tujuan
                             if (cleanRow['origin_hub']) { window.databaseMap[awb]['origin_hub'] = cleanRow['origin_hub']; isUpdated = true; }
                             if (cleanRow['destination_staging']) { window.databaseMap[awb]['destination_staging'] = cleanRow['destination_staging']; isUpdated = true; }
                             if (cleanRow['destination_uz'] || cleanRow['destination_u']) { window.databaseMap[awb]['destination_uz'] = cleanRow['destination_uz'] || cleanRow['destination_u']; isUpdated = true; }
                             
-                            // Cek Opcode 80
                             let new80 = (cleanRow['80_tm'] || cleanRow['80_last']);
                             if (new80) { window.databaseMap[awb]['Opcode 80'] = new80; isUpdated = true; }
                             
-                            // Cek Expect Delivery
                             if (cleanRow['expect_delivery_tm']) { window.databaseMap[awb]['Expect Delivery'] = cleanRow['expect_delivery_tm']; isUpdated = true; } 
                             
-                            // Cek Item Name (hanya isi jika kosong)
                             if (!window.databaseMap[awb]['item_name'] && cleanRow['item_name']) { window.databaseMap[awb]['item_name'] = cleanRow['item_name']; isUpdated = true; }
 
                             if (isUpdated) {
@@ -2360,6 +2349,8 @@
                                     rowMain.push(val);
                                 } else if (col === 'AWB') { rowMain.push(row['AWB'] || '-');
                                 } else if (col === 'Opcode') { rowMain.push(row['Update Opcode'] || '-');
+                                } else if (col === 'Staging') { rowMain.push(row['destination_staging'] || '-');
+                                } else if (col === 'UZ') { rowMain.push(row['destination_uz'] || row['destination_u'] || '-');
                                 } else if (col === 'Feedback') { rowMain.push(row['Feedback'] || '-');
                                 } else if (col === 'Item') { itemText = row['item_name'] || '-'; }
                             });
@@ -2390,33 +2381,6 @@
                 window.showToast(successMsg, "success");
             } catch (err) {}
             document.body.removeChild(textArea);
-        };
-
-        window.formatGroupedData = function(rows) {
-            if (rows.length === 0) return "(Kosong)\n";
-            let groupedData = {};
-
-            rows.forEach(row => {
-                let rawDate = row['Last Scan'];
-                let dateObj = window.parseCustomDate(rawDate);
-                let timestamp = dateObj ? dateObj.getTime() : 0; 
-                let formattedDate = window.formatStandardDate(rawDate);
-
-                if (!groupedData[timestamp]) groupedData[timestamp] = { dateLabel: formattedDate, items: [] };
-                groupedData[timestamp].items.push({ awb: row['AWB'] || '', opcode: row['Update Opcode'] || '-', feedback: row['Feedback'] || '-' });
-            });
-
-            let sortedTimestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
-            let resultText = "";
-
-            sortedTimestamps.forEach(ts => {
-                let group = groupedData[ts];
-                resultText += `${group.dateLabel}\n`;
-                group.items.forEach(item => { resultText += `${item.awb}\t${item.opcode}\t${item.feedback}\n`; });
-                resultText += `\n`; 
-            });
-
-            return resultText;
         };
 
         window.renderSummaryTable = function(data) {
@@ -2760,7 +2724,6 @@
             let dateCounts = {};
             
             filteredArray.forEach(row => {
-                // Selaraskan logika penarikan tanggal dengan Tabel Rekapitulasi & Filter
                 let rawDateStr = row['Today'] || row['Last Scan'];
                 if (row._ui_status === 'Freeze') {
                     let last92 = (row['Date Last Before 92'] || '').toString().trim();
@@ -2855,7 +2818,6 @@
                 }
             });
 
-            // Urutkan dari yang terbanyak
             let sortedOrigins = Object.keys(originCounts).sort((a, b) => originCounts[b] - originCounts[a]);
             let topOrigins = sortedOrigins.slice(0, 10); 
             let chartLabels = topOrigins;
@@ -2927,14 +2889,13 @@
             
             filteredArray.forEach(row => {
                 if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
-                    // Coba ambil dari staging dulu, kalau kosong ambil dari UZ
-                    let dest = (row['destination_staging'] || row['destination_uz'] || 'KOSONG').toString().trim();
+                    // Hanya menggunakan staging untuk grafik Bottleneck (Staging)
+                    let dest = (row['destination_staging'] || 'KOSONG').toString().trim();
                     if(dest === '') dest = 'KOSONG';
                     destCounts[dest] = (destCounts[dest] || 0) + 1;
                 }
             });
 
-            // Urutkan dari yang terbanyak
             let sortedDest = Object.keys(destCounts).sort((a, b) => destCounts[b] - destCounts[a]);
             let topDest = sortedDest.slice(0, 10); 
             let chartLabels = topDest;
@@ -2964,12 +2925,12 @@
                     datasets: [{
                         label: 'Total Stuck & Warning',
                         data: chartData,
-                        backgroundColor: '#a855f7', // Warna Ungu
+                        backgroundColor: '#a855f7', 
                         borderRadius: 6,
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Memutar bar menjadi horizontal
+                    indexAxis: 'y', 
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: { padding: { right: 30, top: 20 } },
@@ -2991,7 +2952,89 @@
                         }
                     },
                     scales: {
-                        x: { display: false }, // Sembunyikan axis x bawah karena ada datalabels
+                        x: { display: false }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                font: { family: 'Plus Jakarta Sans', size: 10, weight: '700' }, 
+                                color: '#64748b' 
+                            },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        };
+
+        window.updateDestUzChart = function(filteredArray) {
+            let destCounts = {};
+            
+            filteredArray.forEach(row => {
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
+                    // Fokus mengambil data destination_uz
+                    let dest = (row['destination_uz'] || row['destination_u'] || 'KOSONG').toString().trim();
+                    if(dest === '') dest = 'KOSONG';
+                    destCounts[dest] = (destCounts[dest] || 0) + 1;
+                }
+            });
+
+            let sortedDest = Object.keys(destCounts).sort((a, b) => destCounts[b] - destCounts[a]);
+            let topDest = sortedDest.slice(0, 10); 
+            let chartLabels = topDest;
+            let chartData = topDest.map(d => destCounts[d]);
+
+            const canvas = document.getElementById('destUzChart');
+            const section = document.getElementById('dest-uz-chart-section');
+            
+            if (chartData.length === 0) {
+                if (section) { section.classList.add('hidden'); section.classList.remove('flex'); }
+                return;
+            } else {
+                if (section) { section.classList.remove('hidden'); section.classList.add('flex'); }
+            }
+
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (window.destUzChartInstance) {
+                window.destUzChartInstance.destroy();
+            }
+
+            window.destUzChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Total Stuck & Warning',
+                        data: chartData,
+                        backgroundColor: '#06b6d4', 
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { right: 30, top: 20 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: '600' },
+                            bodyFont: { size: 14, family: 'Plus Jakarta Sans', weight: 'bold' },
+                            cornerRadius: 8
+                        },
+                        datalabels: {
+                            color: '#475569', 
+                            anchor: 'end',
+                            align: 'right',
+                            offset: 4,
+                            font: { weight: '800', family: 'Plus Jakarta Sans', size: 11 },
+                            formatter: function(value) { return value > 0 ? value.toLocaleString('id-ID') : ''; }
+                        }
+                    },
+                    scales: {
+                        x: { display: false }, 
                         y: { 
                             grid: { display: false }, 
                             ticks: { 
@@ -3012,7 +3055,6 @@
             filteredArray.forEach(row => {
                 if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') {
                     let item = (row['item_name'] || '').toString().trim();
-                    // Cegah nilai kosong atau null mendominasi jika ada
                     if(item === '' || item === '-' || item.toLowerCase() === 'null') item = 'Tidak Teridentifikasi / Kosong';
                     
                     itemCounts[item] = (itemCounts[item] || 0) + 1;
@@ -3032,18 +3074,16 @@
 
             if (!container) return;
             
-            // Urutkan dari yang terbanyak
             let sortedItems = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
-            let topItems = sortedItems.slice(0, 5); // Ambil Top 5
+            let topItems = sortedItems.slice(0, 5);
             
             let html = '';
             let maxCount = topItems.length > 0 ? itemCounts[topItems[0]] : 1;
 
             topItems.forEach((item, index) => {
                 let count = itemCounts[item];
-                let percentage = Math.round((count / maxCount) * 100); // Persentase relatif terhadap yang terbesar
+                let percentage = Math.round((count / maxCount) * 100); 
                 
-                // Variasi warna untuk setiap ranking
                 let colors = ['bg-pink-500', 'bg-pink-400', 'bg-slate-400', 'bg-slate-300', 'bg-slate-200'];
                 let color = colors[index] || 'bg-slate-200';
 
@@ -3072,7 +3112,6 @@
             };
             let totalAged = 0;
             
-            // Ambil waktu hari ini untuk menghitung selisih durasi
             const now = new Date().getTime();
 
             filteredArray.forEach(row => {
@@ -3081,7 +3120,6 @@
                     let dateObj = window.parseCustomDate(rawDateStr);
                     
                     if (dateObj) {
-                        // Hitung selisih waktu dalam milidetik lalu ubah ke hari
                         let diffTime = Math.abs(now - dateObj.getTime());
                         let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                         
@@ -3123,7 +3161,7 @@
                             agingCounts['8-14 Hari'], 
                             agingCounts['> 14 Hari']
                         ],
-                        backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'], // Emerald, Amber, Orange, Red
+                        backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'], 
                         borderWidth: 2,
                         borderColor: '#ffffff',
                         hoverOffset: 6
@@ -3327,6 +3365,7 @@
                 window.updateChart(filteredArray);
                 window.updateOriginChart(filteredArray);
                 window.updateDestinationChart(filteredArray);
+                window.updateDestUzChart(filteredArray);
                 window.updateItemChart(filteredArray);
                 window.updateAgingChart(filteredArray);
                 window.renderSummaryTable(filteredArray);

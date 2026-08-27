@@ -30,7 +30,6 @@
         .dropdown-menu { max-height: 350px; overflow-y: auto; }
         .dropdown-menu::-webkit-scrollbar { width: 4px; }
 
-        /* TABEL RESPONSIVE FIX: Dicabutnya table-layout fixed dan min-width kaku */
         table.dataTable { 
             border-collapse: collapse !important; 
             width: 100% !important; 
@@ -56,6 +55,39 @@
             transition: background-color 0.2s;
         }
         table.dataTable tbody tr:hover td { background-color: #f1f5f9 !important; }
+
+        /* KOLOM LENGKET (STICKY COLUMNS) */
+        .sticky-col-1 { 
+            position: sticky !important; 
+            left: 0; 
+            z-index: 30 !important; 
+            background-color: #ffffff !important; 
+            min-width: 105px !important; 
+            max-width: 105px !important;
+            border-right: 1px solid #f1f5f9 !important;
+        }
+        table.dataTable thead th.sticky-col-1 { 
+            background-color: #f8fafc !important; 
+            z-index: 40 !important; 
+        }
+        
+        .sticky-col-2 { 
+            position: sticky !important; 
+            left: 105px; 
+            z-index: 30 !important; 
+            background-color: #ffffff !important; 
+            box-shadow: 4px 0 10px -3px rgba(0,0,0,0.08); 
+        }
+        table.dataTable thead th.sticky-col-2 { 
+            background-color: #f8fafc !important; 
+            z-index: 40 !important; 
+        }
+
+        /* Status Hover untuk Kolom Sticky */
+        table.dataTable tbody tr:hover td.sticky-col-1,
+        table.dataTable tbody tr:hover td.sticky-col-2 { 
+            background-color: #f1f5f9 !important; 
+        }
         
         .dt-center { text-align: center !important; }
         .dt-left { text-align: left !important; }
@@ -93,6 +125,7 @@
         .status-btn-group {
             display: inline-flex; border-radius: 0.75rem; overflow: hidden;
             border: 1px solid #e2e8f0; background: white; box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            width: 100%; justify-content: center;
         }
         .status-btn {
             padding: 0.4rem 0.75rem; font-size: 0.7rem; font-weight: 700;
@@ -168,6 +201,7 @@
             top: -45px;
         }
         
+        /* Tombol Menyusut Dinamis (Mobile Responsive) */
         @media (max-width: 640px) {
             .tab-btn { width: 60px !important; height: 60px !important; }
             .action-btn { width: 48px !important; height: 48px !important; }
@@ -638,7 +672,7 @@
             
             <div class="flex items-center gap-2 md:gap-3">
                 <div id="badge-publik" class="text-xs bg-white border border-slate-200 text-slate-500 px-3 md:px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-sm">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> <span class="hidden md:inline">Publik</span>
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> <span class="hidden sm:inline">Publik</span>
                 </div>
 
                 <button id="btn-tab-dashboard" onclick="window.switchTab('dashboard')" class="hidden bg-indigo-50 text-indigo-700 px-3 md:px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
@@ -659,7 +693,7 @@
                 </button>
 
                 <button id="btn-login-ui" onclick="window.showLoginModal()" class="bg-white border border-slate-200 text-slate-700 px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
-                    <i data-lucide="shield" class="w-4 h-4"></i> <span class="hidden md:inline">Admin</span>
+                    <i data-lucide="shield" class="w-4 h-4"></i> <span class="hidden sm:inline">Admin</span>
                 </button>
                 <button id="btn-logout-ui" onclick="window.logout()" class="hidden bg-white border border-rose-200 text-rose-600 px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-rose-50 transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                     <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden md:inline">Logout</span>
@@ -675,7 +709,7 @@
 
         <div id="section-dashboard" class="block space-y-6">
             
-            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 relative z-30">
+            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 relative z-30 mx-2 lg:mx-0">
                 <div class="flex flex-col lg:flex-row items-start lg:items-end gap-5">
                     
                     <div class="flex items-center justify-between w-full lg:w-auto lg:hidden mb-2">
@@ -766,7 +800,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 relative z-10">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 relative z-10 mx-2 lg:mx-0">
                 <div class="kpi-card bg-white border border-slate-100 rounded-[2rem] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-[1.5] transition-transform duration-500 -z-10"></div>
                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-slate-100 text-slate-600 mb-3 md:mb-4">
@@ -831,7 +865,8 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10 mx-2 lg:mx-0">
+                <!-- Grafik Trend Baris Atas -->
                 <div class="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 flex flex-col w-full h-full">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -844,6 +879,7 @@
                     </div>
                 </div>
 
+                <!-- Grafik Aging Analisis (Durasi Stuck) -->
                 <div class="xl:col-span-1 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="aging-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -858,12 +894,13 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 relative z-10 mx-2 lg:mx-0">
+                <!-- Origin Hub -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="origin-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
                             <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
-                            Top Origin Terkendala
+                            Top Origin
                         </h4>
                     </div>
                     <div class="w-full h-[250px] relative">
@@ -871,6 +908,7 @@
                     </div>
                 </div>
 
+                <!-- Destination Staging -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="dest-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -883,6 +921,7 @@
                     </div>
                 </div>
 
+                <!-- Destination UZ -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="dest-uz-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -895,6 +934,7 @@
                     </div>
                 </div>
 
+                <!-- Top Items -->
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="item-chart-section">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -919,9 +959,9 @@
                     </div>
 
                     <div id="table-container" class="w-full hidden flex-col">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-4 md:px-8 pt-6 md:pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
+                        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 px-4 md:px-8 pt-6 md:pt-8 pb-6 border-b border-slate-100 bg-white rounded-t-[2rem]">
                             
-                            <ul class="action-menu flex-wrap justify-center md:justify-start">
+                            <ul class="action-menu flex-wrap justify-center lg:justify-start">
                                 <li class="icon-content">
                                     <button onclick="window.switchTableTab('warning')" id="ttab-warning" class="tab-btn tab-warning active">
                                         <span class="filled"></span>
@@ -956,7 +996,7 @@
                                 </li>
                             </ul>
 
-                            <ul class="action-menu flex-wrap justify-center md:justify-end">
+                            <ul class="action-menu flex-wrap justify-center lg:justify-end">
                                 <li class="icon-content hidden" id="li-save-changes">
                                     <button onclick="window.commitChanges()" id="btn-save-changes" class="action-btn btn-save">
                                         <span class="filled"></span>
@@ -995,7 +1035,7 @@
                             </ul>
                         </div>
 
-                        <div class="p-2 md:p-6 bg-white rounded-b-[2rem]">
+                        <div class="p-2 md:p-6 bg-white rounded-b-[2rem] overflow-x-auto">
                             <div id="tc-warning" class="w-full block">
                                 <div class="bg-rose-50/80 border border-rose-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm mx-2 md:mx-0">
                                     <div class="bg-rose-500 p-2 rounded-xl text-white mt-0.5 shadow-sm shadow-rose-200"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i></div>
@@ -1020,7 +1060,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0">
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="summary-section">
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -1057,7 +1097,7 @@
         </div>
 
         <div id="section-settings" class="hidden space-y-6">
-            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8 relative z-10">
+            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8 relative z-10 mx-2 lg:mx-0">
                 <div class="flex items-center gap-4 mb-8">
                     <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-sm">
                         <i data-lucide="sliders" class="w-6 h-6"></i>
@@ -1301,6 +1341,7 @@
         </div>
     </div>
 
+    <!-- MODAL SALIN FORMAT TEKS -->
     <div id="copy-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[150] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300" id="copy-box">
             <button onclick="window.hideCopyModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors">
@@ -3453,12 +3494,12 @@
             let isWarnStuck = (tableType === 'warning' || tableType === 'stuck');
             let isResolved = tableType === 'resolved';
 
+            // 1. KOLOM TINDAKAN (Sisi Paling Kiri - Lengket)
             columns.push({
-                title: `<div class="flex items-center justify-center gap-1.5"><i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i> Tindakan</div>`,
+                title: `<div class="flex items-center justify-center gap-1.5 w-full"><i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i> Tindakan</div>`,
                 data: null,
                 orderable: false,
-                width: "10%", 
-                className: "dt-center whitespace-nowrap",
+                className: "dt-center whitespace-nowrap sticky-col-1",
                 render: function(data, type, row) {
                     let currentStatus = row._ui_status || 'Stuck';
                     
@@ -3469,9 +3510,9 @@
 
                     if (currentStatus === 'Warning') {
                         if (window.isAdminLoggedIn) {
-                            return `<div class="status-btn-group"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`;
+                            return `<div class="status-btn-group mx-auto max-w-[80px]"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`;
                         } else {
-                            return `<span title="Warning" class="p-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 inline-flex items-center justify-center shadow-sm">${iWarn}</span>`;
+                            return `<span title="Warning" class="p-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 inline-flex items-center justify-center shadow-sm w-full">${iWarn}</span>`;
                         }
                     }
                     
@@ -3480,34 +3521,42 @@
                                          currentStatus === 'Freeze' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
                                          'bg-orange-50 text-orange-700 border border-orange-100';
                         let badgeIcon = currentStatus === 'Resolved' ? iRes : currentStatus === 'Freeze' ? iFrz : iPend;
-                        return `<span title="Status: ${currentStatus}" class="p-2 rounded-xl inline-flex items-center justify-center shadow-sm ${badgeClass}">${badgeIcon}</span>`;
+                        return `<span title="Status: ${currentStatus}" class="p-2 rounded-xl inline-flex items-center justify-center shadow-sm w-full ${badgeClass}">${badgeIcon}</span>`;
                     }
                     
                     let btnStuck = currentStatus === 'Stuck' ? `<button title="Status: Pending" class="status-btn bg-orange-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iPend}</button>` : `<button title="Ubah ke Pending" onclick="window.changeStatus('${row.AWB}', 'Stuck')" class="status-btn hover:bg-orange-50 hover:text-orange-600 text-slate-400 flex items-center justify-center p-2">${iPend}</button>`;
                     let btnRes = currentStatus === 'Resolved' ? `<button title="Status: Resolved" class="status-btn bg-emerald-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iRes}</button>` : `<button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-600 text-slate-400 flex items-center justify-center p-2">${iRes}</button>`;
                     let btnFrz = currentStatus === 'Freeze' ? `<button title="Status: Freeze" class="status-btn bg-blue-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iFrz}</button>` : `<button title="Ubah ke Freeze" onclick="window.changeStatus('${row.AWB}', 'Freeze')" class="status-btn hover:bg-blue-50 hover:text-blue-600 text-slate-400 flex items-center justify-center p-2">${iFrz}</button>`;
 
-                    return `<div class="status-btn-group">${btnStuck}${btnRes}${btnFrz}</div>`;
+                    return `<div class="status-btn-group mx-auto max-w-[90px]">${btnStuck}${btnRes}${btnFrz}</div>`;
                 }
             });
 
+            // 2. KOLOM NO RESI (Dipindah ke posisi 2 dan dibuat Lengket/Sticky)
+            columns.push({ 
+                title: "No. Resi", data: "AWB", defaultContent: "-", 
+                className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm whitespace-nowrap sticky-col-2" 
+            });
+
+            // 3. Kolom Hub (Hanya tampil jika bukan tabel Freeze)
             if (!isFreeze) {
                 columns.push({ 
-                    title: "Hub", data: "hub_operator_internal", width: "8%", defaultContent: "-", 
+                    title: "Hub", data: "hub_operator_internal", defaultContent: "-", 
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap" 
                 });
             }
 
+            // 4. Origin & Destinasi
             columns.push({ 
-                title: "Origin Hub", data: "origin_hub", width: "8%", defaultContent: "-", 
+                title: "Origin Hub", data: "origin_hub", defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
             });
             columns.push({ 
-                title: "Dest Staging", data: "destination_staging", width: "8%", defaultContent: "-", 
+                title: "Dest Staging", data: "destination_staging", defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap" 
             });
             columns.push({ 
-                title: "Dest UZ", data: "destination_uz", width: "8%", defaultContent: "-", 
+                title: "Dest UZ", data: "destination_uz", defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
                 render: function(data, type, row) { 
                     if (!data) return row['destination_u'] || '-';
@@ -3515,15 +3564,9 @@
                 }
             });
 
-            let awbW = isWarnStuck ? "12%" : (isFreeze ? "12%" : "15%");
+            // 5. Last Scan & Indikator Aging
             columns.push({ 
-                title: "No. Resi", data: "AWB", width: awbW, defaultContent: "-", 
-                className: "dt-center font-extrabold text-indigo-900 tracking-wide text-sm whitespace-nowrap" 
-            });
-
-            let lsW = isResolved ? "12%" : "10%";
-            columns.push({ 
-                title: "Last Scan", data: "Last Scan", width: lsW, defaultContent: "-", 
+                title: "Last Scan", data: "Last Scan", defaultContent: "-", 
                 className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
                 render: function(data, type, row) { 
                     if (type === 'display' && data) {
@@ -3553,17 +3596,16 @@
                 }
             });
 
-            let opW = isResolved ? "10%" : "8%";
+            // 6. Opcode
             columns.push({ 
-                title: "Opcode", data: "Update Opcode", width: opW, defaultContent: "-", 
+                title: "Opcode", data: "Update Opcode", defaultContent: "-", 
                 className: "dt-center whitespace-nowrap",
                 render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${data || '-'}</span>`; }
             });
 
-            // TABEL RESPONSIVE FIX: Menambahkan min-w-[200px] atau min-w-[250px]
-            let itW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "22%");
+            // 7. Item (Dengan min-width agar tidak bertumpuk di HP)
             columns.push({ 
-                title: "Item", data: "item_name", width: itW, defaultContent: "-", 
+                title: "Item", data: "item_name", defaultContent: "-", 
                 className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-600 min-w-[200px]",
                 render: function(data, type, row) {
                     if (type === 'display') {
@@ -3573,9 +3615,9 @@
                 }
             });
 
-            let fbW = isWarnStuck ? "20%" : (isFreeze ? "15%" : "23%");
+            // 8. Feedback (Dengan min-width agar tidak bertumpuk di HP)
             columns.push({ 
-                title: "Feedback", data: "Feedback", width: fbW, defaultContent: "-", 
+                title: "Feedback", data: "Feedback", defaultContent: "-", 
                 className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-500 italic min-w-[250px]",
                 render: function(data, type, row) {
                     if (type === 'display') {
@@ -3585,9 +3627,10 @@
                 }
             });
 
+            // 9. Kolom Opsional Khusus
             if (isWarnStuck) {
                 columns.push({
-                    title: "Expect Delivery", data: "Expect Delivery", width: "12%", defaultContent: "-", 
+                    title: "Expect Delivery", data: "Expect Delivery", defaultContent: "-", 
                     className: "dt-center text-slate-500 font-semibold text-xs whitespace-nowrap",
                     render: function(data, type, row) { return (type === 'display' && data) ? window.formatStandardDate(data) : data; }
                 });
@@ -3595,7 +3638,7 @@
 
             if (isFreeze) {
                 columns.push({
-                    title: "HUB Delivery", data: "staging_operator_internal", width: "10%", defaultContent: "-", 
+                    title: "HUB Delivery", data: "staging_operator_internal", defaultContent: "-", 
                     className: "dt-center font-bold text-slate-600 text-xs whitespace-nowrap min-w-[120px]",
                     render: function(data, type, row) { 
                         let displayData = data || row['HUB Delivery'] || '';
@@ -3608,7 +3651,7 @@
                 });
 
                 columns.push({
-                    title: "Last < 92", data: "Last Before 92", width: "10%", defaultContent: "", 
+                    title: "Last < 92", data: "Last Before 92", defaultContent: "", 
                     className: "dt-center whitespace-nowrap min-w-[100px]",
                     render: function(data, type, row) {
                         if (type === 'display') {
@@ -3620,7 +3663,7 @@
                 });
                 
                 columns.push({
-                    title: "Tgl Last < 92", data: "Date Last Before 92", width: "10%", defaultContent: "", 
+                    title: "Tgl Last < 92", data: "Date Last Before 92", defaultContent: "", 
                     className: "dt-center whitespace-nowrap min-w-[120px]",
                     render: function(data, type, row) {
                         let inputVal = "";

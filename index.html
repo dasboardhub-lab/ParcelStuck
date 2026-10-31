@@ -1855,6 +1855,144 @@
             return totalSaved;
         };
 
+        /* --- FUNGSI EXPORT & EXTRACT EXCEL --- */
+        window.showExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const box = document.getElementById('export-box');
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideExportModal = function() {
+            const modal = document.getElementById('export-modal');
+            const box = document.getElementById('export-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.executeExportExcel = function() {
+            const selectedCategories = Array.from(document.querySelectorAll('.export-cb:checked')).map(cb => cb.value);
+            if (selectedCategories.length === 0) return window.showToast("Pilih minimal satu kategori data.", "warning");
+
+            let exportData = [];
+            Object.values(window.databaseMap).forEach(row => {
+                if (selectedCategories.includes(row._ui_status)) {
+                    exportData.push({
+                        'No. Resi': row['AWB'] || '',
+                        'Status': row._ui_status || '',
+                        'Opcode': row['Update Opcode'] || '',
+                        'Last Scan': row['Last Scan'] || '',
+                        'Hub Operator': row['hub_operator_internal'] || '',
+                        'Origin Hub': row['origin_hub'] || '',
+                        'Destination Staging': row['destination_staging'] || '',
+                        'Destination UZ': row['destination_uz'] || row['destination_u'] || '',
+                        'Opcode 80': row['Opcode 80'] || '',
+                        'Expect Delivery': row['Expect Delivery'] || '',
+                        'Nama Barang': row['item_name'] || '',
+                        'Feedback': row['Feedback'] || '',
+                        'HUB Delivery': row['staging_operator_internal'] || '',
+                        'Last Before 92': row['Last Before 92'] || '',
+                        'Date Last Before 92': row['Date Last Before 92'] || ''
+                    });
+                }
+            });
+
+            if (exportData.length === 0) return window.showToast("Tidak ada data untuk diunduh.", "warning");
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Parcel Data");
+            XLSX.writeFile(workbook, `HubOps_Parcel_Data_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            window.hideExportModal();
+            window.showToast("File Excel berhasil dibuat!", "success");
+        };
+
+        window.showExtractModal = function() {
+            const modal = document.getElementById('extract-modal');
+            const box = document.getElementById('extract-box');
+            if (document.getElementById('extract-status')) document.getElementById('extract-status').textContent = '';
+            if (document.getElementById('extract-input')) document.getElementById('extract-input').value = '';
+
+            if(modal && box) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    box.classList.remove('scale-95'); box.classList.add('scale-100');
+                });
+            }
+        };
+
+        window.hideExtractModal = function() {
+            const modal = document.getElementById('extract-modal');
+            const box = document.getElementById('extract-box');
+            if(modal && box) {
+                modal.classList.add('opacity-0');
+                box.classList.remove('scale-100'); box.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('pointer-events-none', 'hidden'), 300);
+            }
+        };
+
+        window.processExtractExcel = function() {
+            const textInput = document.getElementById('extract-input').value;
+            if(!textInput.trim()) return window.showToast('Kolom resi masih kosong.', 'warning');
+
+            const awbRegex = /\b(\d{14})\b/g; 
+            const matches = [...textInput.matchAll(awbRegex)].map(m => m[1]);
+            const uniqueAwbs = [...new Set(matches)];
+
+            if (uniqueAwbs.length === 0) return window.showToast("Tidak ada AWB 14-digit valid ditemukan.", "warning");
+
+            let extractedData = [];
+            uniqueAwbs.forEach(awb => {
+                let row = window.databaseMap[awb];
+                if (row) {
+                    extractedData.push({
+                        'No. Resi': row['AWB'] || awb,
+                        'Status': row._ui_status || '',
+                        'Opcode': row['Update Opcode'] || '',
+                        'Last Scan': row['Last Scan'] || '',
+                        'Hub Operator': row['hub_operator_internal'] || '',
+                        'Origin Hub': row['origin_hub'] || '',
+                        'Destination Staging': row['destination_staging'] || '',
+                        'Destination UZ': row['destination_uz'] || row['destination_u'] || '',
+                        'Opcode 80': row['Opcode 80'] || '',
+                        'Expect Delivery': row['Expect Delivery'] || '',
+                        'Nama Barang': row['item_name'] || '',
+                        'Feedback': row['Feedback'] || '',
+                        'HUB Delivery': row['staging_operator_internal'] || '',
+                        'Last Before 92': row['Last Before 92'] || '',
+                        'Date Last Before 92': row['Date Last Before 92'] || ''
+                    });
+                } else {
+                    extractedData.push({
+                        'No. Resi': awb,
+                        'Status': 'TIDAK DITEMUKAN',
+                        'Opcode': '', 'Last Scan': '', 'Hub Operator': '', 'Origin Hub': '',
+                        'Destination Staging': '', 'Destination UZ': '', 'Opcode 80': '',
+                        'Expect Delivery': '', 'Nama Barang': '', 'Feedback': '',
+                        'HUB Delivery': '', 'Last Before 92': '', 'Date Last Before 92': ''
+                    });
+                }
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(extractedData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Ekstrak Resi");
+            XLSX.writeFile(workbook, `Ekstrak_Resi_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            window.hideExtractModal();
+            window.showToast(`${extractedData.length} AWB berhasil diekstrak ke Excel!`, "success");
+        };
+
         window.saveUpdateToSupabase = async function(updateData, progressCallback) {
             let totalSaved = 0;
             let chunkSize = 500;

@@ -148,6 +148,8 @@
         }
         .summary-table td { padding: 10px 6px; font-size: 0.75rem; text-align: center; border-bottom: 1px solid #f8fafc; word-wrap: break-word; }
         .summary-table tbody tr:hover td { background-color: #f1f5f9; }
+        #warningByNikTable thead th { position: sticky; top: 0; z-index: 5; background-clip: padding-box; }
+        #warningByNikTable tbody td { min-height: 34px; }
 
         .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         
@@ -1059,8 +1061,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0">
-                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="summary-section">
+            <!-- Baris 1: Rekapitulasi HUB | HUB Warning > 7 Hari -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0 items-stretch">
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full min-w-0" id="summary-section">
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <h4 id="summary-title" class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
                             <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div>
@@ -1074,6 +1077,80 @@
                     <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50/30">
                         <table class="summary-table" id="summaryTable"></table>
                     </div>
+                </div>
+
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0 flex flex-col">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-orange-50 text-orange-600 rounded-xl"><i data-lucide="building-2" class="w-5 h-5"></i></div>
+                                HUB Warning &gt; 7 Hari
+                            </h4>
+                            <p class="text-xs text-slate-500 font-medium mt-2">Jumlah resi Warning lebih dari 7 hari berdasarkan HUB.</p>
+                        </div>
+                        <span id="warning-over7-hub-count" class="text-[10px] font-extrabold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-100 px-3 py-2 rounded-xl">0 HUB</span>
+                    </div>
+                    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 max-h-[360px] overflow-y-auto">
+                        <table class="summary-table min-w-[260px]" id="warningOver7HubTable"></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Baris 2: Rekapitulasi Persentase Status per HUB | Daftar Resi Warning > 7 Hari -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0 items-stretch">
+                <!-- Rekapitulasi Persentase Status per HUB -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i></div>
+                                Rekapitulasi Persentase Status per HUB
+                            </h4>
+                            <p class="text-xs text-slate-500 font-medium mt-2">Persentase dihitung dari total AWB pada masing-masing HUB sesuai filter aktif.</p>
+                        </div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl">Live Summary</span>
+                    </div>
+                    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="summary-table min-w-[500px]" id="hubStatusPercentTable"></table>
+                    </div>
+                </div>
+
+                <!-- Daftar AWB Warning lebih dari 7 hari -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-rose-50 text-rose-600 rounded-xl"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                                Daftar Resi Warning &gt; 7 Hari
+                            </h4>
+                            <p class="text-xs text-slate-500 font-medium mt-2">AWB berstatus Warning dengan Last Scan lebih dari 7 hari.</p>
+                        </div>
+                        <span id="warning-over7-count" class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl">0 Resi</span>
+                    </div>
+                    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 max-h-[360px] overflow-y-auto">
+                        <table class="summary-table min-w-[720px]" id="warningOver7Table"></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rekap jumlah paket Warning per NIK -->
+                        <!-- Baris 3: Rekap Paket Warning Berdasarkan NIK | Analisis Freeze (<92) -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0 items-stretch">
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0 flex flex-col">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="users" class="w-5 h-5"></i></div>
+                                Rekap Paket Warning Berdasarkan NIK
+                            </h4>
+                            <p class="text-xs text-slate-500 font-medium mt-2">Jumlah AWB berstatus Warning per NIK beserta rincian jumlah paket untuk setiap opcode.</p>
+                        </div>
+                        <span id="warning-by-nik-count" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl">0 NIK</span>
+                    </div>
+                    <div class="w-full h-[560px] overflow-auto rounded-2xl border border-slate-200">
+                        <table class="summary-table min-w-[620px]" id="warningByNikTable"></table>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium mt-2">Menampilkan minimal 12 baris data sekaligus; gunakan scroll untuk melihat NIK lainnya.</p>
                 </div>
 
                 <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 hidden flex-col w-full h-full" id="freeze-summary-section">
@@ -1092,6 +1169,7 @@
                     </div>
                 </div>
             </div>
+
 
         </div>
 
@@ -1164,6 +1242,52 @@
                             </div>
                             <button onclick="window.showBulkDeleteModal()" class="bg-rose-50 text-rose-600 p-2.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
+
+                        <div class="bg-white p-4 rounded-xl border border-rose-200 shadow-sm flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-rose-700">Kosongkan Update_History</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">Hapus seluruh catatan riwayat upload; data parcel_data tidak dihapus.</p>
+                            </div>
+                            <button id="btn-clear-update-history" onclick="window.showClearUpdateHistoryModal()" title="Kosongkan Update_History" class="bg-rose-50 text-rose-600 p-2.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"><i data-lucide="history" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master nama petugas berdasarkan NIK -->
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-8 mt-6">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm">
+                                <i data-lucide="contact-round" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-slate-800 tracking-tight">Master Nama Petugas (NIK)</h3>
+                                <p class="text-sm text-slate-500 font-semibold mt-1">Daftarkan hanya NIK yang Anda ketahui. NIK lainnya tetap ditampilkan tanpa nama.</p>
+                            </div>
+                        </div>
+                        <span id="nik-name-count" class="text-[10px] font-extrabold uppercase tracking-wider text-sky-700 bg-sky-50 border border-sky-100 px-3 py-2 rounded-xl">0 NIK Terdaftar</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_1.4fr_auto] gap-3 items-end mb-6">
+                        <div>
+                            <label for="nik-name-input" class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">NIK</label>
+                            <input id="nik-name-input" type="text" inputmode="numeric" autocomplete="off" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-bold" placeholder="Masukkan NIK..." />
+                        </div>
+                        <div>
+                            <label for="nik-name-value" class="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Nama Petugas</label>
+                            <input id="nik-name-value" type="text" autocomplete="off" class="modern-input w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-bold" placeholder="Masukkan nama petugas..." />
+                        </div>
+                        <button onclick="window.addNikNameMapping()" class="bg-sky-600 text-white font-extrabold py-3 px-5 rounded-xl hover:bg-sky-700 transition-all shadow-md shadow-sky-200 text-sm flex items-center justify-center gap-2 active:scale-95">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah / Simpan
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <p class="text-xs font-bold text-slate-600">Daftar NIK yang sudah memiliki nama</p>
+                        <p class="text-[10px] text-slate-400 font-medium">Nama akan dicocokkan otomatis dengan NIK Scan pada dashboard.</p>
+                    </div>
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="summary-table min-w-[500px]" id="nikNameMappingTable"></table>
                     </div>
                 </div>
             </div>
@@ -1222,6 +1346,28 @@
             <div class="flex border-t border-slate-100 bg-slate-50">
                 <button onclick="window.closeConfirm()" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors border-r border-slate-100">Batal</button>
                 <button onclick="window.executeConfirm()" id="confirm-btn-yes" class="flex-1 py-4 text-sm font-extrabold text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Tetap Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="clear-update-history-modal" class="hidden fixed inset-0 z-[230] bg-slate-900/55 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="p-7">
+                <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-5 border border-rose-100">
+                    <i data-lucide="database-zap" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">Kosongkan Update_History?</h3>
+                <p class="text-sm text-slate-500 font-medium leading-relaxed mt-2">Semua catatan pada tabel <b>update_history</b> akan dihapus permanen. Data paket pada <b>parcel_data</b> dan pengaturan sistem tidak akan disentuh.</p>
+                <div class="mt-5 p-4 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-between gap-3">
+                    <span class="text-xs font-bold text-rose-700">Jumlah catatan saat ini</span>
+                    <span id="clear-history-row-count" class="text-lg font-black text-rose-700 tabular-nums">0</span>
+                </div>
+                <label for="clear-history-confirm-input" class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-widest mt-5 mb-2">Ketik HAPUS HISTORY untuk konfirmasi</label>
+                <input id="clear-history-confirm-input" type="text" autocomplete="off" spellcheck="false" oninput="window.validateClearUpdateHistoryPhrase()" class="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white" placeholder="HAPUS HISTORY" />
+            </div>
+            <div class="grid grid-cols-2 border-t border-slate-100 bg-slate-50">
+                <button onclick="window.closeClearUpdateHistoryModal()" class="py-4 text-sm font-bold text-slate-500 hover:bg-slate-100">Batal</button>
+                <button id="btn-confirm-clear-update-history" onclick="window.executeClearUpdateHistory()" disabled class="py-4 text-sm font-extrabold text-white bg-rose-300 cursor-not-allowed disabled:opacity-70">Hapus Permanen</button>
             </div>
         </div>
     </div>
@@ -1382,6 +1528,7 @@
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="AWB" checked> Resi</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Last Scan" checked> Tanggal</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Opcode" checked> Opcode</label>
+                        <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="NIK Scan" checked> NIK Scan</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Staging" checked> Dest. Staging</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="UZ" checked> Dest. UZ</label>
                         <label class="flex items-center gap-3 cursor-pointer hover:text-indigo-600 transition-colors"><input type="checkbox" class="cp-col-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" value="Item" checked> Tipe Item</label>
@@ -1701,7 +1848,7 @@
 
         window.isAdminLoggedIn = false;
         window.databaseMap = {}; 
-        window.appSettings = { password: 'password123', opcodes: '', hubs: '' };
+        window.appSettings = { password: 'password123', opcodes: '', hubs: '', nikNames: {} };
         window.trendChartInstance = null;
         window.originChartInstance = null;
         window.destChartInstance = null;
@@ -1788,12 +1935,14 @@
         async function fetchInitialData() {
             try {
                 const { data: settingsData, error: settingsError } = await withTimeout(supabase.from('settings').select('data').eq('id', 'admin').single(), 15000);
-                if (settingsData && settingsData.data) window.appSettings = settingsData.data;
+                if (settingsData && settingsData.data) window.appSettings = { ...window.appSettings, ...settingsData.data };
+                if (!window.appSettings.nikNames || typeof window.appSettings.nikNames !== 'object' || Array.isArray(window.appSettings.nikNames)) window.appSettings.nikNames = {};
                 
                 const elOp = document.getElementById('set-opcodes');
                 if (elOp) elOp.value = window.appSettings.opcodes || '';
                 const elHub = document.getElementById('set-hubs');
                 if (elHub) elHub.value = window.appSettings.hubs || '';
+                window.renderNikNameMappings();
 
                 let allParcels = [];
                 let fetchMore = true;
@@ -1812,11 +1961,30 @@
 
                 window.databaseMap = {};
                 if (allParcels.length > 0) {
-                    allParcels.forEach((row) => { 
-                        if (row.data && row.data.AWB) window.databaseMap[row.data.AWB] = row.data; 
+                    allParcels.forEach((row) => {
+                        if (row.data && row.data.AWB) window.databaseMap[row.data.AWB] = row.data;
                     });
                 }
-                
+
+                // Sinkronisasi status turunan saat dashboard dibuka.
+                // Ini memperbaiki data lama yang sebelumnya tersimpan sebagai Warning
+                // padahal timestamp Opcode 80 (80_tm) sudah tersedia.
+                const statusRecalculationQueue = [];
+                Object.values(window.databaseMap).forEach((parcel) => {
+                    if (!parcel || parcel._is_manual) return;
+                    const previousStatus = parcel._ui_status || '';
+                    const recalculatedStatus = window.evaluateStatus(parcel);
+                    if (previousStatus !== recalculatedStatus) {
+                        parcel._ui_status = recalculatedStatus;
+                        statusRecalculationQueue.push(parcel);
+                    }
+                });
+
+                if (statusRecalculationQueue.length > 0) {
+                    const savedCount = await window.saveBatchToSupabase(statusRecalculationQueue);
+                    console.info(`Status paket disinkronkan: ${savedCount}/${statusRecalculationQueue.length}`);
+                }
+
                 window.updateDatabaseUI();
                 
                 const loader = document.getElementById('global-loader');
@@ -1889,6 +2057,7 @@
                         'No. Resi': row['AWB'] || '',
                         'Status': row._ui_status || '',
                         'Opcode': row['Update Opcode'] || '',
+                        'NIK Scan': row['latest_opcode_nik'] || '',
                         'Last Scan': row['Last Scan'] || '',
                         'Hub Operator': row['hub_operator_internal'] || '',
                         'Origin Hub': row['origin_hub'] || '',
@@ -1959,6 +2128,7 @@
                         'No. Resi': row['AWB'] || awb,
                         'Status': row._ui_status || '',
                         'Opcode': row['Update Opcode'] || '',
+                        'NIK Scan': row['latest_opcode_nik'] || '',
                         'Last Scan': row['Last Scan'] || '',
                         'Hub Operator': row['hub_operator_internal'] || '',
                         'Origin Hub': row['origin_hub'] || '',
@@ -1976,7 +2146,7 @@
                     extractedData.push({
                         'No. Resi': awb,
                         'Status': 'TIDAK DITEMUKAN',
-                        'Opcode': '', 'Last Scan': '', 'Hub Operator': '', 'Origin Hub': '',
+                        'Opcode': '', 'NIK Scan': '', 'Last Scan': '', 'Hub Operator': '', 'Origin Hub': '',
                         'Destination Staging': '', 'Destination UZ': '', 'Opcode 80': '',
                         'Expect Delivery': '', 'Nama Barang': '', 'Feedback': '',
                         'HUB Delivery': '', 'Last Before 92': '', 'Date Last Before 92': ''
@@ -2072,6 +2242,101 @@
             }
         };
 
+        // Master mapping NIK -> nama petugas disimpan di settings.data.nikNames.
+        window.getNikName = function(nik) {
+            const key = (nik || '').toString().trim();
+            if (!key || key === '-') return '';
+            const mapping = window.appSettings && window.appSettings.nikNames ? window.appSettings.nikNames : {};
+            return mapping[key] || mapping[key.toUpperCase()] || '';
+        };
+
+        window.escapeHtmlText = function(value) {
+            return String(value == null || value === '' ? '-' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        };
+
+        window.renderNikNameMappings = function() {
+            const table = document.getElementById('nikNameMappingTable');
+            const count = document.getElementById('nik-name-count');
+            if (!table) return;
+            const mapping = window.appSettings && window.appSettings.nikNames ? window.appSettings.nikNames : {};
+            const entries = Object.entries(mapping).filter(([nik, name]) => String(nik).trim() && String(name).trim())
+                .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+            if (count) count.textContent = `${entries.length.toLocaleString('id-ID')} NIK Terdaftar`;
+
+            let html = `<thead><tr>
+                <th class="bg-slate-50 text-left text-slate-500">NIK</th>
+                <th class="bg-slate-50 text-left text-slate-500">NAMA PETUGAS</th>
+                <th class="bg-slate-50 text-center text-slate-500">TINDAKAN</th>
+            </tr></thead><tbody>`;
+            if (!entries.length) {
+                html += `<tr><td colspan="3" class="py-8 text-center text-slate-400 font-bold">Belum ada NIK yang dipasangkan dengan nama</td></tr>`;
+            } else {
+                entries.forEach(([nik, name]) => {
+                    html += `<tr>
+                        <td class="text-left font-mono font-extrabold text-sky-700">${window.escapeHtmlText(nik)}</td>
+                        <td class="text-left font-bold text-slate-700">${window.escapeHtmlText(name)}</td>
+                        <td><button type="button" onclick="window.removeNikNameMapping('${encodeURIComponent(nik).replace(/'/g, '%27')}')" class="inline-flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-100 rounded-lg px-3 py-1.5 text-[10px] font-extrabold transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus</button></td>
+                    </tr>`;
+                });
+            }
+            html += '</tbody>';
+            table.innerHTML = html;
+            if (window.lucide) window.lucide.createIcons();
+        };
+
+        window.persistNikNameMappings = async function() {
+            const { error } = await supabase.from('settings').upsert({ id: 'admin', data: window.appSettings });
+            if (error) throw error;
+        };
+
+        window.addNikNameMapping = async function() {
+            if (!window.isAdminLoggedIn) return window.showToast('Silakan login sebagai Admin terlebih dahulu.', 'warning');
+            const nikInput = document.getElementById('nik-name-input');
+            const nameInput = document.getElementById('nik-name-value');
+            const nik = nikInput ? nikInput.value.trim().toUpperCase() : '';
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!nik || !name) return window.showToast('NIK dan nama petugas wajib diisi.', 'warning');
+
+            if (!window.appSettings.nikNames || typeof window.appSettings.nikNames !== 'object') window.appSettings.nikNames = {};
+            const previous = window.appSettings.nikNames[nik];
+            window.appSettings.nikNames[nik] = name;
+            try {
+                await window.persistNikNameMappings();
+                if (nikInput) nikInput.value = '';
+                if (nameInput) nameInput.value = '';
+                window.renderNikNameMappings();
+                window.updateDatabaseUI();
+                window.showToast(previous ? 'Nama petugas berhasil diperbarui.' : 'NIK dan nama petugas berhasil ditambahkan.', 'success');
+            } catch (error) {
+                if (previous === undefined) delete window.appSettings.nikNames[nik];
+                else window.appSettings.nikNames[nik] = previous;
+                window.showToast('Gagal menyimpan mapping NIK. Periksa koneksi database.', 'error');
+            }
+        };
+
+        window.removeNikNameMapping = async function(encodedNik) {
+            if (!window.isAdminLoggedIn) return window.showToast('Silakan login sebagai Admin terlebih dahulu.', 'warning');
+            let nik = '';
+            try { nik = decodeURIComponent(encodedNik); } catch (e) { return; }
+            const previous = window.appSettings.nikNames ? window.appSettings.nikNames[nik] : undefined;
+            if (previous === undefined) return;
+            window.showConfirmModal('Hapus Mapping NIK?', `Nama untuk NIK ${nik} akan dihapus dari pengaturan.`, async () => {
+                delete window.appSettings.nikNames[nik];
+                try {
+                    await window.persistNikNameMappings();
+                    window.renderNikNameMappings();
+                    window.updateDatabaseUI();
+                    window.showToast('Mapping NIK berhasil dihapus.', 'success');
+                } catch (error) {
+                    window.appSettings.nikNames[nik] = previous;
+                    window.renderNikNameMappings();
+                    window.showToast('Gagal menghapus mapping NIK. Periksa koneksi database.', 'error');
+                }
+            });
+        };
+
         window.saveSettings = async function() {
             if(!window.isAdminLoggedIn) return;
             const newPass = document.getElementById('set-password').value;
@@ -2121,6 +2386,129 @@
                 const pInput = document.getElementById('set-password');
                 if(pInput) pInput.value = ''; 
             });
+        };
+
+        window.updateHistoryRowsPending = 0;
+
+        window.showClearUpdateHistoryModal = async function() {
+            if (!window.isAdminLoggedIn) {
+                return window.showToast('Silakan login sebagai Admin terlebih dahulu.', 'warning');
+            }
+            const trigger = document.getElementById('btn-clear-update-history');
+            const input = document.getElementById('clear-history-confirm-input');
+            const confirmBtn = document.getElementById('btn-confirm-clear-update-history');
+            if (trigger) trigger.disabled = true;
+            try {
+                const { count, error } = await supabase
+                    .from('update_history')
+                    .select('id', { count: 'exact', head: true });
+                if (error) throw error;
+
+                window.updateHistoryRowsPending = Number(count || 0);
+                window.setText('clear-history-row-count', window.updateHistoryRowsPending.toLocaleString('id-ID'));
+                if (input) input.value = '';
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.className = 'py-4 text-sm font-extrabold text-white bg-rose-300 cursor-not-allowed disabled:opacity-70';
+                }
+                const modal = document.getElementById('clear-update-history-modal');
+                if (modal) modal.classList.remove('hidden');
+                try { lucide.createIcons(); } catch (e) {}
+                if (window.updateHistoryRowsPending === 0) {
+                    window.closeClearUpdateHistoryModal();
+                    window.showToast('Tabel Update_History sudah kosong.', 'success');
+                    return;
+                }
+                if (input) input.focus();
+            } catch (error) {
+                console.error('Gagal membaca jumlah Update_History:', error);
+                window.showToast('Tidak dapat membaca jumlah Update_History. Periksa koneksi atau izin Supabase.', 'error');
+            } finally {
+                if (trigger) trigger.disabled = false;
+            }
+        };
+
+        window.validateClearUpdateHistoryPhrase = function() {
+            const input = document.getElementById('clear-history-confirm-input');
+            const button = document.getElementById('btn-confirm-clear-update-history');
+            if (!input || !button) return;
+            const valid = input.value.trim().toUpperCase() === 'HAPUS HISTORY';
+            button.disabled = !valid;
+            button.className = valid
+                ? 'py-4 text-sm font-extrabold text-white bg-rose-600 hover:bg-rose-700 transition-colors'
+                : 'py-4 text-sm font-extrabold text-white bg-rose-300 cursor-not-allowed disabled:opacity-70';
+        };
+
+        window.closeClearUpdateHistoryModal = function() {
+            const modal = document.getElementById('clear-update-history-modal');
+            const input = document.getElementById('clear-history-confirm-input');
+            const button = document.getElementById('btn-confirm-clear-update-history');
+            if (modal) modal.classList.add('hidden');
+            if (input) input.value = '';
+            if (button) {
+                button.disabled = true;
+                button.className = 'py-4 text-sm font-extrabold text-white bg-rose-300 cursor-not-allowed disabled:opacity-70';
+            }
+        };
+
+        window.executeClearUpdateHistory = async function() {
+            if (!window.isAdminLoggedIn) {
+                window.closeClearUpdateHistoryModal();
+                return window.showToast('Ditolak. Wajib login Admin.', 'error');
+            }
+            const input = document.getElementById('clear-history-confirm-input');
+            const button = document.getElementById('btn-confirm-clear-update-history');
+            if (!input || input.value.trim().toUpperCase() !== 'HAPUS HISTORY') {
+                return window.showToast('Ketik HAPUS HISTORY dengan benar untuk melanjutkan.', 'warning');
+            }
+            if (button) button.disabled = true;
+            window.closeClearUpdateHistoryModal();
+            window.showUploadProgress('Mengosongkan Update_History', 'Menghapus catatan riwayat upload...');
+
+            try {
+                // Hitung ulang tepat sebelum delete agar angka tidak memakai jumlah yang sudah kedaluwarsa.
+                const { count: beforeCount, error: countError } = await supabase
+                    .from('update_history')
+                    .select('id', { count: 'exact', head: true });
+                if (countError) throw countError;
+
+                const totalBefore = Number(beforeCount || 0);
+                if (totalBefore === 0) {
+                    window.hideUploadProgress();
+                    window.showToast('Tabel Update_History sudah kosong.', 'success');
+                    return;
+                }
+
+                window.updateUploadProgress(0, totalBefore, 'Menghapus riwayat:');
+
+                // id adalah primary key NOT NULL, sehingga filter ini menargetkan seluruh baris.
+                const { error: deleteError } = await supabase
+                    .from('update_history')
+                    .delete()
+                    .not('id', 'is', null);
+                if (deleteError) throw deleteError;
+
+                const { count: remainingCount, error: verifyError } = await supabase
+                    .from('update_history')
+                    .select('id', { count: 'exact', head: true });
+                if (verifyError) throw verifyError;
+
+                const remaining = Number(remainingCount || 0);
+                const deleted = Math.max(0, totalBefore - remaining);
+                window.updateUploadProgress(deleted, totalBefore, 'Dihapus:');
+
+                if (remaining === 0) {
+                    window.finishUploadProgress(deleted, 0, `${deleted.toLocaleString('id-ID')} catatan Update_History berhasil dihapus. Data parcel_data tetap aman.`);
+                    window.showToast(`${deleted.toLocaleString('id-ID')} catatan riwayat berhasil dikosongkan.`, 'success');
+                } else {
+                    window.finishUploadProgress(deleted, remaining, `${deleted.toLocaleString('id-ID')} catatan terhapus, ${remaining.toLocaleString('id-ID')} masih tersisa. Periksa izin DELETE/SELECT Supabase.`);
+                    window.showToast('Sebagian catatan masih tersisa. Periksa izin tabel di Supabase.', 'warning');
+                }
+            } catch (error) {
+                console.error('Gagal mengosongkan Update_History:', error);
+                window.hideUploadProgress();
+                window.showToast('Gagal menghapus Update_History. Periksa izin DELETE/SELECT dan koneksi Supabase.', 'error');
+            }
         };
 
         window.clearResolvedData = async function() {
@@ -2212,9 +2600,12 @@
         window.evaluateStatus = function(row) {
             let currentOpcode = (row['Update Opcode'] || '').toString().trim();
             let currentHub = (row['hub_operator_internal'] || '').toString().trim();
-            let currentOpcode80 = (row['Opcode 80'] || '').toString().trim();
+            // Timestamp 80_tm dipetakan ke "Opcode 80" saat ingest. Raw key juga
+            // dibaca untuk menjaga kompatibilitas dengan data lama.
+            let currentOpcode80 = (row['Opcode 80'] || row['80_tm'] || row['80_last'] || '').toString().trim();
             let currentReturn = (row['Return'] || '').toString().trim();
-            
+
+            // Freeze tetap memiliki prioritas tertinggi, kecuali status dikunci manual.
             if (currentOpcode === '92') {
                 if (row._is_manual) return row._ui_status;
                 return 'Freeze';
@@ -2223,14 +2614,13 @@
             let confHubs = window.appSettings.hubs ? window.appSettings.hubs.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confHubs.length > 0 && currentHub !== '' && !confHubs.includes(currentHub)) return 'Resolved';
 
-            const warningOpcodes = ['603', '618', '21', '22', '207', '43'];
-            if (warningOpcodes.includes(currentOpcode)) {
-                if (row._is_manual) return row._ui_status; 
-                return 'Warning';
-            }
-
+            // Status manual tetap dihormati. Untuk status otomatis, 80_tm/Return
+            // harus mengalahkan opcode Warning seperti 43, 603, 618, dan lainnya.
             if (row._is_manual) return row._ui_status;
             if (currentOpcode80 !== '' || currentReturn !== '') return 'Resolved';
+
+            const warningOpcodes = ['603', '618', '21', '22', '207', '43'];
+            if (warningOpcodes.includes(currentOpcode)) return 'Warning';
 
             let confOpcodes = window.appSettings.opcodes ? window.appSettings.opcodes.toString().split(',').map(s => s.trim()).filter(s => s !== '') : [];
             if (confOpcodes.length > 0 && confOpcodes.includes(currentOpcode)) return 'Resolved';
@@ -2309,7 +2699,8 @@
                         let cleanRow = {};
                         for (let key in row) {
                             if (row.hasOwnProperty(key)) {
-                                cleanRow[key.trim()] = row[key];
+                                const normalizedKey = key.replace(/^\uFEFF/, '').trim();
+                                cleanRow[normalizedKey] = row[key];
                             }
                         }
 
@@ -2321,6 +2712,7 @@
                             let newObj = {
                                 'AWB': awb,
                                 'Update Opcode': cleanRow['latest_op_code'] || cleanRow['fop_code_internal'] || "",
+                                'latest_opcode_nik': cleanRow['latest_opcode_nik'] || "",
                                 'Last Scan': cleanRow['latest_opcode_tm'] || cleanRow['time_scan_internal'] || "",
                                 'hub_operator_internal': cleanRow['latest_opcode_location'] || cleanRow['hub_operator_internal'] || "",
                                 'staging_operator_internal': cleanRow['staging_operator_internal'] || "",
@@ -2350,6 +2742,13 @@
                             
                             let newTime = (cleanRow['latest_opcode_tm'] || cleanRow['time_scan_internal']);
                             if (newTime) { window.databaseMap[awb]['Last Scan'] = newTime; isUpdated = true; }
+
+                            const newNik = (cleanRow['latest_opcode_nik'] || '').toString().trim();
+                            const currentNik = (window.databaseMap[awb]['latest_opcode_nik'] || '').toString().trim();
+                            if (newNik && newNik !== currentNik) {
+                                window.databaseMap[awb]['latest_opcode_nik'] = newNik;
+                                isUpdated = true;
+                            }
                             
                             let newHub = (cleanRow['latest_opcode_location'] || cleanRow['hub_operator_internal']);
                             if (newHub) { window.databaseMap[awb]['hub_operator_internal'] = newHub; isUpdated = true; }
@@ -2568,6 +2967,7 @@
                                     rowMain.push(val);
                                 } else if (col === 'AWB') { rowMain.push(row['AWB'] || '-');
                                 } else if (col === 'Opcode') { rowMain.push(row['Update Opcode'] || '-');
+                                } else if (col === 'NIK Scan') { rowMain.push(row['latest_opcode_nik'] || '-');
                                 } else if (col === 'Staging') { rowMain.push(row['destination_staging'] || '-');
                                 } else if (col === 'UZ') { rowMain.push(row['destination_uz'] || row['destination_u'] || '-');
                                 } else if (col === 'Feedback') { rowMain.push(row['Feedback'] || '-');
@@ -2600,6 +3000,281 @@
                 window.showToast(successMsg, "success");
             } catch (err) {}
             document.body.removeChild(textArea);
+        };
+
+        window.renderHubStatusPercentTable = function(data) {
+            const table = document.getElementById('hubStatusPercentTable');
+            if (!table) return;
+
+            const confHubs = window.appSettings.hubs
+                ? window.appSettings.hubs.toString().split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+                : [];
+
+            const summary = {};
+            data.forEach(row => {
+                const hubOps = (row['hub_operator_internal'] || '').toString().trim().toUpperCase();
+                const hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
+                let hub = (row._ui_status === 'Freeze' && hubDel) ? hubDel : hubOps;
+
+                if (!hub || hub === '-') hub = 'KOSONG';
+                else if (confHubs.length > 0 && !confHubs.includes(hub)) hub = 'EKSTERNAL';
+
+                if (!summary[hub]) summary[hub] = { total: 0, pending: 0, resolved: 0, freeze: 0 };
+                summary[hub].total++;
+
+                if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') summary[hub].pending++;
+                else if (row._ui_status === 'Resolved') summary[hub].resolved++;
+                else if (row._ui_status === 'Freeze') summary[hub].freeze++;
+            });
+
+            const hubs = Object.keys(summary).sort((a, b) => {
+                if (a === 'KOSONG') return 1;
+                if (b === 'KOSONG') return -1;
+                if (a === 'EKSTERNAL') return 1;
+                if (b === 'EKSTERNAL') return -1;
+                return summary[b].total - summary[a].total || a.localeCompare(b);
+            });
+
+            const pct = (count, total) => total > 0 ? ((count / total) * 100).toFixed(1) + '%' : '0.0%';
+            const th = `
+                <thead>
+                    <tr>
+                        <th class="bg-slate-50 text-left text-slate-500">HUB</th>
+                        <th class="bg-orange-50 text-orange-700"> % PENDING </th>
+                        <th class="bg-emerald-50 text-emerald-700"> % RESOLVED </th>
+                        <th class="bg-blue-50 text-blue-700"> % FREEZE </th>
+                    </tr>
+                </thead>`;
+            let tbody = '<tbody>';
+            let totalAwb = 0, totalPending = 0, totalResolved = 0, totalFreeze = 0;
+
+            if (!hubs.length) {
+                tbody += '<tr><td colspan="4" class="py-8 text-center text-slate-400 font-bold">Tidak ada data untuk ditampilkan</td></tr>';
+            } else {
+                hubs.forEach(hub => {
+                    const item = summary[hub];
+                    totalAwb += item.total;
+                    totalPending += item.pending;
+                    totalResolved += item.resolved;
+                    totalFreeze += item.freeze;
+
+                    tbody += `
+                        <tr>
+                            <td class="text-left font-extrabold text-slate-700">${hub}</td>
+                            <td class="font-extrabold text-orange-600 bg-orange-50/40">${pct(item.pending, item.total)}</td>
+                            <td class="font-extrabold text-emerald-600 bg-emerald-50/40">${pct(item.resolved, item.total)}</td>
+                            <td class="font-extrabold text-blue-600 bg-blue-50/40">${pct(item.freeze, item.total)}</td>
+                        </tr>`;
+                });
+                tbody += `
+                    <tr class="bg-slate-100/70">
+                        <td class="text-left font-black text-slate-800 border-t-2 border-slate-200">TOTAL</td>
+                        <td class="font-black text-orange-700 bg-orange-100/70 border-t-2 border-slate-200">${pct(totalPending, totalAwb)}</td>
+                        <td class="font-black text-emerald-700 bg-emerald-100/70 border-t-2 border-slate-200">${pct(totalResolved, totalAwb)}</td>
+                        <td class="font-black text-blue-700 bg-blue-100/70 border-t-2 border-slate-200">${pct(totalFreeze, totalAwb)}</td>
+                    </tr>`;
+            }
+            tbody += '</tbody>';
+            table.innerHTML = th + tbody;
+        };
+
+        window.renderWarningOver7DaysTable = function(data) {
+            const table = document.getElementById('warningOver7Table');
+            const countBadge = document.getElementById('warning-over7-count');
+            const hubTable = document.getElementById('warningOver7HubTable');
+            const hubCountBadge = document.getElementById('warning-over7-hub-count');
+            if (!table) return;
+
+            const now = Date.now();
+            const oneDayMs = 1000 * 60 * 60 * 24;
+            const escapeHtml = value => String(value == null || value === '' ? '-' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            const warningRows = data
+                .filter(row => row._ui_status === 'Warning')
+                .map(row => {
+                    const dateObj = window.parseCustomDate(row['Last Scan']);
+                    if (!dateObj) return null;
+                    const diffDays = Math.floor((now - dateObj.getTime()) / oneDayMs);
+                    if (diffDays <= 7) return null;
+                    return {
+                        awb: row.AWB || row.awb || row['No. Resi'] || '-',
+                        hub: (row.hub_operator_internal || '').toString().trim() || 'HUB TIDAK TERSEDIA',
+                        opcode: row['Update Opcode'] || row.latest_op_code || row.fop_code_internal || '-',
+                        nik: row.latest_opcode_nik || '-',
+                        name: window.getNikName(row.latest_opcode_nik) || '',
+                        lastScan: window.formatStandardDate(row['Last Scan']),
+                        age: diffDays
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.age - a.age || String(a.hub).localeCompare(String(b.hub)));
+
+            if (countBadge) countBadge.textContent = `${warningRows.length.toLocaleString('id-ID')} Resi`;
+
+            // Ringkas jumlah AWB Warning >7 hari berdasarkan HUB untuk tabel pendamping.
+            if (hubTable) {
+                const hubSummary = {};
+                warningRows.forEach(row => {
+                    const hubKey = row.hub || 'HUB TIDAK TERSEDIA';
+                    hubSummary[hubKey] = (hubSummary[hubKey] || 0) + 1;
+                });
+
+                const hubEntries = Object.entries(hubSummary)
+                    .map(([hub, count]) => ({ hub, count }))
+                    .sort((a, b) => b.count - a.count || a.hub.localeCompare(b.hub));
+
+                if (hubCountBadge) {
+                    hubCountBadge.textContent = `${hubEntries.length.toLocaleString('id-ID')} HUB · ${warningRows.length.toLocaleString('id-ID')} Resi`;
+                }
+
+                let hubHtml = `<thead><tr>
+                    <th class="bg-slate-50 text-left text-slate-500">HUB</th>
+                    <th class="bg-orange-50 text-orange-700">JUMLAH RESI &gt;7 HARI</th>
+                </tr></thead><tbody>`;
+
+                if (!hubEntries.length) {
+                    hubHtml += '<tr><td colspan="2" class="py-8 text-center text-slate-400 font-bold">Tidak ada HUB dengan resi Warning lebih dari 7 hari</td></tr>';
+                } else {
+                    hubEntries.forEach(item => {
+                        hubHtml += `<tr>
+                            <td class="text-left font-extrabold text-slate-700">${escapeHtml(item.hub)}</td>
+                            <td><span class="inline-flex min-w-[42px] items-center justify-center rounded-lg bg-orange-50 text-orange-700 border border-orange-100 px-3 py-1.5 font-black">${item.count.toLocaleString('id-ID')}</span></td>
+                        </tr>`;
+                    });
+                    hubHtml += `<tr class="bg-slate-100/70">
+                        <td class="text-left font-black text-slate-800 border-t-2 border-slate-200">TOTAL</td>
+                        <td class="font-black text-orange-800 bg-orange-100/70 border-t-2 border-slate-200">${warningRows.length.toLocaleString('id-ID')}</td>
+                    </tr>`;
+                }
+                hubHtml += '</tbody>';
+                hubTable.innerHTML = hubHtml;
+            }
+
+            const thead = `
+                <thead>
+                    <tr>
+                        <th class="bg-slate-50 text-left text-slate-500">NO. RESI / AWB</th>
+                        <th class="bg-slate-50 text-slate-500">HUB</th>
+                        <th class="bg-indigo-50 text-indigo-700">OPCODE</th>
+                        <th class="bg-sky-50 text-sky-700">NIK SCAN / NAMA</th>
+                        <th class="bg-slate-50 text-slate-500">LAST SCAN</th>
+                        <th class="bg-rose-50 text-rose-700">USIA</th>
+                    </tr>
+                </thead>`;
+
+            let tbody = '<tbody>';
+            if (!warningRows.length) {
+                tbody += '<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold">Tidak ada resi Warning lebih dari 7 hari</td></tr>';
+            } else {
+                warningRows.forEach(row => {
+                    tbody += `
+                        <tr>
+                            <td class="text-left font-extrabold text-indigo-900 whitespace-nowrap">${escapeHtml(row.awb)}</td>
+                            <td class="font-bold text-slate-600 whitespace-nowrap">${escapeHtml(row.hub)}</td>
+                            <td><span class="inline-flex bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${escapeHtml(row.opcode)}</span></td>
+                            <td class="text-center">
+                                <span class="inline-flex bg-sky-50 border border-sky-100 text-sky-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${escapeHtml(row.nik)}</span>
+                                ${row.name ? `<div class="text-[10px] text-slate-600 font-bold mt-1">${escapeHtml(row.name)}</div>` : ''}
+                            </td>
+                            <td class="text-slate-500 font-semibold whitespace-nowrap">${escapeHtml(row.lastScan)}</td>
+                            <td><span class="inline-flex items-center justify-center rounded-lg bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 font-extrabold whitespace-nowrap">${row.age} hari</span></td>
+                        </tr>`;
+                });
+            }
+            tbody += '</tbody>';
+            table.innerHTML = thead + tbody;
+        };
+
+        window.renderWarningByNikTable = function(data) {
+            const table = document.getElementById('warningByNikTable');
+            const badge = document.getElementById('warning-by-nik-count');
+            if (!table) return;
+
+            const groups = {};
+            const opcodeSet = new Set();
+            let totalWarning = 0;
+            const getOpcode = row => {
+                const value = (row['Update Opcode'] || row.latest_op_code || row.fop_code_internal || '').toString().trim();
+                return value || 'TIDAK DIKETAHUI';
+            };
+
+            data.filter(row => row._ui_status === 'Warning').forEach(row => {
+                const nikRaw = (row.latest_opcode_nik || '').toString().trim();
+                const nikKey = nikRaw || 'NIK TIDAK TERSEDIA';
+                const opcode = getOpcode(row);
+                if (!groups[nikKey]) {
+                    groups[nikKey] = {
+                        nik: nikRaw || 'NIK TIDAK TERSEDIA',
+                        name: window.getNikName(nikRaw) || '',
+                        count: 0,
+                        opcodes: {}
+                    };
+                }
+                groups[nikKey].count++;
+                groups[nikKey].opcodes[opcode] = (groups[nikKey].opcodes[opcode] || 0) + 1;
+                opcodeSet.add(opcode);
+                totalWarning++;
+            });
+
+            const opcodeColumns = Array.from(opcodeSet).sort((a, b) => {
+                if (a === 'TIDAK DIKETAHUI') return 1;
+                if (b === 'TIDAK DIKETAHUI') return -1;
+                const aNum = Number(a), bNum = Number(b);
+                if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+                return a.localeCompare(b, 'id', { numeric: true });
+            });
+            const entries = Object.values(groups).sort((a, b) =>
+                b.count - a.count || String(a.name || a.nik).localeCompare(String(b.name || b.nik))
+            );
+
+            if (badge) {
+                badge.textContent = `${entries.length.toLocaleString('id-ID')} NIK · ${totalWarning.toLocaleString('id-ID')} Paket · ${opcodeColumns.length.toLocaleString('id-ID')} Opcode`;
+            }
+
+            const escape = value => window.escapeHtmlText(value);
+            const minWidth = Math.max(620, 360 + (opcodeColumns.length * 88));
+            let thead = `<thead><tr>
+                <th class="bg-slate-50 text-left text-slate-500">NIK SCAN</th>
+                <th class="bg-slate-50 text-left text-slate-500">NAMA PETUGAS</th>
+                <th class="bg-amber-50 text-amber-700">TOTAL WARNING</th>`;
+            opcodeColumns.forEach(opcode => {
+                thead += `<th class="bg-indigo-50 text-indigo-700 whitespace-nowrap">OP ${escape(opcode)}</th>`;
+            });
+            thead += '</tr></thead>';
+
+            let tbody = '<tbody>';
+            if (!entries.length) {
+                tbody += `<tr><td colspan="${3 + opcodeColumns.length}" class="py-8 text-center text-slate-400 font-bold">Tidak ada paket berstatus Warning pada filter aktif</td></tr>`;
+            } else {
+                entries.forEach(item => {
+                    tbody += `<tr>
+                        <td class="text-left font-mono font-extrabold text-sky-700 whitespace-nowrap">${escape(item.nik)}</td>
+                        <td class="text-left font-bold text-slate-700 whitespace-nowrap">${escape(item.name || 'Nama belum didaftarkan')}</td>
+                        <td><span class="inline-flex min-w-[48px] items-center justify-center rounded-lg bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1.5 font-black">${item.count.toLocaleString('id-ID')}</span></td>`;
+                    opcodeColumns.forEach(opcode => {
+                        const count = item.opcodes[opcode] || 0;
+                        tbody += `<td class="font-bold ${count ? 'text-indigo-700' : 'text-slate-300'}">${count.toLocaleString('id-ID')}</td>`;
+                    });
+                    tbody += '</tr>';
+                });
+
+                tbody += `<tr class="bg-slate-100/70">
+                    <td colspan="2" class="text-left font-black text-slate-800 border-t-2 border-slate-200">TOTAL PAKET WARNING</td>
+                    <td class="font-black text-amber-800 bg-amber-100/70 border-t-2 border-slate-200">${totalWarning.toLocaleString('id-ID')}</td>`;
+                opcodeColumns.forEach(opcode => {
+                    const opcodeTotal = entries.reduce((sum, item) => sum + (item.opcodes[opcode] || 0), 0);
+                    tbody += `<td class="font-black text-indigo-800 bg-indigo-100/60 border-t-2 border-slate-200">${opcodeTotal.toLocaleString('id-ID')}</td>`;
+                });
+                tbody += '</tr>';
+            }
+            tbody += '</tbody>';
+            table.style.minWidth = `${minWidth}px`;
+            table.innerHTML = thead + tbody;
         };
 
         window.renderSummaryTable = function(data) {
@@ -3589,6 +4264,9 @@
                 window.updateAgingChart(filteredArray);
                 window.renderSummaryTable(filteredArray);
                 window.renderFreezeSummaryTable(filteredArray);
+                window.renderHubStatusPercentTable(filteredArray);
+                window.renderWarningOver7DaysTable(filteredArray);
+                window.renderWarningByNikTable(filteredArray);
 
                 window.dtWarning = window.renderOrUpdateTable('#tableWarning', window.dtWarning, dataWarning, 'warning');
                 window.dtStuck = window.renderOrUpdateTable('#tableStuck', window.dtStuck, dataStuck, 'stuck');
@@ -3719,7 +4397,25 @@
                 render: function(data, type, row) { return `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${data || '-'}</span>`; }
             });
 
-            // 7. Item (Dengan min-width agar tidak bertumpuk di HP)
+            // 7. NIK petugas pada latest opcode
+            columns.push({
+                title: "NIK Scan", data: "latest_opcode_nik", defaultContent: "-",
+                className: "dt-center whitespace-nowrap text-slate-600 font-mono text-xs",
+                render: function(data, type, row) {
+                    const value = (data || '').toString().trim();
+                    const safeValue = value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+                    if (type === 'display') {
+                        const mappedName = window.getNikName(value);
+                        const safeName = String(mappedName || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+                        return value
+                            ? `<div class="flex flex-col items-center gap-1"><span class="inline-flex bg-sky-50 border border-sky-100 text-sky-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${safeValue}</span>${safeName ? `<span class="text-[10px] font-bold text-slate-600">${safeName}</span>` : ''}</div>`
+                            : '<span class="text-slate-300">-</span>';
+                    }
+                    return value;
+                }
+            });
+
+            // 8. Item (Dengan min-width agar tidak bertumpuk di HP)
             columns.push({ 
                 title: "Item", data: "item_name", defaultContent: "-", 
                 className: "dt-left text-[9px] lg:text-[11px] font-semibold text-slate-600 min-w-[200px]",

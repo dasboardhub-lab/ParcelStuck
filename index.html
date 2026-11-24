@@ -1125,7 +1125,13 @@
                             </h4>
                             <p class="text-xs text-slate-500 font-medium mt-2">AWB berstatus Warning dengan Last Scan lebih dari 7 hari.</p>
                         </div>
-                        <span id="warning-over7-count" class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl">0 Resi</span>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button type="button" onclick="window.copyWarningOver7DaysForWhatsApp()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-[11px] sm:text-xs font-extrabold px-3 py-2.5 rounded-xl shadow-sm shadow-emerald-100 transition-all">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                <span>Salin untuk WhatsApp</span>
+                            </button>
+                            <span id="warning-over7-count" class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl">0 Resi</span>
+                        </div>
                     </div>
                     <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 max-h-[360px] overflow-y-auto">
                         <table class="summary-table min-w-[720px]" id="warningOver7Table"></table>
@@ -3114,6 +3120,7 @@
                 .filter(Boolean)
                 .sort((a, b) => b.age - a.age || String(a.hub).localeCompare(String(b.hub)));
 
+            window.warningOver7DaysRows = warningRows;
             if (countBadge) countBadge.textContent = `${warningRows.length.toLocaleString('id-ID')} Resi`;
 
             // Ringkas jumlah AWB Warning >7 hari berdasarkan HUB untuk tabel pendamping.
@@ -3188,6 +3195,50 @@
             }
             tbody += '</tbody>';
             table.innerHTML = thead + tbody;
+        };
+
+        window.copyWarningOver7DaysForWhatsApp = function() {
+            const rows = Array.isArray(window.warningOver7DaysRows) ? window.warningOver7DaysRows : [];
+            if (!rows.length) {
+                return window.showToast("Tidak ada resi Warning > 7 hari untuk disalin.", "warning");
+            }
+
+            const grouped = {};
+            rows.forEach(row => {
+                const hub = (row.hub || 'HUB TIDAK TERSEDIA').toString().trim();
+                if (!grouped[hub]) grouped[hub] = [];
+                grouped[hub].push(row);
+            });
+
+            const hubNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+            const totalHubs = hubNames.length;
+            const totalRows = rows.length;
+            const lines = [
+                '*DAFTAR RESI WARNING > 7 HARI*',
+                `Total: *${totalRows.toLocaleString('id-ID')} resi* dari *${totalHubs.toLocaleString('id-ID')} HUB*`,
+                ''
+            ];
+
+            hubNames.forEach(hub => {
+                const hubRows = grouped[hub].sort((a, b) => (b.age || 0) - (a.age || 0));
+                lines.push(`*${hub} — ${hubRows.length.toLocaleString('id-ID')} resi*`);
+                hubRows.forEach((row, index) => {
+                    const awb = row.awb || '-';
+                    const opcode = row.opcode || '-';
+                    const nik = row.nik || '-';
+                    const nikName = row.name ? ` (${row.name})` : '';
+                    const lastScan = row.lastScan || '-';
+                    const age = Number.isFinite(Number(row.age)) ? `${row.age} hari` : '-';
+                    lines.push(`${index + 1}. ${awb}`);
+                    lines.push(`   Opcode: ${opcode} | NIK Scan: ${nik}${nikName}`);
+                    lines.push(`   Last Scan: ${lastScan} | Usia: *${age}*`);
+                });
+                lines.push('');
+            });
+
+            lines.push('_Data mengikuti filter dashboard yang sedang aktif._');
+            const message = lines.join('\n').trim();
+            window.copyToClipboard(message, `${totalRows.toLocaleString('id-ID')} resi berhasil disalin untuk WhatsApp!`);
         };
 
         window.renderWarningByNikTable = function(data) {

@@ -144,9 +144,22 @@
         .summary-table th { 
             padding: 10px 6px; font-size: 0.65rem; text-transform: uppercase; font-weight: 800; 
             letter-spacing: 0.03em; text-align: center; border-bottom: 2px solid #e2e8f0; border-top: 1px solid #e2e8f0;
-            word-wrap: break-word; line-height: 1.3;
+            word-wrap: break-word; overflow-wrap: anywhere; white-space: normal; line-height: 1.3;
         }
-        .summary-table td { padding: 10px 6px; font-size: 0.75rem; text-align: center; border-bottom: 1px solid #f8fafc; word-wrap: break-word; }
+        .summary-table td { padding: 10px 6px; font-size: 0.75rem; text-align: center; border-bottom: 1px solid #f8fafc; word-wrap: break-word; overflow-wrap: anywhere; }
+        /* Tabel Warning >7 Hari harus muat di panel tanpa scroll horizontal. */
+        #warningOver7Table { width: 100% !important; min-width: 0 !important; max-width: 100%; table-layout: fixed !important; }
+        #warningOver7Table th { padding: 8px 4px !important; font-size: 0.58rem !important; letter-spacing: 0.01em; }
+        #warningOver7Table td { padding: 9px 4px !important; font-size: 0.66rem !important; line-height: 1.35; }
+        #warningOver7Table .warning-over7-actions { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+        #warningOver7Table .warning-over7-icon-btn { width: 28px; height: 28px; min-width: 28px; padding: 0; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: transform .15s ease, background-color .15s ease; }
+        #warningOver7Table .warning-over7-icon-btn:active { transform: scale(.92); }
+        #warningOver7Table .warning-over7-icon-btn svg { width: 14px; height: 14px; }
+        @media (max-width: 900px) {
+            #warningOver7Table th { font-size: 0.52rem !important; }
+            #warningOver7Table td { font-size: 0.60rem !important; }
+            #warningOver7Table .warning-over7-icon-btn { width: 25px; height: 25px; min-width: 25px; }
+        }
         .summary-table tbody tr:hover td { background-color: #f1f5f9; }
         #warningByNikTable thead th { position: sticky; top: 0; z-index: 5; background-clip: padding-box; }
         #warningByNikTable tbody td { min-height: 34px; }
@@ -307,6 +320,7 @@
         .tab-pending .filled, .tab-pending + .tooltip { background-color: #f97316; }
         .tab-resolved .filled, .tab-resolved + .tooltip { background-color: #10b981; }
         .tab-freeze .filled, .tab-freeze + .tooltip { background-color: #3b82f6; }
+        .tab-claim-hilang .filled, .tab-claim-hilang + .tooltip { background-color: #7c3aed; }
         
         .btn-save .filled, .btn-save + .tooltip { background-color: #4f46e5; }
         .btn-copy-awb .filled, .btn-copy-awb + .tooltip { background-color: #2563eb; }
@@ -321,6 +335,7 @@
         window.dtResolved = null; 
         window.dtFreeze = null; 
         window.dtWarning = null;
+        window.dtClaimHilang = null;
 
         window.setText = function(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; };
         window.toggleVisibility = function(id, isVisible, displayClass = 'block') {
@@ -995,6 +1010,14 @@
                                     </button>
                                     <div class="tooltip hidden md:block">Freeze</div>
                                 </li>
+                                <li class="icon-content">
+                                    <button onclick="window.switchTableTab('claim-hilang')" id="ttab-claim-hilang" class="tab-btn tab-claim-hilang">
+                                        <span class="filled"></span>
+                                        <i data-lucide="package-x" class="w-5 h-5 md:w-6 md:h-6"></i>
+                                        <span id="count-claim-hilang" class="text-[10px] md:text-[11px] font-black leading-none z-10 truncate px-1 w-full text-center">0</span>
+                                    </button>
+                                    <div class="tooltip hidden md:block">Claim Hilang</div>
+                                </li>
                             </ul>
 
                             <ul class="action-menu flex-wrap justify-center lg:justify-end">
@@ -1056,6 +1079,16 @@
                             <div id="tc-freeze" class="w-full hidden">
                                 <table id="tableFreeze" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
                             </div>
+                            <div id="tc-claim-hilang" class="w-full hidden">
+                                <div class="bg-violet-50/80 border border-violet-100 rounded-2xl p-4 mb-5 text-sm flex items-start gap-3 shadow-sm mx-2 md:mx-0">
+                                    <div class="bg-violet-600 p-2 rounded-xl text-white mt-0.5 shadow-sm"><i data-lucide="file-warning" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <p class="font-black mb-1 text-violet-900">Catatan Claim Hilang untuk Management</p>
+                                        <p class="text-violet-800 text-xs font-semibold leading-relaxed">Daftar ini berisi paket yang sudah ditandai Claim Hilang. Penandaan ini merupakan catatan tambahan dan tidak mengubah status operasional Warning, Pending, Resolved, atau Freeze.</p>
+                                    </div>
+                                </div>
+                                <table id="tableClaimHilang" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1097,9 +1130,9 @@
             </div>
 
             <!-- Baris 2: Rekapitulasi Persentase Status per HUB | Daftar Resi Warning > 7 Hari -->
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10 mx-2 lg:mx-0 items-stretch">
+            <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 relative z-10 mx-2 lg:mx-0 items-stretch">
                 <!-- Rekapitulasi Persentase Status per HUB -->
-                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                <div class="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
                     <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
                         <div>
                             <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -1111,12 +1144,12 @@
                         <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl">Live Summary</span>
                     </div>
                     <div class="w-full overflow-x-auto rounded-2xl border border-slate-200">
-                        <table class="summary-table min-w-[500px]" id="hubStatusPercentTable"></table>
+                        <table class="summary-table min-w-[420px]" id="hubStatusPercentTable"></table>
                     </div>
                 </div>
 
                 <!-- Daftar AWB Warning lebih dari 7 hari -->
-                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                <div class="xl:col-span-3 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
                     <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
                         <div>
                             <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -1133,8 +1166,8 @@
                             <span id="warning-over7-count" class="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl">0 Resi</span>
                         </div>
                     </div>
-                    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 max-h-[360px] overflow-y-auto">
-                        <table class="summary-table min-w-[720px]" id="warningOver7Table"></table>
+                    <div class="w-full overflow-x-hidden rounded-2xl border border-slate-200 max-h-[360px] overflow-y-auto">
+                        <table class="summary-table w-full min-w-0" id="warningOver7Table"></table>
                     </div>
                 </div>
             </div>
@@ -1458,6 +1491,9 @@
                 </label>
                 <label class="flex items-center gap-3 p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
                     <input type="checkbox" class="export-cb w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" value="Freeze"> Freeze
+                </label>
+                <label class="flex items-center gap-3 p-3.5 border border-violet-200 bg-violet-50/50 rounded-xl cursor-pointer hover:bg-violet-50 transition-colors">
+                    <input type="checkbox" class="export-cb w-5 h-5 text-violet-600 rounded border-slate-300 focus:ring-violet-500" value="Claim Hilang"> Claim Hilang
                 </label>
             </div>
             <button onclick="window.executeExportExcel()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:emerald-200 text-sm flex items-center justify-center gap-2 active:scale-95">
@@ -1795,6 +1831,11 @@
                             let cleanFeedback = afterAwb.replace(/^\d{1,4}([\t\s]+|$)/, '').trim();
                             if (cleanFeedback !== '') {
                                 window.databaseMap[awb]['Feedback'] = cleanFeedback;
+                                if (/\b(?:claim|klaim)\s+hilang\b|\bhilang\s+(?:sudah\s+)?(?:di[-\s]?claim|di[-\s]?klaim)\b/i.test(cleanFeedback)) {
+                                    window.databaseMap[awb]._claim_hilang = true;
+                                    window.databaseMap[awb]._claim_hilang_at = window.databaseMap[awb]._claim_hilang_at || new Date().toISOString();
+                                    window.databaseMap[awb]._claim_hilang_source = 'Feedback';
+                                }
                                 recordsToSave.push(window.databaseMap[awb]); 
                                 updatedCount++;
                             } else { skippedCount++; }
@@ -2058,10 +2099,16 @@
 
             let exportData = [];
             Object.values(window.databaseMap).forEach(row => {
-                if (selectedCategories.includes(row._ui_status)) {
+                const isClaimedMissing = window.isClaimHilang(row);
+                const includeByStatus = selectedCategories.includes(row._ui_status);
+                const includeClaimHilang = selectedCategories.includes('Claim Hilang') && isClaimedMissing;
+                if (includeByStatus || includeClaimHilang) {
                     exportData.push({
                         'No. Resi': row['AWB'] || '',
                         'Status': row._ui_status || '',
+                        'Status Claim Hilang': isClaimedMissing ? 'SUDAH CLAIM HILANG' : '',
+                        'Tanggal Claim Hilang': row._claim_hilang_at || '',
+                        'Sumber Penandaan Claim': row._claim_hilang_source || (isClaimedMissing ? 'Feedback' : ''),
                         'Opcode': row['Update Opcode'] || '',
                         'NIK Scan': row['latest_opcode_nik'] || '',
                         'Last Scan': row['Last Scan'] || '',
@@ -2220,7 +2267,7 @@
 
         window.switchTableTab = function(tableName) {
             window.currentActiveTable = tableName;
-            const tabs = ['warning', 'stuck', 'resolved', 'freeze'];
+            const tabs = ['warning', 'stuck', 'resolved', 'freeze', 'claim-hilang'];
             
             tabs.forEach(t => {
                 let btn = document.getElementById(`ttab-${t}`);
@@ -2245,6 +2292,7 @@
                 else if (tableName === 'stuck' && window.dtStuck) window.dtStuck.columns.adjust();
                 else if (tableName === 'resolved' && window.dtResolved) window.dtResolved.columns.adjust();
                 else if (tableName === 'freeze' && window.dtFreeze) window.dtFreeze.columns.adjust();
+                else if (tableName === 'claim-hilang' && window.dtClaimHilang) window.dtClaimHilang.columns.adjust();
             }
         };
 
@@ -2632,6 +2680,39 @@
             if (confOpcodes.length > 0 && confOpcodes.includes(currentOpcode)) return 'Resolved';
 
             return 'Stuck';
+        };
+
+        window.isClaimHilang = function(row) {
+            if (!row) return false;
+            if (row._claim_hilang === false) return false;
+            if (row._claim_hilang === true) return true;
+            const feedback = String(row['Feedback'] || '');
+            return /\b(?:claim|klaim)\s+hilang\b|\bhilang\s+(?:sudah\s+)?(?:di[-\s]?claim|di[-\s]?klaim)\b/i.test(feedback);
+        };
+
+        window.setClaimHilang = function(awb, shouldClaim) {
+            if (!window.isAdminLoggedIn) return window.showToast('Ditolak. Wajib login Admin.', 'error');
+            const parcel = window.databaseMap && window.databaseMap[awb];
+            if (!parcel) return window.showToast('Resi tidak ditemukan.', 'error');
+
+            const currentlyClaimed = window.isClaimHilang(parcel);
+            if (currentlyClaimed === shouldClaim && parcel._claim_hilang === shouldClaim) {
+                return window.showToast(shouldClaim ? 'Resi sudah masuk daftar Claim Hilang.' : 'Penanda Claim Hilang sudah dilepas.', 'info');
+            }
+
+            const executeChange = () => {
+                parcel._claim_hilang = shouldClaim;
+                parcel._claim_hilang_at = shouldClaim ? new Date().toISOString() : '';
+                parcel._claim_hilang_source = shouldClaim ? 'Admin' : '';
+                window.modifiedAwbs.add(awb);
+                window.commitChanges();
+            };
+
+            const title = shouldClaim ? 'Konfirmasi Claim Hilang' : 'Lepas Penanda Claim Hilang?';
+            const message = shouldClaim
+                ? `Resi ${awb} akan dicatat sebagai paket yang sudah di-claim hilang untuk laporan management. Status operasionalnya tidak berubah.`
+                : `Resi ${awb} akan dikeluarkan dari daftar Claim Hilang. Status operasionalnya tidak berubah.`;
+            window.showConfirmModal(title, message, executeChange);
         };
 
         window.changeStatus = async function(awb, newStatus) {
@@ -3114,7 +3195,9 @@
                         nik: row.latest_opcode_nik || '-',
                         name: window.getNikName(row.latest_opcode_nik) || '',
                         lastScan: window.formatStandardDate(row['Last Scan']),
-                        age: diffDays
+                        age: diffDays,
+                        feedback: (row['Feedback'] || '').toString().trim() || '-',
+                        isClaimed: window.isClaimHilang(row)
                     };
                 })
                 .filter(Boolean)
@@ -3163,6 +3246,10 @@
             }
 
             const thead = `
+                <colgroup>
+                    <col style="width:16%"><col style="width:7%"><col style="width:7%"><col style="width:12%">
+                    <col style="width:9%"><col style="width:7%"><col style="width:34%"><col style="width:8%">
+                </colgroup>
                 <thead>
                     <tr>
                         <th class="bg-slate-50 text-left text-slate-500">NO. RESI / AWB</th>
@@ -3171,25 +3258,48 @@
                         <th class="bg-sky-50 text-sky-700">NIK SCAN / NAMA</th>
                         <th class="bg-slate-50 text-slate-500">LAST SCAN</th>
                         <th class="bg-rose-50 text-rose-700">USIA</th>
+                        <th class="bg-emerald-50 text-emerald-700">FEEDBACK</th>
+                        <th class="bg-slate-100 text-slate-600">AKSI</th>
                     </tr>
                 </thead>`;
 
             let tbody = '<tbody>';
             if (!warningRows.length) {
-                tbody += '<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold">Tidak ada resi Warning lebih dari 7 hari</td></tr>';
+                tbody += '<tr><td colspan="8" class="py-8 text-center text-slate-400 font-bold">Tidak ada resi Warning lebih dari 7 hari</td></tr>';
             } else {
                 warningRows.forEach(row => {
                     tbody += `
                         <tr>
-                            <td class="text-left font-extrabold text-indigo-900 whitespace-nowrap">${escapeHtml(row.awb)}</td>
-                            <td class="font-bold text-slate-600 whitespace-nowrap">${escapeHtml(row.hub)}</td>
-                            <td><span class="inline-flex bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${escapeHtml(row.opcode)}</span></td>
+                            <td class="text-left font-extrabold text-indigo-900" style="overflow-wrap:anywhere;">${escapeHtml(row.awb)}</td>
+                            <td class="font-bold text-slate-600">${escapeHtml(row.hub)}</td>
+                            <td><span class="inline-flex bg-indigo-50 border border-indigo-100 text-indigo-700 font-mono text-[9px] px-1.5 py-1 rounded-lg font-bold">${escapeHtml(row.opcode)}</span></td>
                             <td class="text-center">
-                                <span class="inline-flex bg-sky-50 border border-sky-100 text-sky-700 font-mono text-[10px] px-2 py-1 rounded-lg font-bold">${escapeHtml(row.nik)}</span>
-                                ${row.name ? `<div class="text-[10px] text-slate-600 font-bold mt-1">${escapeHtml(row.name)}</div>` : ''}
+                                <span class="inline-flex bg-sky-50 border border-sky-100 text-sky-700 font-mono text-[9px] px-1.5 py-1 rounded-lg font-bold">${escapeHtml(row.nik)}</span>
+                                ${row.name ? `<div class="text-[9px] text-slate-600 font-bold mt-1">${escapeHtml(row.name)}</div>` : ''}
                             </td>
-                            <td class="text-slate-500 font-semibold whitespace-nowrap">${escapeHtml(row.lastScan)}</td>
-                            <td><span class="inline-flex items-center justify-center rounded-lg bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-1 font-extrabold whitespace-nowrap">${row.age} hari</span></td>
+                            <td class="text-slate-500 font-semibold">${escapeHtml(row.lastScan)}</td>
+                            <td><span class="inline-flex items-center justify-center rounded-lg bg-rose-50 text-rose-700 border border-rose-100 px-1.5 py-1 font-extrabold">${row.age}h</span></td>
+                            <td class="text-left text-slate-600 font-semibold whitespace-normal break-words leading-relaxed">${escapeHtml(row.feedback)}</td>
+                            <td>
+                                ${window.isAdminLoggedIn ? `
+                                    <div class="warning-over7-actions">
+                                        <button type="button" aria-label="Resolved ${escapeHtml(row.awb)}" onclick="window.changeStatus('${escapeHtml(row.awb)}', 'Resolved')" title="Ubah status menjadi Resolved" class="warning-over7-icon-btn bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 shadow-sm">
+                                            <i data-lucide="check-circle-2"></i>
+                                        </button>
+                                        ${row.isClaimed ? `
+                                            <span aria-label="Sudah Claim Hilang" title="Resi sudah tercatat sebagai Claim Hilang" class="warning-over7-icon-btn bg-violet-100 text-violet-700 border border-violet-200">
+                                                <i data-lucide="flag"></i>
+                                            </span>
+                                        ` : `
+                                            <button type="button" aria-label="Claim Hilang ${escapeHtml(row.awb)}" onclick="window.setClaimHilang('${escapeHtml(row.awb)}', true)" title="Catat sebagai Claim Hilang" class="warning-over7-icon-btn bg-violet-600 hover:bg-violet-700 text-white border border-violet-700 shadow-sm">
+                                                <i data-lucide="flag"></i>
+                                            </button>
+                                        `}
+                                    </div>
+                                ` : `
+                                    <span title="Login Admin untuk melakukan tindakan" class="inline-flex justify-center w-full text-slate-400"><i data-lucide="lock" class="w-3.5 h-3.5"></i></span>
+                                `}
+                            </td>
                         </tr>`;
                 });
             }
@@ -4288,6 +4398,7 @@
                 let dataResolved = filteredArray.filter(r => r._ui_status === 'Resolved');
                 let dataFreeze = filteredArray.filter(r => r._ui_status === 'Freeze');
                 let dataWarning = filteredArray.filter(r => r._ui_status === 'Warning');
+                let dataClaimHilang = filteredArray.filter(r => window.isClaimHilang(r));
 
                 let totalData = filteredArray.length;
                 window.setText('kpi-total', totalData.toLocaleString('id-ID'));
@@ -4306,6 +4417,7 @@
                 window.setText('count-resolved', dataResolved.length.toLocaleString('id-ID'));
                 window.setText('count-freeze', dataFreeze.length.toLocaleString('id-ID'));
                 window.setText('count-warning', dataWarning.length.toLocaleString('id-ID'));
+                window.setText('count-claim-hilang', dataClaimHilang.length.toLocaleString('id-ID'));
 
                 window.updateChart(filteredArray);
                 window.updateOriginChart(filteredArray);
@@ -4323,6 +4435,7 @@
                 window.dtStuck = window.renderOrUpdateTable('#tableStuck', window.dtStuck, dataStuck, 'stuck');
                 window.dtResolved = window.renderOrUpdateTable('#tableResolved', window.dtResolved, dataResolved, 'resolved');
                 window.dtFreeze = window.renderOrUpdateTable('#tableFreeze', window.dtFreeze, dataFreeze, 'freeze');
+                window.dtClaimHilang = window.renderOrUpdateTable('#tableClaimHilang', window.dtClaimHilang, dataClaimHilang, 'claim-hilang');
                 
                 setTimeout(() => {
                     lucide.createIcons();
@@ -4347,6 +4460,13 @@
                 className: "dt-center whitespace-nowrap sticky-col-1",
                 render: function(data, type, row) {
                     let currentStatus = row._ui_status || 'Stuck';
+                    const claimActive = window.isClaimHilang(row);
+                    const withClaimControl = (statusMarkup) => {
+                        const claimMarkup = window.isAdminLoggedIn
+                            ? `<button type="button" title="${claimActive ? 'Lepas penanda Claim Hilang' : 'Tandai sebagai Claim Hilang'}" onclick="window.setClaimHilang('${row.AWB}', ${claimActive ? 'false' : 'true'})" class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[9px] font-extrabold border transition-colors ${claimActive ? 'bg-violet-600 text-white border-violet-700 hover:bg-violet-700' : 'bg-violet-50 text-violet-700 border-violet-100 hover:bg-violet-100'}"><i data-lucide="${claimActive ? 'flag-off' : 'flag'}" class="w-3 h-3"></i>${claimActive ? 'CLAIM' : 'TANDA CLAIM'}</button>`
+                            : (claimActive ? '<span class="inline-flex items-center gap-1 rounded-lg bg-violet-50 text-violet-700 border border-violet-100 px-2 py-1 text-[9px] font-extrabold"><i data-lucide="flag" class="w-3 h-3"></i> CLAIM HILANG</span>' : '');
+                        return `<div class="flex flex-col items-center justify-center gap-1.5 min-w-[82px]">${statusMarkup}${claimMarkup}</div>`;
+                    };
                     
                     const iWarn = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
                     const iPend = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
@@ -4355,9 +4475,9 @@
 
                     if (currentStatus === 'Warning') {
                         if (window.isAdminLoggedIn) {
-                            return `<div class="status-btn-group mx-auto max-w-[80px]"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`;
+                            return withClaimControl(`<div class="status-btn-group mx-auto max-w-[80px]"><button title="Status: Warning" class="status-btn bg-rose-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iWarn}</button><button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-700 text-slate-400 flex items-center justify-center p-2">${iRes}</button></div>`);
                         } else {
-                            return `<span title="Warning" class="p-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 inline-flex items-center justify-center shadow-sm w-full">${iWarn}</span>`;
+                            return withClaimControl(`<span title="Warning" class="p-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 inline-flex items-center justify-center shadow-sm w-full">${iWarn}</span>`);
                         }
                     }
                     
@@ -4366,14 +4486,14 @@
                                          currentStatus === 'Freeze' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
                                          'bg-orange-50 text-orange-700 border border-orange-100';
                         let badgeIcon = currentStatus === 'Resolved' ? iRes : currentStatus === 'Freeze' ? iFrz : iPend;
-                        return `<span title="Status: ${currentStatus}" class="p-2 rounded-xl inline-flex items-center justify-center shadow-sm w-full ${badgeClass}">${badgeIcon}</span>`;
+                        return withClaimControl(`<span title="Status: ${currentStatus}" class="p-2 rounded-xl inline-flex items-center justify-center shadow-sm w-full ${badgeClass}">${badgeIcon}</span>`);
                     }
                     
                     let btnStuck = currentStatus === 'Stuck' ? `<button title="Status: Pending" class="status-btn bg-orange-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iPend}</button>` : `<button title="Ubah ke Pending" onclick="window.changeStatus('${row.AWB}', 'Stuck')" class="status-btn hover:bg-orange-50 hover:text-orange-600 text-slate-400 flex items-center justify-center p-2">${iPend}</button>`;
                     let btnRes = currentStatus === 'Resolved' ? `<button title="Status: Resolved" class="status-btn bg-emerald-500 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iRes}</button>` : `<button title="Ubah ke Resolved" onclick="window.changeStatus('${row.AWB}', 'Resolved')" class="status-btn hover:bg-emerald-50 hover:text-emerald-600 text-slate-400 flex items-center justify-center p-2">${iRes}</button>`;
                     let btnFrz = currentStatus === 'Freeze' ? `<button title="Status: Freeze" class="status-btn bg-blue-600 text-white cursor-default shadow-inner flex items-center justify-center p-2">${iFrz}</button>` : `<button title="Ubah ke Freeze" onclick="window.changeStatus('${row.AWB}', 'Freeze')" class="status-btn hover:bg-blue-50 hover:text-blue-600 text-slate-400 flex items-center justify-center p-2">${iFrz}</button>`;
 
-                    return `<div class="status-btn-group mx-auto max-w-[90px]">${btnStuck}${btnRes}${btnFrz}</div>`;
+                    return withClaimControl(`<div class="status-btn-group mx-auto max-w-[90px]">${btnStuck}${btnRes}${btnFrz}</div>`);
                 }
             });
 
@@ -4490,7 +4610,26 @@
                 }
             });
 
-            // 9. Kolom Opsional Khusus
+            // 9. Metadata khusus daftar Claim Hilang untuk dokumentasi management.
+            if (tableType === 'claim-hilang') {
+                columns.push({
+                    title: 'Tanggal Claim Hilang', data: '_claim_hilang_at', defaultContent: '-',
+                    className: 'dt-center text-violet-700 font-semibold text-xs whitespace-nowrap',
+                    render: function(data, type, row) {
+                        if (type !== 'display') return data || '';
+                        if (!data) return '<span class="text-slate-400 italic">Terdeteksi dari Feedback</span>';
+                        const date = new Date(data);
+                        return isNaN(date.getTime()) ? window.escapeHtmlText(data) : date.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                    }
+                });
+                columns.push({
+                    title: 'Sumber Penandaan', data: '_claim_hilang_source', defaultContent: '-',
+                    className: 'dt-center text-slate-600 font-bold text-xs whitespace-nowrap',
+                    render: function(data, type, row) { return data || (window.isClaimHilang(row) ? 'Feedback' : '-'); }
+                });
+            }
+
+            // 10. Kolom Opsional Khusus
             if (isWarnStuck) {
                 columns.push({
                     title: "Expect Delivery", data: "Expect Delivery", defaultContent: "-", 

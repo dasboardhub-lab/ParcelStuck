@@ -798,6 +798,7 @@
                                 <option value="Stuck">Pending</option>
                                 <option value="Resolved">Resolved</option>
                                 <option value="Freeze">Freeze</option>
+                                <option value="Claim Hilang">Claim Hilang</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -1084,7 +1085,7 @@
                                     <div class="bg-violet-600 p-2 rounded-xl text-white mt-0.5 shadow-sm"><i data-lucide="file-warning" class="w-4 h-4"></i></div>
                                     <div>
                                         <p class="font-black mb-1 text-violet-900">Catatan Claim Hilang untuk Management</p>
-                                        <p class="text-violet-800 text-xs font-semibold leading-relaxed">Daftar ini berisi paket yang sudah ditandai Claim Hilang. Penandaan ini merupakan catatan tambahan dan tidak mengubah status operasional Warning, Pending, Resolved, atau Freeze.</p>
+                                        <p class="text-violet-800 text-xs font-semibold leading-relaxed">Daftar ini berisi paket dengan status Claim Hilang. Resi yang masuk ke sini otomatis keluar dari kategori Warning, Pending, Resolved, dan Freeze.</p>
                                     </div>
                                 </div>
                                 <table id="tableClaimHilang" class="w-full text-sm text-slate-700 whitespace-nowrap"></table>
@@ -1560,6 +1561,9 @@
                         <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
                             <input type="checkbox" id="cp-tab-freeze" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"> Freeze
                         </label>
+                        <label class="flex items-center gap-3 p-3 border border-violet-200 rounded-xl cursor-pointer hover:bg-violet-50 transition-colors">
+                            <input type="checkbox" id="cp-tab-claim-hilang" class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"> Claim Hilang
+                        </label>
                     </div>
                 </div>
 
@@ -1629,6 +1633,9 @@
                         </label>
                         <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
                             <input type="checkbox" id="cpa-tab-freeze" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"> Freeze
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border border-violet-200 rounded-xl cursor-pointer hover:bg-violet-50 transition-colors">
+                            <input type="checkbox" id="cpa-tab-claim-hilang" class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"> Claim Hilang
                         </label>
                     </div>
                 </div>
@@ -1830,13 +1837,20 @@
                             let afterAwb = line.substring(line.indexOf(awb) + awb.length).replace(/^[\t\s]+/, '');
                             let cleanFeedback = afterAwb.replace(/^\d{1,4}([\t\s]+|$)/, '').trim();
                             if (cleanFeedback !== '') {
-                                window.databaseMap[awb]['Feedback'] = cleanFeedback;
+                                const parcel = window.databaseMap[awb];
+                                parcel['Feedback'] = cleanFeedback;
                                 if (/\b(?:claim|klaim)\s+hilang\b|\bhilang\s+(?:sudah\s+)?(?:di[-\s]?claim|di[-\s]?klaim)\b/i.test(cleanFeedback)) {
-                                    window.databaseMap[awb]._claim_hilang = true;
-                                    window.databaseMap[awb]._claim_hilang_at = window.databaseMap[awb]._claim_hilang_at || new Date().toISOString();
-                                    window.databaseMap[awb]._claim_hilang_source = 'Feedback';
+                                    if (parcel._ui_status !== 'Claim Hilang') {
+                                        parcel._claim_previous_status = parcel._ui_status || window.evaluateStatus({ ...parcel, _claim_hilang: false });
+                                        parcel._claim_previous_manual = !!parcel._is_manual;
+                                    }
+                                    parcel._claim_hilang = true;
+                                    parcel._claim_hilang_at = parcel._claim_hilang_at || new Date().toISOString();
+                                    parcel._claim_hilang_source = 'Feedback';
+                                    parcel._ui_status = 'Claim Hilang';
+                                    parcel._is_manual = true;
                                 }
-                                recordsToSave.push(window.databaseMap[awb]); 
+                                recordsToSave.push(parcel); 
                                 updatedCount++;
                             } else { skippedCount++; }
                         }
@@ -2018,7 +2032,33 @@
                 // padahal timestamp Opcode 80 (80_tm) sudah tersedia.
                 const statusRecalculationQueue = [];
                 Object.values(window.databaseMap).forEach((parcel) => {
-                    if (!parcel || parcel._is_manual) return;
+                    if (!parcel) return;
+
+                    // Migrasi dari versi sebelumnya: penanda Claim Hilang kini
+                    // menjadi status utama, bukan label tambahan pada status lama.
+                    if (window.isClaimHilang(parcel)) {
+                        let changed = false;
+                        if (!parcel._claim_previous_status || parcel._claim_previous_status === 'Claim Hilang') {
+                            const prior = { ...parcel, _claim_hilang: false, _ui_status: '', _is_manual: false };
+                            parcel._claim_previous_status = parcel._ui_status && parcel._ui_status !== 'Claim Hilang'
+                                ? parcel._ui_status
+                                : window.evaluateStatus(prior);
+                            parcel._claim_previous_manual = !!parcel._is_manual;
+                            changed = true;
+                        }
+                        if (parcel._claim_hilang !== true) { parcel._claim_hilang = true; changed = true; }
+                        if (!parcel._claim_hilang_at) { parcel._claim_hilang_at = new Date().toISOString(); changed = true; }
+                        if (!parcel._claim_hilang_source) { parcel._claim_hilang_source = 'Feedback'; changed = true; }
+                        if (parcel._ui_status !== 'Claim Hilang' || !parcel._is_manual) {
+                            parcel._ui_status = 'Claim Hilang';
+                            parcel._is_manual = true;
+                            changed = true;
+                        }
+                        if (changed) statusRecalculationQueue.push(parcel);
+                        return;
+                    }
+
+                    if (parcel._is_manual) return;
                     const previousStatus = parcel._ui_status || '';
                     const recalculatedStatus = window.evaluateStatus(parcel);
                     if (previousStatus !== recalculatedStatus) {
@@ -2627,6 +2667,7 @@
             window.showConfirmModal("Kembalikan 92?", "Semua Opcode 92 akan ditarik kembali ke Freeze. Anda yakin?", async () => {
                     let updatedCount = 0; let recordsToSave = [];
                     Object.values(window.databaseMap).forEach(row => {
+                        if (window.isClaimHilang(row)) return;
                         let currentOpcode = (row['Update Opcode'] || '').toString().trim();
                         let currentStatus = row._ui_status;
                         if (currentOpcode === '92' && (currentStatus !== 'Freeze' || row._is_manual)) {
@@ -2652,6 +2693,10 @@
         };
 
         window.evaluateStatus = function(row) {
+            // Claim Hilang adalah status final tersendiri dan harus mengalahkan
+            // perhitungan otomatis opcode, HUB, maupun status turunan lainnya.
+            if (window.isClaimHilang && window.isClaimHilang(row)) return 'Claim Hilang';
+
             let currentOpcode = (row['Update Opcode'] || '').toString().trim();
             let currentHub = (row['hub_operator_internal'] || '').toString().trim();
             // Timestamp 80_tm dipetakan ke "Opcode 80" saat ingest. Raw key juga
@@ -2684,8 +2729,9 @@
 
         window.isClaimHilang = function(row) {
             if (!row) return false;
-            if (row._claim_hilang === false) return false;
             if (row._claim_hilang === true) return true;
+            if (row._claim_hilang === false) return false;
+            if (row._ui_status === 'Claim Hilang') return true;
             const feedback = String(row['Feedback'] || '');
             return /\b(?:claim|klaim)\s+hilang\b|\bhilang\s+(?:sudah\s+)?(?:di[-\s]?claim|di[-\s]?klaim)\b/i.test(feedback);
         };
@@ -2696,27 +2742,61 @@
             if (!parcel) return window.showToast('Resi tidak ditemukan.', 'error');
 
             const currentlyClaimed = window.isClaimHilang(parcel);
-            if (currentlyClaimed === shouldClaim && parcel._claim_hilang === shouldClaim) {
-                return window.showToast(shouldClaim ? 'Resi sudah masuk daftar Claim Hilang.' : 'Penanda Claim Hilang sudah dilepas.', 'info');
+            if (currentlyClaimed === shouldClaim && parcel._claim_hilang === shouldClaim && parcel._ui_status === (shouldClaim ? 'Claim Hilang' : parcel._ui_status)) {
+                return window.showToast(shouldClaim ? 'Resi sudah berstatus Claim Hilang.' : 'Penanda Claim Hilang sudah dilepas.', 'info');
             }
 
-            const executeChange = () => {
-                parcel._claim_hilang = shouldClaim;
-                parcel._claim_hilang_at = shouldClaim ? new Date().toISOString() : '';
-                parcel._claim_hilang_source = shouldClaim ? 'Admin' : '';
+            const executeChange = async () => {
+                if (shouldClaim) {
+                    // Simpan status sebelumnya agar admin dapat membatalkan Claim
+                    // tanpa kehilangan status operasional asal paket.
+                    if (parcel._ui_status !== 'Claim Hilang') {
+                        parcel._claim_previous_status = parcel._ui_status || window.evaluateStatus({ ...parcel, _claim_hilang: false });
+                        parcel._claim_previous_manual = !!parcel._is_manual;
+                    }
+                    parcel._claim_hilang = true;
+                    parcel._claim_hilang_at = new Date().toISOString();
+                    parcel._claim_hilang_source = 'Admin';
+                    parcel._ui_status = 'Claim Hilang';
+                    parcel._is_manual = true;
+                } else {
+                    parcel._claim_hilang = false;
+                    parcel._claim_hilang_at = '';
+                    parcel._claim_hilang_source = '';
+
+                    const previousStatus = parcel._claim_previous_status || '';
+                    const previousWasManual = parcel._claim_previous_manual === true;
+                    if (previousWasManual && previousStatus && previousStatus !== 'Claim Hilang') {
+                        parcel._ui_status = previousStatus;
+                        parcel._is_manual = true;
+                    } else {
+                        parcel._ui_status = '';
+                        parcel._is_manual = false;
+                        parcel._ui_status = window.evaluateStatus(parcel);
+                    }
+                    delete parcel._claim_previous_status;
+                    delete parcel._claim_previous_manual;
+                }
+
                 window.modifiedAwbs.add(awb);
-                window.commitChanges();
+                await window.commitChanges();
+                window.showToast(shouldClaim ? 'Status resi berubah menjadi Claim Hilang.' : `Status resi dikembalikan ke ${parcel._ui_status}.`, 'success');
             };
 
-            const title = shouldClaim ? 'Konfirmasi Claim Hilang' : 'Lepas Penanda Claim Hilang?';
+            const title = shouldClaim ? 'Konfirmasi Claim Hilang' : 'Kembalikan Status Resi?';
             const message = shouldClaim
-                ? `Resi ${awb} akan dicatat sebagai paket yang sudah di-claim hilang untuk laporan management. Status operasionalnya tidak berubah.`
-                : `Resi ${awb} akan dikeluarkan dari daftar Claim Hilang. Status operasionalnya tidak berubah.`;
+                ? `Resi ${awb} akan dipindahkan dari status ${parcel._ui_status || 'operasional'} ke status Claim Hilang dan dikeluarkan dari seluruh tabel status lainnya.`
+                : `Resi ${awb} akan dikeluarkan dari Claim Hilang dan dikembalikan ke status sebelumnya.`;
             window.showConfirmModal(title, message, executeChange);
         };
 
         window.changeStatus = async function(awb, newStatus) {
             if(!window.isAdminLoggedIn) return window.showToast("Ditolak. Wajib login Admin.", "error");
+
+            const targetParcel = window.databaseMap && window.databaseMap[awb];
+            if (targetParcel && window.isClaimHilang(targetParcel) && newStatus !== 'Claim Hilang') {
+                return window.showToast('Lepas status Claim Hilang terlebih dahulu sebelum mengubah status operasional.', 'warning');
+            }
 
             const executeChange = async () => {
                 if(window.databaseMap[awb]) {
@@ -2937,6 +3017,7 @@
             if(document.getElementById('cpa-tab-pending').checked) tabs.push({id: 'stuck', name: '⏳ DATA PENDING', dt: window.dtStuck});
             if(document.getElementById('cpa-tab-resolved').checked) tabs.push({id: 'resolved', name: '✅ DATA RESOLVED', dt: window.dtResolved});
             if(document.getElementById('cpa-tab-freeze').checked) tabs.push({id: 'freeze', name: '❄️ DATA FREEZE', dt: window.dtFreeze});
+            if(document.getElementById('cpa-tab-claim-hilang') && document.getElementById('cpa-tab-claim-hilang').checked) tabs.push({id: 'claim-hilang', name: '🚩 DATA CLAIM HILANG', dt: window.dtClaimHilang});
 
             const isFilterEmpty = document.getElementById('cpa-filter-empty') ? document.getElementById('cpa-filter-empty').checked : false;
 
@@ -3002,6 +3083,7 @@
             if(document.getElementById('cp-tab-pending').checked) tabs.push({id: 'stuck', name: '⏳ DATA PENDING', dt: window.dtStuck});
             if(document.getElementById('cp-tab-resolved').checked) tabs.push({id: 'resolved', name: '✅ DATA RESOLVED', dt: window.dtResolved});
             if(document.getElementById('cp-tab-freeze').checked) tabs.push({id: 'freeze', name: '❄️ DATA FREEZE', dt: window.dtFreeze});
+            if(document.getElementById('cp-tab-claim-hilang') && document.getElementById('cp-tab-claim-hilang').checked) tabs.push({id: 'claim-hilang', name: '🚩 DATA CLAIM HILANG', dt: window.dtClaimHilang});
 
             const cols = Array.from(document.querySelectorAll('.cp-col-chk:checked')).map(cb => cb.value);
             const isFilterEmpty = document.getElementById('cp-filter-empty') ? document.getElementById('cp-filter-empty').checked : false;
@@ -3106,12 +3188,13 @@
                 if (!hub || hub === '-') hub = 'KOSONG';
                 else if (confHubs.length > 0 && !confHubs.includes(hub)) hub = 'EKSTERNAL';
 
-                if (!summary[hub]) summary[hub] = { total: 0, pending: 0, resolved: 0, freeze: 0 };
+                if (!summary[hub]) summary[hub] = { total: 0, pending: 0, resolved: 0, freeze: 0, claim: 0 };
                 summary[hub].total++;
 
                 if (row._ui_status === 'Warning' || row._ui_status === 'Stuck') summary[hub].pending++;
                 else if (row._ui_status === 'Resolved') summary[hub].resolved++;
                 else if (row._ui_status === 'Freeze') summary[hub].freeze++;
+                else if (row._ui_status === 'Claim Hilang') summary[hub].claim++;
             });
 
             const hubs = Object.keys(summary).sort((a, b) => {
@@ -3127,16 +3210,17 @@
                 <thead>
                     <tr>
                         <th class="bg-slate-50 text-left text-slate-500">HUB</th>
-                        <th class="bg-orange-50 text-orange-700"> % PENDING </th>
-                        <th class="bg-emerald-50 text-emerald-700"> % RESOLVED </th>
-                        <th class="bg-blue-50 text-blue-700"> % FREEZE </th>
+                        <th class="bg-orange-50 text-orange-700">% PENDING</th>
+                        <th class="bg-emerald-50 text-emerald-700">% RESOLVED</th>
+                        <th class="bg-blue-50 text-blue-700">% FREEZE</th>
+                        <th class="bg-violet-50 text-violet-700">% CLAIM</th>
                     </tr>
                 </thead>`;
             let tbody = '<tbody>';
-            let totalAwb = 0, totalPending = 0, totalResolved = 0, totalFreeze = 0;
+            let totalAwb = 0, totalPending = 0, totalResolved = 0, totalFreeze = 0, totalClaim = 0;
 
             if (!hubs.length) {
-                tbody += '<tr><td colspan="4" class="py-8 text-center text-slate-400 font-bold">Tidak ada data untuk ditampilkan</td></tr>';
+                tbody += '<tr><td colspan="5" class="py-8 text-center text-slate-400 font-bold">Tidak ada data untuk ditampilkan</td></tr>';
             } else {
                 hubs.forEach(hub => {
                     const item = summary[hub];
@@ -3144,6 +3228,7 @@
                     totalPending += item.pending;
                     totalResolved += item.resolved;
                     totalFreeze += item.freeze;
+                    totalClaim += item.claim;
 
                     tbody += `
                         <tr>
@@ -3151,6 +3236,7 @@
                             <td class="font-extrabold text-orange-600 bg-orange-50/40">${pct(item.pending, item.total)}</td>
                             <td class="font-extrabold text-emerald-600 bg-emerald-50/40">${pct(item.resolved, item.total)}</td>
                             <td class="font-extrabold text-blue-600 bg-blue-50/40">${pct(item.freeze, item.total)}</td>
+                            <td class="font-extrabold text-violet-700 bg-violet-50/50">${pct(item.claim, item.total)}</td>
                         </tr>`;
                 });
                 tbody += `
@@ -3159,6 +3245,7 @@
                         <td class="font-black text-orange-700 bg-orange-100/70 border-t-2 border-slate-200">${pct(totalPending, totalAwb)}</td>
                         <td class="font-black text-emerald-700 bg-emerald-100/70 border-t-2 border-slate-200">${pct(totalResolved, totalAwb)}</td>
                         <td class="font-black text-blue-700 bg-blue-100/70 border-t-2 border-slate-200">${pct(totalFreeze, totalAwb)}</td>
+                        <td class="font-black text-violet-800 bg-violet-100/70 border-t-2 border-slate-200">${pct(totalClaim, totalAwb)}</td>
                     </tr>`;
             }
             tbody += '</tbody>';
@@ -3182,7 +3269,7 @@
                 .replace(/'/g, '&#39;');
 
             const warningRows = data
-                .filter(row => row._ui_status === 'Warning')
+                .filter(row => row._ui_status === 'Warning' && !window.isClaimHilang(row))
                 .map(row => {
                     const dateObj = window.parseCustomDate(row['Last Scan']);
                     if (!dateObj) return null;
@@ -3483,12 +3570,12 @@
 
             let summary = {};
             groupKeys.forEach(k => {
-                summary[k] = { Total: 0, Resolved: 0, Freeze: 0 };
+                summary[k] = { Total: 0, Resolved: 0, Freeze: 0, Claim: 0 };
                 warningOpcodes.forEach(op => summary[k]['Warning_'+op] = 0);
                 pendingOpcodes.forEach(op => summary[k]['Pending_'+op] = 0);
             });
 
-            let grandTotal = 0; let grandWarning = 0; let grandPending = 0; let grandResolved = 0; let grandFreeze = 0;
+            let grandTotal = 0; let grandWarning = 0; let grandPending = 0; let grandResolved = 0; let grandFreeze = 0; let grandClaim = 0;
 
             data.forEach(row => {
                 let key = "-";
@@ -3517,6 +3604,7 @@
 
                 if (status === 'Resolved') { summary[key].Resolved++; grandResolved++; }
                 else if (status === 'Freeze') { summary[key].Freeze++; grandFreeze++; }
+                else if (status === 'Claim Hilang') { summary[key].Claim++; grandClaim++; }
                 else if (status === 'Warning' && op) { summary[key]['Warning_'+op]++; grandWarning++; }
                 else if (status === 'Stuck' && op) { summary[key]['Pending_'+op]++; grandPending++; }
             });
@@ -3545,7 +3633,8 @@
                         <th colspan="${wCols}" class="bg-rose-50 text-rose-800 border-l border-r border-slate-100 text-center">WARNING</th>
                         <th colspan="${pCols}" class="bg-orange-50 text-orange-800 border-r border-slate-100 text-center">PENDING</th>
                         <th rowspan="2" class="bg-emerald-50 text-emerald-800 text-center">RESOLVED</th>
-                        <th rowspan="2" class="bg-blue-50 text-blue-800 border-l border-slate-100 text-center rounded-tr-2xl">FREEZE</th>
+                        <th rowspan="2" class="bg-blue-50 text-blue-800 border-l border-slate-100 text-center">FREEZE</th>
+                        <th rowspan="2" class="bg-violet-50 text-violet-800 border-l border-slate-100 text-center rounded-tr-2xl">CLAIM HILANG</th>
                     </tr>
                     <tr>
             `;
@@ -3563,7 +3652,7 @@
             let tbody = `<tbody>`;
             
             if (groupKeys.length === 0) {
-                tbody += `<tr><td colspan="${4 + wCols + pCols}" class="text-slate-400 py-10 text-center rounded-b-xl font-bold">Basis Data Sepi</td></tr>`;
+                tbody += `<tr><td colspan="${5 + wCols + pCols}" class="text-slate-400 py-10 text-center rounded-b-xl font-bold">Basis Data Sepi</td></tr>`;
             } else {
                 const renderCell = (val, colorClass) => {
                     const displayVal = val > 0 ? val.toLocaleString('id-ID') : ''; 
@@ -3584,6 +3673,7 @@
 
                     tbody += renderCell(row.Resolved, 'text-emerald-600');
                     tbody += renderCell(row.Freeze, `text-blue-600 bg-blue-50/20`);
+                    tbody += renderCell(row.Claim, `text-violet-700 bg-violet-50/40`);
                     tbody += `</tr>`;
                 });
 
@@ -3593,7 +3683,8 @@
                 tbody += `<td colspan="${wCols}" class="font-black text-rose-700 bg-rose-100 border-l border-t-2 border-slate-200 text-center py-4">${grandWarning.toLocaleString('id-ID')}</td>`;
                 tbody += `<td colspan="${pCols}" class="font-black text-orange-700 bg-orange-100 border-l border-r border-t-2 border-slate-200 text-center py-4">${grandPending.toLocaleString('id-ID')}</td>`;
                 tbody += `<td class="font-black text-emerald-700 bg-emerald-100 text-center border-t-2 border-slate-200 py-4">${grandResolved.toLocaleString('id-ID')}</td>`;
-                tbody += `<td class="font-black text-blue-700 bg-blue-100 border-l border-t-2 border-slate-200 text-center rounded-br-2xl py-4">${grandFreeze.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-black text-blue-700 bg-blue-100 border-l border-t-2 border-slate-200 text-center py-4">${grandFreeze.toLocaleString('id-ID')}</td>`;
+                tbody += `<td class="font-black text-violet-800 bg-violet-100 border-l border-t-2 border-slate-200 text-center rounded-br-2xl py-4">${grandClaim.toLocaleString('id-ID')}</td>`;
                 tbody += `</tr>`;
             }
             tbody += `</tbody>`;
@@ -4398,7 +4489,7 @@
                 let dataResolved = filteredArray.filter(r => r._ui_status === 'Resolved');
                 let dataFreeze = filteredArray.filter(r => r._ui_status === 'Freeze');
                 let dataWarning = filteredArray.filter(r => r._ui_status === 'Warning');
-                let dataClaimHilang = filteredArray.filter(r => window.isClaimHilang(r));
+                let dataClaimHilang = filteredArray.filter(r => r._ui_status === 'Claim Hilang' && window.isClaimHilang(r));
 
                 let totalData = filteredArray.length;
                 window.setText('kpi-total', totalData.toLocaleString('id-ID'));
@@ -4472,6 +4563,11 @@
                     const iPend = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
                     const iRes = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>`;
                     const iFrz = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="22" y1="12" x2="2" y2="12"></line><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`;
+                    const iClaim = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M4 22V4"></path><path d="M4 4h13l-2 4 2 4H4"></path></svg>`;
+
+                    if (currentStatus === 'Claim Hilang' || tableType === 'claim-hilang') {
+                        return withClaimControl(`<span title="Status: Claim Hilang" class="p-2 rounded-xl bg-violet-50 text-violet-700 border border-violet-100 inline-flex items-center justify-center shadow-sm w-full">${iClaim}</span>`);
+                    }
 
                     if (currentStatus === 'Warning') {
                         if (window.isAdminLoggedIn) {

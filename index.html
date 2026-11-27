@@ -163,6 +163,39 @@
         .summary-table tbody tr:hover td { background-color: #f1f5f9; }
         #warningByNikTable thead th { position: sticky; top: 0; z-index: 5; background-clip: padding-box; }
         #warningByNikTable tbody td { min-height: 34px; }
+        #claimByNikTable thead th { position: sticky; top: 0; z-index: 5; background-clip: padding-box; }
+        #claimByNikTable tbody td { min-height: 34px; }
+        #claimByNikTable { width: 100% !important; min-width: 0 !important; max-width: 100%; table-layout: fixed !important; }
+        #claimByNikTable th { padding: 11px 6px !important; font-size: .61rem !important; line-height: 1.25; }
+        #claimByNikTable td { padding: 9px 6px !important; font-size: .68rem !important; line-height: 1.35; vertical-align: middle !important; }
+        #claimByNikTable .claim-hub-group-row td { padding: 0 !important; background: #f5f3ff !important; border-top: 1px solid #ddd6fe !important; border-bottom: 1px solid #ddd6fe !important; }
+        #claimByNikTable .claim-hub-group-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 10px 12px; }
+        #claimByNikTable .claim-hub-name { display: inline-flex; align-items: center; gap: 6px; color: #4c1d95; font-size: .72rem; font-weight: 900; }
+        #claimByNikTable .claim-hub-meta, #claimByNikTable .claim-hub-total { display: inline-flex; align-items: center; border: 1px solid #ddd6fe; background: #fff; color: #6d28d9; border-radius: 7px; padding: 3px 7px; font-size: .58rem; font-weight: 800; }
+        #claimByNikTable .claim-hub-total { background: #ede9fe; }
+        #claimByNikTable .claim-rank-cell { color: #94a3b8; font-weight: 900; }
+        #claimByNikTable .claim-nik-cell { text-align: left; color: #0369a1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 900; overflow-wrap: anywhere; }
+        #claimByNikTable .claim-name-cell { text-align: left; color: #334155; font-weight: 700; white-space: normal; }
+        #claimByNikTable .claim-total-pill { display: inline-flex; min-width: 34px; justify-content: center; border: 1px solid #ddd6fe; background: #f5f3ff; color: #6d28d9; border-radius: 8px; padding: 4px 7px; font-weight: 900; }
+        #claimByNikTable .claim-date-cell { color: #64748b; font-size: .62rem !important; white-space: normal; }
+        #claimByNikTable .claim-detail-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; border: 1px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #6d28d9; transition: all .15s ease; }
+        #claimByNikTable .claim-detail-icon-btn:hover { background: #6d28d9; color: #fff; }
+        #claimByNikTable .claim-hub-subtotal-row td { background: #faf5ff !important; color: #6b21a8; border-top: 1px solid #e9d5ff !important; font-weight: 800; }
+        #claimByNikTable .claim-hub-subtotal-row td:first-child, #claimByNikTable .claim-grand-total-row td:first-child { text-align: left; }
+        #claimByNikTable .claim-grand-total-row td { background: #e2e8f0 !important; color: #1e293b; border-top: 2px solid #cbd5e1 !important; font-weight: 900; }
+        @media (max-width: 760px) {
+            #claimByNikTable th { padding: 8px 3px !important; font-size: .52rem !important; }
+            #claimByNikTable td { padding: 7px 3px !important; font-size: .58rem !important; }
+            #claimByNikTable .claim-date-cell { font-size: .54rem !important; }
+            #claimByNikTable .claim-detail-icon-btn { width: 25px; height: 25px; }
+            #claimByNikTable .claim-hub-group-heading { padding: 8px; }
+        }
+        .claim-metric-card { min-width: 0; transition: transform .2s ease, box-shadow .2s ease; }
+        .claim-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(15,23,42,.18); }
+        #claim-awb-modal .claim-detail-cell { white-space: normal; min-width: 120px; max-width: 260px; }
+        #claim-awb-modal .claim-detail-awb { white-space: nowrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 800; color: #4338ca; }
+        #claim-awb-modal .claim-detail-table th { position: sticky; top: 0; z-index: 5; }
+
 
         .glass-header { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         
@@ -1210,6 +1243,81 @@
                 </div>
             </div>
 
+            <!-- Claim Investigation & Accountability -->
+            <section id="claim-analytics-section" class="space-y-6 mx-2 lg:mx-0">
+                <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                <div class="p-2 bg-violet-50 text-violet-600 rounded-xl"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+                                Claim Investigation &amp; Accountability
+                            </h4>
+                            <p class="text-xs text-slate-500 font-medium mt-2">Ringkasan paket Claim Hilang, kontribusi HUB dan NIK, serta pola opcode dan destinasi berdasarkan filter aktif.</p>
+                        </div>
+                        <span id="claim-by-nik-count" class="text-[10px] font-extrabold uppercase tracking-wider text-violet-700 bg-violet-50 border border-violet-100 px-3 py-2 rounded-xl">0 NIK</span>
+                    </div>
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+                        <div class="claim-metric-card border border-violet-100 bg-violet-50/60 rounded-2xl p-4">
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-violet-500">Total Claim Hilang</p>
+                            <p id="claim-kpi-total" class="text-2xl md:text-3xl font-black text-violet-800 mt-1 tabular-nums">0</p>
+                            <p class="text-[10px] font-semibold text-violet-500 mt-1">Paket pada filter aktif</p>
+                        </div>
+                        <div class="claim-metric-card border border-slate-200 bg-slate-50 rounded-2xl p-4">
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">HUB Terdampak</p>
+                            <p id="claim-kpi-hubs" class="text-2xl md:text-3xl font-black text-slate-800 mt-1 tabular-nums">0</p>
+                            <p class="text-[10px] font-semibold text-slate-500 mt-1">Termasuk EXT</p>
+                        </div>
+                        <div class="claim-metric-card border border-sky-100 bg-sky-50/60 rounded-2xl p-4">
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-sky-600">NIK Terlibat</p>
+                            <p id="claim-kpi-niks" class="text-2xl md:text-3xl font-black text-sky-800 mt-1 tabular-nums">0</p>
+                            <p class="text-[10px] font-semibold text-sky-600 mt-1">NIK scan yang tercatat</p>
+                        </div>
+                        <div class="claim-metric-card border border-amber-100 bg-amber-50/60 rounded-2xl p-4">
+                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-amber-600">Rata-rata Aging</p>
+                            <p id="claim-kpi-aging" class="text-2xl md:text-3xl font-black text-amber-800 mt-1 tabular-nums">-</p>
+                            <p id="claim-kpi-aging-note" class="text-[10px] font-semibold text-amber-600 mt-1">Last Scan hingga tanggal Claim</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+                    <!-- Ranking NIK: panel utama di sisi kiri -->
+                    <div class="xl:col-span-3 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                        <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                            <div>
+                                <h4 class="text-base font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                                    <div class="p-2 bg-violet-50 text-violet-600 rounded-xl"><i data-lucide="users" class="w-5 h-5"></i></div>
+                                    Peringkat NIK Claim Hilang per HUB
+                                </h4>
+                                <p class="text-xs text-slate-500 font-medium mt-2">Peringkat NIK per HUB, rentang tanggal Claim, dan popup seluruh AWB milik setiap NIK.</p>
+                            </div>
+                        </div>
+                        <div class="w-full max-h-[560px] overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200">
+                            <table class="summary-table w-full" id="claimByNikTable"></table>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-medium mt-2">EXT menandakan HUB kosong atau di luar whitelist HUB. Gunakan ikon detail untuk melihat AWB, opcode, dan informasi paket lainnya.</p>
+                    </div>
+
+                    <!-- Analisis pendukung: panel kanan, tersusun vertikal -->
+                    <div class="xl:col-span-2 min-w-0 space-y-6">
+                        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="p-2 bg-cyan-50 text-cyan-600 rounded-xl"><i data-lucide="map-pinned" class="w-5 h-5"></i></div>
+                                <div><h4 class="text-sm font-extrabold text-slate-800">Top Destinasi</h4><p class="text-[11px] text-slate-500 mt-1">Tujuan staging/UZ yang paling sering muncul pada Claim</p></div>
+                            </div>
+                            <div class="overflow-auto rounded-xl border border-slate-200"><table class="summary-table min-w-[320px]" id="claimDestinationTable"></table></div>
+                        </div>
+
+                        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-6 min-w-0">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="scan-line" class="w-5 h-5"></i></div>
+                                <div><h4 class="text-sm font-extrabold text-slate-800">Analisis Opcode Terakhir</h4><p class="text-[11px] text-slate-500 mt-1">Opcode terakhir yang tercatat pada paket sebelum ditandai Claim</p></div>
+                            </div>
+                            <div class="overflow-auto rounded-xl border border-slate-200"><table class="summary-table min-w-[320px]" id="claimOpcodeTable"></table></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         </div>
 
@@ -3185,7 +3293,8 @@
                 const hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                 let hub = (row._ui_status === 'Freeze' && hubDel) ? hubDel : hubOps;
 
-                if (!hub || hub === '-') hub = 'KOSONG';
+                // HUB kosong digabung ke kelompok External agar tidak membuat baris KOSONG tersendiri.
+                if (!hub || hub === '-') hub = 'EKSTERNAL';
                 else if (confHubs.length > 0 && !confHubs.includes(hub)) hub = 'EKSTERNAL';
 
                 if (!summary[hub]) summary[hub] = { total: 0, pending: 0, resolved: 0, freeze: 0, claim: 0 };
@@ -3198,8 +3307,6 @@
             });
 
             const hubs = Object.keys(summary).sort((a, b) => {
-                if (a === 'KOSONG') return 1;
-                if (b === 'KOSONG') return -1;
                 if (a === 'EKSTERNAL') return 1;
                 if (b === 'EKSTERNAL') return -1;
                 return summary[b].total - summary[a].total || a.localeCompare(b);
@@ -3232,7 +3339,7 @@
 
                     tbody += `
                         <tr>
-                            <td class="text-left font-extrabold text-slate-700">${hub}</td>
+                            <td class="text-left font-extrabold text-slate-700">${hub === 'EKSTERNAL' ? 'EXT' : hub}</td>
                             <td class="font-extrabold text-orange-600 bg-orange-50/40">${pct(item.pending, item.total)}</td>
                             <td class="font-extrabold text-emerald-600 bg-emerald-50/40">${pct(item.resolved, item.total)}</td>
                             <td class="font-extrabold text-blue-600 bg-blue-50/40">${pct(item.freeze, item.total)}</td>
@@ -3525,6 +3632,265 @@
             table.innerHTML = thead + tbody;
         };
 
+        // Analitik Claim Hilang: rekap per HUB/NIK, detail AWB, opcode, destinasi, dan aging.
+        window.claimNikDetailMap = {};
+        window.claimAwbDetailRows = [];
+
+        window.renderClaimByNikTable = function(data) {
+            const table = document.getElementById('claimByNikTable');
+            const badge = document.getElementById('claim-by-nik-count');
+            if (!table) return;
+
+            const configuredHubs = window.appSettings.hubs
+                ? window.appSettings.hubs.toString().split(',').map(value => value.trim().toUpperCase()).filter(Boolean)
+                : [];
+            const normalizeHub = value => {
+                const hub = String(value || '').trim().toUpperCase();
+                if (!hub || hub === '-') return 'EXT';
+                if (configuredHubs.length && !configuredHubs.includes(hub)) return 'EXT';
+                return hub;
+            };
+            const parseClaimDate = row => {
+                const raw = String(row._claim_hilang_at || '').trim();
+                if (raw) {
+                    const iso = new Date(raw);
+                    if (!Number.isNaN(iso.getTime())) return new Date(iso.getFullYear(), iso.getMonth(), iso.getDate(), 12, 0, 0);
+                    const custom = window.parseCustomDate(raw);
+                    if (custom) return new Date(custom.getFullYear(), custom.getMonth(), custom.getDate(), 12, 0, 0);
+                }
+                // Tanggal Claim tidak boleh disamakan dengan Last Scan. Jika metadata Claim
+                // belum tersedia pada data lama, tampilkan sebagai data tanggal yang belum tersedia.
+                return null;
+            };
+            const getOpcode = row => {
+                const value = String(row['Update Opcode'] || row.latest_op_code || row.fop_code_internal || '').trim();
+                return value && value !== '-' ? value : 'TIDAK DIKETAHUI';
+            };
+            const getAgeDays = row => {
+                const lastScan = window.parseCustomDate(String(row['Last Scan'] || '').trim());
+                const claimDate = parseClaimDate(row);
+                if (!lastScan || !claimDate) return null;
+                return Math.max(0, Math.floor((claimDate.getTime() - lastScan.getTime()) / 86400000));
+            };
+            const claimRows = (data || []).filter(row => row && row._ui_status === 'Claim Hilang' && window.isClaimHilang(row)).map(row => {
+                const nikRaw = String(row.latest_opcode_nik || '').trim();
+                const hubRaw = row.hub_operator_internal || row.staging_operator_internal || row['HUB Delivery'] || '';
+                const claimDate = parseClaimDate(row);
+                const awb = String(row.AWB || row.awb || row['No. Resi'] || '').trim();
+                return {
+                    raw: row,
+                    awb: awb || '-',
+                    nik: nikRaw || 'NIK TIDAK TERSEDIA',
+                    name: window.getNikName(nikRaw) || '',
+                    hub: normalizeHub(hubRaw),
+                    opcode: getOpcode(row),
+                    claimDate,
+                    age: getAgeDays(row),
+                    origin: String(row.origin_hub || '').trim() || 'TIDAK DIKETAHUI',
+                    destination: String(row.destination_staging || row.destination_uz || row.destination_u || '').trim() || 'TIDAK DIKETAHUI',
+                    item: String(row.item_name || '').trim() || '-',
+                    feedback: String(row['Feedback'] || '').trim() || 'TIDAK ADA FEEDBACK'
+                };
+            });
+
+            const hubGroups = {};
+            const opcodeCounts = {}, destinationCounts = {};
+            const uniqueNiks = new Set();
+            const uniqueHubs = new Set();
+            let agingTotal = 0, agingCount = 0;
+
+            claimRows.forEach(item => {
+                const nikKey = item.nik;
+                if (!hubGroups[item.hub]) hubGroups[item.hub] = {};
+                if (!hubGroups[item.hub][nikKey]) {
+                    hubGroups[item.hub][nikKey] = {
+                        nik: item.nik, name: item.name, hub: item.hub, count: 0,
+                        rows: [], oldestDateTs: null, newestDateTs: null,
+                        oldestDate: null, newestDate: null
+                    };
+                }
+                const group = hubGroups[item.hub][nikKey];
+                group.count++;
+                group.rows.push(item);
+                if (item.claimDate) {
+                    const ts = item.claimDate.getTime();
+                    if (group.oldestDateTs === null || ts < group.oldestDateTs) { group.oldestDateTs = ts; group.oldestDate = item.claimDate; }
+                    if (group.newestDateTs === null || ts > group.newestDateTs) { group.newestDateTs = ts; group.newestDate = item.claimDate; }
+                }
+                uniqueNiks.add(nikKey);
+                uniqueHubs.add(item.hub);
+                opcodeCounts[item.opcode] = (opcodeCounts[item.opcode] || 0) + 1;
+                destinationCounts[item.destination] = (destinationCounts[item.destination] || 0) + 1;
+                if (item.age !== null) { agingTotal += item.age; agingCount++; }
+            });
+
+            const totalClaim = claimRows.length;
+            const pct = count => totalClaim ? `${(count / totalClaim * 100).toFixed(1)}%` : '0%';
+            const setMetric = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+            setMetric('claim-kpi-total', totalClaim.toLocaleString('id-ID'));
+            setMetric('claim-kpi-hubs', uniqueHubs.size.toLocaleString('id-ID'));
+            setMetric('claim-kpi-niks', uniqueNiks.size.toLocaleString('id-ID'));
+            setMetric('claim-kpi-aging', agingCount ? `${(agingTotal / agingCount).toFixed(1)} hari` : '-');
+            setMetric('claim-kpi-aging-note', agingCount ? `${agingCount.toLocaleString('id-ID')} dari ${totalClaim.toLocaleString('id-ID')} paket memiliki data tanggal valid` : 'Data tanggal belum cukup');
+            if (badge) badge.textContent = `${uniqueNiks.size.toLocaleString('id-ID')} NIK · ${totalClaim.toLocaleString('id-ID')} Paket · ${uniqueHubs.size.toLocaleString('id-ID')} HUB`;
+
+            const escape = value => window.escapeHtmlText(value);
+            const renderRankTable = (tableId, entries, labelTitle) => {
+                const el = document.getElementById(tableId);
+                if (!el) return;
+                const sorted = Object.entries(entries).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], 'id', {numeric:true})).slice(0, 10);
+                let html = `<thead><tr><th class="bg-slate-50">RANK</th><th class="bg-slate-50 text-left">${labelTitle}</th><th class="bg-violet-50 text-violet-700">TOTAL</th><th class="bg-slate-50">KONTRIBUSI</th></tr></thead><tbody>`;
+                if (!sorted.length) html += `<tr><td colspan="4" class="py-7 text-center text-slate-400 font-bold">Belum ada data Claim pada filter aktif</td></tr>`;
+                else sorted.forEach(([label, count], index) => {
+                    html += `<tr><td class="font-black text-slate-400">${index + 1}</td><td class="text-left font-bold text-slate-700">${escape(label)}</td><td class="font-black text-violet-700">${count.toLocaleString('id-ID')}</td><td class="font-bold text-slate-500">${pct(count)}</td></tr>`;
+                });
+                html += '</tbody>'; el.innerHTML = html;
+            };
+            renderRankTable('claimOpcodeTable', opcodeCounts, 'OPCODE TERAKHIR');
+            renderRankTable('claimDestinationTable', destinationCounts, 'DESTINASI');
+
+
+            // Siapkan kelompok NIK per HUB untuk tabel ranking dan popup detail AWB.
+            window.claimNikDetailMap = {};
+            const hubNames = Object.keys(hubGroups).sort((a,b) => a === 'EXT' ? 1 : b === 'EXT' ? -1 : a.localeCompare(b, 'id'));
+            const totalColumns = 6;
+            let thead = `<colgroup>
+                <col style="width:7%"><col style="width:19%"><col style="width:25%">
+                <col style="width:14%"><col style="width:23%"><col style="width:12%">
+            </colgroup><thead><tr>
+                <th class="bg-slate-50">RANK</th>
+                <th class="bg-slate-50 text-left">NIK SCAN</th>
+                <th class="bg-slate-50 text-left">NAMA PETUGAS</th>
+                <th class="bg-violet-50 text-violet-700">TOTAL CLAIM</th>
+                <th class="bg-slate-50">RENTANG TGL CLAIM</th>
+                <th class="bg-violet-50 text-violet-700">DETAIL</th>
+            </tr></thead>`;
+            let tbody = '<tbody>';
+
+            if (!totalClaim) {
+                tbody += `<tr><td colspan="${totalColumns}" class="py-10 text-center text-slate-400 font-bold">Belum ada paket berstatus Claim Hilang pada filter aktif</td></tr>`;
+            } else {
+                let detailIndex = 0;
+                hubNames.forEach(hub => {
+                    const entries = Object.values(hubGroups[hub]).sort((a,b) => b.count - a.count || String(a.name || a.nik).localeCompare(String(b.name || b.nik), 'id'));
+                    const hubTotal = entries.reduce((sum,item) => sum + item.count, 0);
+                    tbody += `<tr class="claim-hub-group-row"><td colspan="${totalColumns}">
+                        <div class="claim-hub-group-heading">
+                            <span class="claim-hub-name"><i data-lucide="building-2" class="w-4 h-4"></i> HUB ${escape(hub)}</span>
+                            <span class="claim-hub-meta">${entries.length.toLocaleString('id-ID')} NIK</span>
+                            <span class="claim-hub-total">${hubTotal.toLocaleString('id-ID')} PAKET CLAIM</span>
+                        </div>
+                    </td></tr>`;
+
+                    entries.forEach((item,index) => {
+                        let dateRange = '-';
+                        if (item.oldestDate && item.newestDate) {
+                            const oldest = window.formatStandardDate(item.oldestDate.toISOString());
+                            const newest = window.formatStandardDate(item.newestDate.toISOString());
+                            dateRange = oldest === newest ? oldest : `${oldest} – ${newest}`;
+                        }
+                        const id = String(detailIndex++);
+                        window.claimNikDetailMap[id] = {hub, nik:item.nik, name:item.name, rows:item.rows.slice()};
+                        tbody += `<tr class="claim-nik-row">
+                            <td class="claim-rank-cell">${(index+1).toLocaleString('id-ID')}</td>
+                            <td class="claim-nik-cell">${escape(item.nik)}</td>
+                            <td class="claim-name-cell">${escape(item.name || 'Nama belum didaftarkan')}</td>
+                            <td><span class="claim-total-pill">${item.count.toLocaleString('id-ID')}</span></td>
+                            <td class="claim-date-cell">${escape(dateRange)}</td>
+                            <td><button type="button" onclick="window.openClaimNikDetail('${id}')" title="Lihat detail AWB NIK ${escape(item.nik)}" aria-label="Lihat detail AWB" class="claim-detail-icon-btn"><i data-lucide="list-details" class="w-4 h-4"></i></button></td>
+                        </tr>`;
+                    });
+                    tbody += `<tr class="claim-hub-subtotal-row">
+                        <td colspan="3">TOTAL HUB ${escape(hub)}</td>
+                        <td><b>${hubTotal.toLocaleString('id-ID')}</b></td>
+                        <td colspan="2">-</td>
+                    </tr>`;
+                });
+
+                tbody += `<tr class="claim-grand-total-row">
+                    <td colspan="3">TOTAL KESELURUHAN CLAIM HILANG</td>
+                    <td><b>${totalClaim.toLocaleString('id-ID')}</b></td>
+                    <td colspan="2">-</td>
+                </tr>`;
+            }
+            tbody += '</tbody>';
+            table.style.width = '100%';
+            table.style.minWidth = '0';
+            table.style.maxWidth = '100%';
+            table.style.tableLayout = 'fixed';
+            table.innerHTML = thead + tbody;
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.openClaimNikDetail = function(detailId) {
+            const detail = window.claimNikDetailMap && window.claimNikDetailMap[String(detailId)];
+            if (!detail) return window.showToast('Detail NIK tidak ditemukan pada filter aktif.', 'warning');
+            window.claimAwbDetailRows = detail.rows || [];
+            const modal = document.getElementById('claim-awb-modal');
+            const box = document.getElementById('claim-awb-box');
+            if (!modal || !box) return;
+            const escape = value => window.escapeHtmlText(value);
+            const sorted = window.claimAwbDetailRows.slice().sort((a,b) => {
+                const ta = a.claimDate ? a.claimDate.getTime() : 0;
+                const tb = b.claimDate ? b.claimDate.getTime() : 0;
+                return tb - ta || a.awb.localeCompare(b.awb);
+            });
+            const dates = sorted.map(item => item.claimDate).filter(Boolean).sort((a,b) => a - b);
+            const opCounts = {};
+            let ageTotal = 0, ageCount = 0;
+            sorted.forEach(item => { opCounts[item.opcode] = (opCounts[item.opcode] || 0) + 1; if (item.age !== null) { ageTotal += item.age; ageCount++; } });
+            const topOpcode = Object.entries(opCounts).sort((a,b) => b[1]-a[1])[0];
+            const dateText = dates.length ? `${window.formatStandardDate(dates[0].toISOString())} – ${window.formatStandardDate(dates[dates.length-1].toISOString())}` : '-';
+            const setText = (id,value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+            setText('claim-awb-title', `Detail AWB · ${detail.nik}`);
+            setText('claim-awb-subtitle', `${detail.name || 'Nama belum didaftarkan'} · HUB ${detail.hub}`);
+            setText('claim-awb-count', sorted.length.toLocaleString('id-ID'));
+            setText('claim-awb-top-opcode', topOpcode ? `${topOpcode[0]} (${topOpcode[1]})` : '-');
+            setText('claim-awb-average-aging', ageCount ? `${(ageTotal/ageCount).toFixed(1)} hari` : '-');
+            setText('claim-awb-date-range', dateText);
+            const table = document.getElementById('claimAwbDetailTable');
+            if (table) {
+                let html = `<thead><tr><th class="bg-slate-50 text-left">NO. RESI / AWB</th><th class="bg-slate-50">TANGGAL CLAIM</th><th class="bg-slate-50">LAST SCAN</th><th class="bg-amber-50 text-amber-700">AGING</th><th class="bg-indigo-50 text-indigo-700">OPCODE</th><th class="bg-slate-50">ORIGIN HUB</th><th class="bg-slate-50">DESTINASI</th><th class="bg-slate-50 text-left">ITEM</th><th class="bg-rose-50 text-rose-700 text-left">FEEDBACK</th></tr></thead><tbody>`;
+                sorted.forEach(item => {
+                    const raw = item.raw || {};
+                    const claimDate = item.claimDate ? window.formatStandardDate(item.claimDate.toISOString()) : '-';
+                    const lastScan = raw['Last Scan'] ? window.formatStandardDate(raw['Last Scan']) : '-';
+                    const searchText = [item.awb, item.opcode, item.origin, item.destination, item.item, item.feedback, item.nik, detail.name].join(' ').toLowerCase();
+                    html += `<tr data-claim-search="${escape(searchText)}"><td class="text-left claim-detail-awb">${escape(item.awb)}</td><td class="whitespace-nowrap text-slate-600 font-semibold">${escape(claimDate)}</td><td class="whitespace-nowrap text-slate-600 font-semibold">${escape(lastScan)}</td><td class="font-black text-amber-700">${item.age === null ? '-' : `${item.age} hari`}</td><td><span class="inline-flex bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg px-2 py-1 font-mono text-[10px] font-bold">${escape(item.opcode)}</span></td><td class="text-slate-600 font-semibold">${escape(item.origin)}</td><td class="text-slate-600 font-semibold">${escape(item.destination)}</td><td class="text-left claim-detail-cell text-slate-700 font-semibold">${escape(item.item)}</td><td class="text-left claim-detail-cell text-slate-600">${escape(item.feedback)}</td></tr>`;
+                });
+                table.innerHTML = html + '</tbody>';
+            }
+            const search = document.getElementById('claim-awb-search');
+            if (search) search.value = '';
+            window.filterClaimAwbDetail('');
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); });
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.filterClaimAwbDetail = function(value) {
+            const query = String(value || '').toLowerCase().trim();
+            const table = document.getElementById('claimAwbDetailTable');
+            if (!table) return;
+            let visible = 0;
+            table.querySelectorAll('tbody tr[data-claim-search]').forEach(row => {
+                const match = !query || (row.getAttribute('data-claim-search') || '').includes(query);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            const count = document.getElementById('claim-awb-visible-count');
+            if (count) count.textContent = `${visible.toLocaleString('id-ID')} / ${(window.claimAwbDetailRows || []).length.toLocaleString('id-ID')} AWB`;
+        };
+
+        window.closeClaimAwbModal = function() {
+            const modal = document.getElementById('claim-awb-modal');
+            const box = document.getElementById('claim-awb-box');
+            if (!modal || !box) return;
+            modal.classList.add('opacity-0');
+            box.classList.remove('scale-100'); box.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
         window.renderSummaryTable = function(data) {
             let groupKeys = new Set();
             let warningOpcodes = new Set();
@@ -3552,7 +3918,8 @@
                     let hubOps = (row['hub_operator_internal'] || '').toString().trim().toUpperCase();
                     let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                     key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
-                    if (!key || key === '-') key = "KOSONG";
+                    // HUB kosong digabung ke External pada rekapitulasi area.
+                    if (!key || key === '-') key = "EKSTERNAL";
                     else if (confHubs.length > 0 && !confHubs.includes(key)) key = "EKSTERNAL";
                 }
                 
@@ -3593,7 +3960,8 @@
                     let hubOps = (row['hub_operator_internal'] || '').toString().trim().toUpperCase();
                     let hubDel = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                     key = (row._ui_status === 'Freeze' && hubDel !== '') ? hubDel : hubOps;
-                    if (!key || key === '-') key = "KOSONG";
+                    // HUB kosong digabung ke External pada rekapitulasi area.
+                    if (!key || key === '-') key = "EKSTERNAL";
                     else if (confHubs.length > 0 && !confHubs.includes(key)) key = "EKSTERNAL";
                 }
                 
@@ -3611,7 +3979,6 @@
 
             groupKeys.sort((a, b) => {
                 if (window.summaryMode === 'hub') {
-                    if (a === "KOSONG") return 1; if (b === "KOSONG") return -1;
                     if (a === "EKSTERNAL") return 1; if (b === "EKSTERNAL") return -1;
                     return summary[b].Total - summary[a].Total;
                 }
@@ -3662,7 +4029,8 @@
                 groupKeys.forEach((k) => {
                     let row = summary[k];
                     tbody += `<tr>`;
-                    tbody += `<td class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] border-b border-slate-50 text-xs">${k}</td>`;
+                    const hubLabel = k === 'EKSTERNAL' ? 'EXT' : k;
+                    tbody += `<td class="font-bold text-slate-700 text-left sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] border-b border-slate-50 text-xs">${hubLabel}</td>`;
                     tbody += `<td class="font-black text-slate-600 bg-slate-50 border-l border-slate-50 text-center">${row.Total.toLocaleString('id-ID')}</td>`;
 
                     if (warningOpcodes.length > 0) warningOpcodes.forEach(op => tbody += renderCell(row['Warning_'+op], 'text-rose-600 bg-rose-50/50'));
@@ -3738,7 +4106,8 @@
                 
                 let hubRaw = (row['staging_operator_internal'] || row['HUB Delivery'] || '').toString().trim().toUpperCase();
                 let hub = hubRaw;
-                if (!hub || hub === '-') hub = "KOSONG";
+                // HUB Delivery kosong pada analisis Freeze juga dikelompokkan sebagai External.
+                if (!hub || hub === '-') hub = "EKSTERNAL";
                 else if (confHubs.length > 0 && !confHubs.includes(hub)) hub = "EKSTERNAL";
                 
                 hasValidData = true;
@@ -3789,7 +4158,7 @@
                 if (monthSortA !== monthSortB) return monthSortA.localeCompare(monthSortB);
                 
                 if (window.freezeSummaryMode === 'hub') {
-                    if (col2SortA === "KOSONG") return 1; if (col2SortB === "KOSONG") return -1;
+                    if (col2SortA === "EKSTERNAL") return 1; if (col2SortB === "EKSTERNAL") return -1;
                     return rowsData[b].total - rowsData[a].total;
                 } else {
                     return col2SortA.localeCompare(col2SortB);
@@ -3840,7 +4209,8 @@
                     renderedMonthYears.add(my);
                 }
 
-                tbody += `<td class="font-bold text-slate-500 text-left border-l border-slate-50 bg-white text-xs" style="${borderStyle}">${rData.col2Value}</td>`;
+                const hubDisplayValue = rData.col2Value === 'EKSTERNAL' ? 'EXT' : rData.col2Value;
+                tbody += `<td class="font-bold text-slate-500 text-left border-l border-slate-50 bg-white text-xs" style="${borderStyle}">${hubDisplayValue}</td>`;
                 tbody += `<td class="font-black text-slate-600 bg-slate-50 border-l border-slate-50 text-center" style="${borderStyle}">${rData.total.toLocaleString('id-ID')}</td>`;
                 
                 const renderCell = (val, colorClass) => {
@@ -4521,6 +4891,7 @@
                 window.renderHubStatusPercentTable(filteredArray);
                 window.renderWarningOver7DaysTable(filteredArray);
                 window.renderWarningByNikTable(filteredArray);
+                window.renderClaimByNikTable(filteredArray);
 
                 window.dtWarning = window.renderOrUpdateTable('#tableWarning', window.dtWarning, dataWarning, 'warning');
                 window.dtStuck = window.renderOrUpdateTable('#tableStuck', window.dtStuck, dataStuck, 'stuck');
@@ -4815,5 +5186,34 @@
         };
 
     </script>
+
+    <div id="claim-awb-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[180] flex items-center justify-center p-3 md:p-6 opacity-0 transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="claim-awb-title">
+        <div class="bg-white rounded-[1.75rem] shadow-2xl w-full max-w-7xl max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="claim-awb-box">
+            <div class="flex items-start justify-between gap-4 p-5 md:p-6 border-b border-slate-100">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 text-violet-700 mb-1"><i data-lucide="flag" class="w-4 h-4"></i><span class="text-[10px] font-extrabold uppercase tracking-widest">Claim Hilang · Detail Investigasi</span></div>
+                    <h3 id="claim-awb-title" class="text-lg md:text-xl font-black text-slate-800">Detail AWB Claim</h3>
+                    <p id="claim-awb-subtitle" class="text-xs text-slate-500 font-semibold mt-1">-</p>
+                </div>
+                <button type="button" onclick="window.closeClaimAwbModal()" class="shrink-0 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors" aria-label="Tutup detail AWB"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 p-4 md:px-6 bg-slate-50 border-b border-slate-100">
+                <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Total AWB</p><p id="claim-awb-count" class="text-xl font-black text-violet-700 mt-1">0</p></div>
+                <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Opcode Terbanyak</p><p id="claim-awb-top-opcode" class="text-xl font-black text-indigo-700 mt-1">-</p></div>
+                <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Rata-rata Aging</p><p id="claim-awb-average-aging" class="text-xl font-black text-amber-700 mt-1">-</p></div>
+                <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Rentang Tanggal Claim</p><p id="claim-awb-date-range" class="text-xs font-black text-slate-700 mt-2">-</p></div>
+            </div>
+            <div class="p-4 md:px-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <div class="relative w-full sm:max-w-sm"><i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="claim-awb-search" type="text" oninput="window.filterClaimAwbDetail(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-violet-500" placeholder="Cari AWB, opcode, origin, item, feedback..."></div>
+                <span id="claim-awb-visible-count" class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">0 AWB</span>
+            </div>
+            <div class="px-4 md:px-6 pb-5 flex-1 min-h-0">
+                <div class="w-full h-full max-h-[46vh] overflow-auto rounded-xl border border-slate-200">
+                    <table class="summary-table claim-detail-table min-w-[1500px]" id="claimAwbDetailTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
